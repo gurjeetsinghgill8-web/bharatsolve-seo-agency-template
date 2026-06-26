@@ -1,0 +1,67 @@
+{
+  "app_name": "BHARATSOLVE SEO AGENCY",
+  "version": "1.1.0",
+  "db_path": "seo_agency.db",
+  "language": "Hinglish",
+  "subscription": {
+    "freelancer": {"price": 499, "clients": 3, "agents": ["keyword", "content", "rank", "social"]},
+    "pro": {"price": 1499, "clients": 10, "agents": ["keyword", "content", "rank", "social", "tech", "link", "clinic", "alumni"]},
+    "agency": {"price": 4999, "clients": 999, "agents": "all", "whitelabel": true},
+    "clinic": {"price": 999, "clients": 1, "agents": ["clinic", "social", "keyword", "rank"]},
+    "lifetime": {"price": 29999, "clients": 999, "agents": "all", "whitelabel": true}
+  },
+  "models": {
+    "default_provider": "groq",
+    "fallback_chain": [
+      {"provider": "groq", "model": "llama-3.1-8b-instant"},
+      {"provider": "gemini", "model": "gemini-2.0-flash"},
+      {"provider": "deepseek", "model": "deepseek-chat"}
+    ]
+  },
+  "agents": {
+    "manager": {"enabled": true, "model": "groq/llama-3.1-8b-instant"},
+    "commander": {"enabled": true, "interval_hours": 6, "model": "groq/llama-3.1-8b-instant"},
+    "self_healing": {"enabled": true, "max_retries": 3},
+    "keyword": {"enabled": true, "model": "gemini/gemini-2.0-flash"},
+    "content": {"enabled": true, "model": "gemini/gemini-2.0-flash"},
+    "rank": {"enabled": true},
+    "social": {"enabled": true, "model": "groq/llama-3.1-8b-instant"},
+    "clinic": {"enabled": true, "model": "gemini/gemini-2.0-flash"}
+  },
+    "social_platforms": ["google_business", "facebook", "instagram", "telegram", "email"],
+    "wordpress": {
+        "enabled": true,
+        "default_status": "publish",
+        "batch_delay_seconds": 1,
+        "auto_publish_on_generate": false,
+        "seo_plugin": "yoast"
+    },
+    "google_business": {
+        "enabled": true,
+        "post_types": ["STANDARD", "OFFER", "EVENT", "PRODUCT"],
+        "auto_reply_reviews": false,
+        "auto_post_frequency_hours": 48
+    },
+    "social_platforms_config": {
+    "facebook": {
+      "description": "Facebook Page Access Token + Page ID"
+    },
+    "instagram": {
+      "description": "Instagram Business Account ID + Facebook Access Token"
+    },
+    "telegram": {
+      "description": "Telegram Bot Token + Chat ID"
+    },
+    "email": {
+      "description": "SMTP settings or SendGrid API Key"
+    },
+    "google_business": {
+      "description": "Google Business Profile Access Token"
+    }
+  },
+  "monitoring": {
+    "sitrep_enabled": true,
+    "alert_on_error": true,
+    "max_response_time_ms": 5000
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "BHARATSOLVE SEO AGENCY",
+  "short_name": "BHARATSOLVE",
+  "description": "Single Person AI-Powered SEO Agency — Fully Automated",
+  "start_url": "/app/",
+  "display": "standalone",
+  "background_color": "#e0f7ff",
+  "theme_color": "#0077b6",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "app/static/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "app/static/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "seo"],
+  "lang": "hi",
+  "dir": "ltr"
+}

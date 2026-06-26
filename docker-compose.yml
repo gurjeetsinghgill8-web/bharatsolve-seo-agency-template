@@ -1,0 +1,41 @@
+# BHARATSOLVE SEO AGENCY — Docker Compose
+# One command: docker-compose up -d
+version: '3.8'
+
+services:
+  bharatsolve:
+    build: .
+    container_name: bharatsolve-seo-agency
+    ports:
+      - "8501:8501"
+    volumes:
+      # Persist database and PDF outputs
+      - bharatsolve_data:/app/seo_agency.db
+      - bharatsolve_pdfs:/app/pdf_outputs
+    environment:
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+      # API Keys - set these via .env file or environment
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      # Social Connectors
+      - FACEBOOK_ACCESS_TOKEN=${FACEBOOK_ACCESS_TOKEN:-}
+      - FACEBOOK_PAGE_ID=${FACEBOOK_PAGE_ID:-}
+      - INSTAGRAM_BUSINESS_ID=${INSTAGRAM_BUSINESS_ID:-}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
+      - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY:-}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8501', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  bharatsolve_data:
+  bharatsolve_pdfs:
