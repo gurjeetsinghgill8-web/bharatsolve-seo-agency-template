@@ -151,12 +151,12 @@ def get_rankings_history(keyword_id, days=30):
 
 # ── CONTENT OPERATIONS ──
 
-def save_content(project_id, title, content, content_type="blog", target_keyword="", meta_title="", meta_description="", schema_json=""):
+def save_content(project_id, title, content, content_type="blog", target_keyword="", meta_title="", meta_description="", schema_json="", published_url=""):
     conn = get_connection()
     conn.execute("""
-        INSERT INTO content_pieces (project_id, title, content, content_type, target_keyword, meta_title, meta_description, schema_json, word_count)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (project_id, title, content, content_type, target_keyword, meta_title, meta_description, schema_json, len(content.split())))
+        INSERT INTO content_pieces (project_id, title, content, content_type, target_keyword, meta_title, meta_description, schema_json, word_count, published_url, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (project_id, title, content, content_type, target_keyword, meta_title, meta_description, schema_json, len(content.split()), published_url, 'published' if published_url else 'draft'))
     conn.commit()
     cid = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
     conn.close()

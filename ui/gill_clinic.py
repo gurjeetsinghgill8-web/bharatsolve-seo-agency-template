@@ -9,14 +9,70 @@ from datetime import datetime, timedelta
 from db.operations import (
     get_dashboard_stats, get_clients, get_projects,
     get_agent_status_summary, get_agent_logs, get_content_pieces,
-    get_keywords, log_agent_action
+    get_keywords, log_agent_action,
+    create_client, create_project
 )
 from agents.content_agent import generate_content
 
 
 # ═══════════════════════════════════════════════════════════════════════
-# CLINIC CONFIGURATION (also in config.json)
+# AUTO-SETUP: Create Gill Clinic client + project on first visit
 # ═══════════════════════════════════════════════════════════════════════
+def _ensure_clinic_setup(user_id: int) -> int:
+    """
+    Auto-create Gill Heart Clinic client & default project if missing.
+    Returns the default project_id to use for content generation.
+    """
+    # Check if Gill Clinic client already exists
+    existing_clients = get_clients(user_id)
+    clinic_client = None
+    for c in existing_clients:
+        if c['name'] == CLINIC['name']:
+            clinic_client = c
+            break
+    
+    if not clinic_client:
+        create_client(
+            user_id=user_id,
+            name=CLINIC['name'],
+            website=CLINIC['website'],
+            email=CLINIC['email'],
+            phone=CLINIC['phone'],
+            business_type='Cardiology Clinic',
+            location=CLINIC['address'],
+            notes=f'{CLINIC["doctor"]} — {CLINIC["qualifications"]}'
+        )
+        # Re-fetch to get the new client
+        existing_clients = get_clients(user_id)
+        clinic_client = existing_clients[-1] if existing_clients else None
+    
+    if not clinic_client:
+        return 0
+    
+    client_id = clinic_client['id']
+    
+    # Check if default project exists
+    existing_projects = get_projects(client_id)
+    default_project = None
+    for p in existing_projects:
+        if p['name'] == 'Gill Clinic SEO':
+            default_project = p
+            break
+    
+    if not default_project and existing_projects:
+        default_project = existing_projects[0]  # Use first project
+    
+    if not default_project:
+        create_project(
+            client_id=client_id,
+            name='Gill Clinic SEO',
+            target_location='Meerut, Delhi NCR',
+            target_language='hi'
+        )
+        existing_projects = get_projects(client_id)
+        default_project = existing_projects[-1] if existing_projects else None
+    
+    return default_project['id'] if default_project else 0
 CLINIC = {
     "name": "Gill Heart Clinic",
     "doctor": "Dr. Gurjeet Singh Gill",
@@ -415,10 +471,15 @@ def render_quick_actions():
 # ═══════════════════════════════════════════════════════════════════════
 # SECTION: Blog Generator (Left)
 # ═══════════════════════════════════════════════════════════════════════
-def render_blog_section(user_id):
+def render_blog_section(user_id, project_id=0):
     with st.container():
         st.markdown('<div class="gill-section">', unsafe_allow_html=True)
         st.markdown("### 📝 Heart Health Blog Generator")
+        
+        if not project_id:
+            st.warning("⚠️ Clinic setup required. Please refresh or go to Clients page to add your clinic first.")
+            st.markdown('</div>', unsafe_allow_html=True)
+            return
         
         # Topic selector
         selected_topic = st.selectbox(
@@ -477,7 +538,7 @@ Make it patient-friendly, medically accurate, and SEO-optimized."""
                     
                     # Use content agent to generate
                     content_result = generate_content(
-                        project_id=1,  # default project
+                        project_id=project_id,
                         keyword=selected_topic,
                         content_type="blog"
                     )
@@ -514,7 +575,7 @@ Make it patient-friendly, medically accurate, and SEO-optimized."""
         st.markdown("---")
         st.markdown("#### 📚 Recent Blogs")
         try:
-            pieces = get_content_pieces(project_id=1, limit=5) if user_id else []
+            pieces = get_content_pieces(project_id=project_id, limit=5) if user_id else []
             if pieces:
                 for piece in pieces[:5]:
                     status_badge = "✅ Published" if piece.get('status') == 'published' else "📝 Draft"
@@ -855,6 +916,11 @@ def show_gill_clinic():
     
     user_id = st.session_state.get("user_id")
     
+    # Auto-create clinic client + project if missing
+    if user_id and "gc_project_id" not in st.session_state:
+        st.session_state["gc_project_id"] = _ensure_clinic_setup(user_id)
+    project_id = st.session_state.get("gc_project_id", 0)
+    
     # Handle quick action routing
     if "gc_action" not in st.session_state:
         st.session_state["gc_action"] = None
@@ -876,7 +942,7 @@ def show_gill_clinic():
     col_left, col_right = st.columns([1, 1])
     
     with col_left:
-        render_blog_section(user_id)
+        render_blog_section(user_id, project_id)
     
     with col_right:
         render_review_section()
