@@ -1101,6 +1101,101 @@ def render_competitor_section():
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# SECTION: Local Search Auto-Engine
+# ═══════════════════════════════════════════════════════════════════════
+def render_local_search_engine():
+    with st.container():
+        st.markdown('<div class="gill-section">', unsafe_allow_html=True)
+        st.markdown("### 🔍 Local Search Auto-Engine — Meerut & Delhi NCR")
+        st.markdown("*Jab log Meerut mein heart doctor search karein → auto-detect → auto-content → auto-rank*")
+        
+        from agents.local_search_engine import generate_content_plan, get_top_converting_queries, get_weekly_target_queries, LOCAL_SEARCH_QUERIES
+        
+        col1, col2, col3 = st.columns(3)
+        
+        total_queries = sum(len(v) for v in LOCAL_SEARCH_QUERIES.values())
+        
+        with col1:
+            st.metric("🎯 Search Queries Tracked", str(total_queries), "50+ high-intent")
+        with col2:
+            st.metric("📈 Est. Monthly Searches", "85,000+", "Meerut + NCR")
+        with col3:
+            st.metric("👥 Patient Conversion Potential", "15-30/month", "If ranked top 3")
+        
+        # Weekly content plan
+        st.markdown("---")
+        st.markdown("#### 📅 This Week's Auto-Content Plan")
+        
+        weekly_queries = get_weekly_target_queries()
+        
+        for i, q in enumerate(weekly_queries[:7]):
+            intent_emoji = {
+                "book_appointment": "📅", "emergency": "🚨", "information": "📖",
+                "price_check": "💰", "book_test": "🩺", "brand_search": "🏥",
+                "walk_in": "🚶", "book_service": "🏠", "event": "📢"
+            }
+            conv_badge = {"very_high": "🔴", "high": "🟠", "medium": "🟡", "low": "🟢"}
+            
+            st.markdown(f"""
+            <div style="display:flex;align-items:center;padding:0.4rem 0;border-bottom:1px solid #e0f0ff;font-size:0.9rem;">
+                <span style="width:30px;text-align:center;">{i+1}</span>
+                <span style="width:30px;">{intent_emoji.get(q['intent'],'📌')}</span>
+                <span style="flex:2;">{q['query'][:55]}</span>
+                <span style="color:#888;width:80px;text-align:center;">{q['volume']}</span>
+                <span>{conv_badge.get(q['conversion'],'')}</span>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        st.markdown("---")
+        
+        col_a, col_b = st.columns(2)
+        with col_a:
+            if st.button("🚀 Publish This Week's Content", key="publish_weekly_plan", 
+                        use_container_width=True, type="primary"):
+                with st.spinner(f"Generating & Publishing {len(weekly_queries[:7])} targeted pages..."):
+                    from agents.github_publisher import publish_blog_to_github
+                    published = 0
+                    for i, q in enumerate(weekly_queries[:7]):
+                        try:
+                            result = publish_blog_to_github(
+                                topic=q['query'],
+                                target_location="Meerut",
+                                language="hinglish",
+                                auto_publish=True
+                            )
+                            if result.get("status") == "published":
+                                published += 1
+                                st.success(f"✅ [{i+1}/7] {q['query'][:40]} → LIVE")
+                            else:
+                                st.warning(f"⚠️ [{i+1}/7] {q['query'][:40]}")
+                        except Exception as e:
+                            st.error(f"❌ [{i+1}/7] {str(e)[:60]}")
+                    st.balloons()
+                    st.success(f"🎉 {published}/7 pages published! Meerut patients will now find your clinic.")
+        
+        with col_b:
+            if st.button("📊 View Full 50+ Search Plan", key="view_full_plan", use_container_width=True):
+                plan = generate_content_plan()
+                st.markdown(f"""
+                ### 📊 Complete Search Intent Plan
+                
+                **Critical (Book Now!)**: {len(plan['priority_1_critical'])} queries  
+                **High Priority**: {len(plan['priority_2_high'])} queries  
+                **Medium Priority**: {len(plan['priority_3_medium'])} queries  
+                **Nurture**: {len(plan['priority_4_nurture'])} queries  
+                
+                **Est. Patient Conversions/month**: {plan['estimated_patients']}+
+                
+                ---
+                ### 🔴 CRITICAL — Publish First:
+                """)
+                for entry in plan['priority_1_critical'][:7]:
+                    st.markdown(f"- **{entry['query']}** → {entry['recommended_action'][:60]}")
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # SECTION: Auto-Pilot Status Panel
 # ═══════════════════════════════════════════════════════════════════════
 def render_autopilot_section():
@@ -1202,6 +1297,10 @@ def show_gill_clinic():
     
     with col_bottom_right:
         render_competitor_section()
+    
+    # ── Local Search Auto-Engine ──
+    st.markdown("<br>", unsafe_allow_html=True)
+    render_local_search_engine()
     
     # ── Auto-Pilot Panel ──
     st.markdown("<br>", unsafe_allow_html=True)
