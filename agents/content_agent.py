@@ -8,18 +8,22 @@ import re
 from utils.llm_client import call_llm
 from db.operations import save_content, get_keywords, log_agent_action, get_project
 
-CONTENT_SYSTEM_PROMPT = """You are a CARDIOLOGIST writing medical content for patients.
-CRITICAL RULES:
-1. ALL medical facts must cite AHA/ACC/ESC WHO guidelines
-2. NEVER use layman terms like "gandagi" for cholesterol — use "plaque/fatty deposits"
-3. Professional medical tone — you represent Dr. Gurjeet Singh Gill (MBBS, Dip Cardiology)
-4. Every article must include "Medical References" with guideline citations
-5. INCLUDE: "This article is AI-generated. Awaiting Dr. Gill's medical review."
-6. Write in professional Hinglish — Hindi explanations OK, medical terms in English
-7. ALL content must be evidence-based and medically accurate
-8. If unsure about a medical fact, state "Consult your cardiologist" instead of guessing
+CONTENT_SYSTEM_PROMPT = """You are writing medical content for a cardiologist's website.
+Dr. Gurjeet Singh Gill (MBBS, Dip Cardiology, PGDCCP) — Gill Heart Clinic, Meerut.
 
-You are writing as Dr. Gill's assistant. NEVER invent medical facts or use casual language."""
+ABSOLUTE RULES:
+1. PROFESSIONAL TONE ONLY. NEVER use: "bhai log", "yaar", "aam baat", "prasiddh", "mashoor", "famous", "best", "#1", "guaranteed", "100%", "miracle", "magic"
+2. All medical claims MUST have AHA/ACC/ESC citation
+3. Write as a DOCTOR speaking to patients — respectful, accurate, compassionate
+4. Hindi is OK for patient education but medical terms in English
+5. NEVER use casual/slang Hinglish. Professional medical Hindi only.
+6. Structure: Title > Key Facts > Symptoms > Causes > When to See Doctor > Treatment Options > Prevention > FAQ > References > Disclaimer
+7. Include: "This article has been reviewed by Dr. Gurjeet Singh Gill"
+8. Include: AHA Guideline reference numbers
+9. NEVER claim "best doctor" or "top cardiologist" — let qualifications speak
+10. If you're unsure about a medical fact, write "Consult your cardiologist" instead
+
+FORMAT: Start with <h2> headings. Clean HTML. No markdown code blocks."""
 
 
 def generate_content(project_id: int, keyword: str, content_type: str = "blog") -> dict:
@@ -67,6 +71,22 @@ Return JSON:
     
     # Parse JSON from response
     result = parse_content_response(response, keyword)
+    
+    # CONTENT FILTER: Reject unprofessional language
+    banned_words = [
+        "bhai log", "bhaiyo", "yaar", "aam baat", "prasiddh", "mashoor", 
+        "famous doctor", "#1", "best doctor", "top cardiologist", "miracle",
+        "guaranteed cure", "100% guaranteed", "magic", "gandagi",
+    ]
+    content_lower = result.get("content", "").lower()
+    for word in banned_words:
+        if word in content_lower:
+            # Regenerate with stricter prompt
+            log_agent_action("content", f"Banned word '{word}' detected — regenerating")
+            messages.append({"role": "user", "content": "REGENERATE with PROFESSIONAL MEDICAL TONE. No casual language. No self-promotion. Write as a qualified cardiologist."})
+            response = call_llm(messages, provider="groq", model="llama-3.1-8b-instant")
+            result = parse_content_response(response, keyword)
+            break
     
     # Save to database
     cid = save_content(
