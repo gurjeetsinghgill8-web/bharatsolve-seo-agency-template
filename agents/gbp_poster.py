@@ -177,10 +177,10 @@ def post_multiple_tips(count: int = 3) -> List[Dict]:
 
 def gbp_weekly_tip_task():
     """
-    Scheduled task: Post a heart health tip to GBP every week.
-    Called by the scheduler every 7 days.
+    Scheduled task: Post heart health tip to GBP every 12 hours (2 posts/day).
+    Called by the scheduler.
     """
-    print("📱 GBP Weekly Tip: Posting heart health tip...")
+    print("📱 GBP Heart Tip: Posting daily heart health tip...")
     result = post_weekly_heart_tip(use_ai=True)
     
     if result.get("success"):

@@ -478,8 +478,8 @@ def start_apscheduler():
     _apscheduler.add_job(run_delhi_rank_check, 'interval', hours=12,
                          id='delhi_rank', replace_existing=True)
     
-    # GBP weekly heart tip — every 7 days (168 hours)
-    _apscheduler.add_job(run_gbp_weekly_tip, 'interval', hours=168,
+    # GBP heart health tip — every 12 hours (2 posts/day)
+    _apscheduler.add_job(run_gbp_weekly_tip, 'interval', hours=12,
                          id='gbp_weekly_tip', replace_existing=True)
     
     # Daily full run at 3 AM
@@ -524,7 +524,7 @@ def try_cloud_tasks():
         ("auto_review", 6, run_auto_review_task),
         ("competitor_scan", 48, run_competitor_scan),
         ("delhi_rank", 12, run_delhi_rank_check),
-        ("gbp_weekly_tip", 168, run_gbp_weekly_tip),
+        ("gbp_weekly_tip", 12, run_gbp_weekly_tip),    # 2 posts/day
     ]
     
     for task_name, interval_hours, task_fn in task_schedule:

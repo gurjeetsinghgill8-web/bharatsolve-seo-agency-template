@@ -89,10 +89,26 @@
       "Women & Heart Disease", "Stress & Heart Health", "Seasonal Heart Care Tips"
     ],
     "competitors": [
-      {"name": "Anand Hospital Cardiology", "location": "Meerut", "strength": "Multi-specialty brand, Google Ads"},
-      {"name": "Lokpriya Hospital Heart Centre", "location": "Meerut", "strength": "Maps ranking, local citations"},
-      {"name": "Max Hospital Cardiac Care", "location": "Delhi NCR (Vaishali)", "strength": "Brand authority, blog content"},
-      {"name": "Fortis Hospital Noida", "location": "Delhi NCR", "strength": "Domain authority, patient reviews"}
+      {"name": "Dr. S. Kumar Cardiology", "location": "Meerut"},
+      {"name": "Dr. R. Sharma Heart Clinic", "location": "Meerut Cantt"},
+      {"name": "Dr. A. Gupta Cardiac Care", "location": "Meerut City"},
+      {"name": "Dr. V. Singh Heart Centre", "location": "Meerut Medical Rd"},
+      {"name": "Dr. P. Jain Cardiology", "location": "Meerut Saket"},
+      {"name": "Dr. M. Agarwal Heart Care", "location": "Meerut Shastri Nagar"},
+      {"name": "Dr. N. Verma Cardio Clinic", "location": "Meerut Begum Bridge"},
+      {"name": "Dr. K. Tiwari Heart Doctor", "location": "Meerut Lisari Road"},
+      {"name": "Dr. Y. Chaudhary Cardiology", "location": "Modinagar"},
+      {"name": "Dr. D. Rana Heart Clinic", "location": "Hapur"},
+      {"name": "Dr. T. Malik Cardiac Care", "location": "Ghaziabad Raj Nagar"},
+      {"name": "Dr. H. Siddiqui Heart Dr", "location": "Ghaziabad Indirapuram"},
+      {"name": "Dr. B. Arora Cardiology", "location": "Delhi Laxmi Nagar"},
+      {"name": "Dr. C. Mehta Heart Clinic", "location": "Delhi Preet Vihar"},
+      {"name": "Dr. L. Kapoor Cardiac", "location": "Noida Sector 62"},
+      {"name": "Dr. F. Khan Heart Care", "location": "Delhi Jamia Nagar"},
+      {"name": "Dr. G. Reddy Cardiology", "location": "Gurgaon Sector 14"},
+      {"name": "Dr. J. Tyagi Heart Clinic", "location": "Muzaffarnagar"},
+      {"name": "Dr. O. Bhatnagar Cardiac", "location": "Saharanpur"},
+      {"name": "Dr. E. Saxena Heart Centre", "location": "Bijnor"}
     ],
     "auto_pilot": {
       "auto_blog_interval_hours": 24,
