@@ -664,25 +664,48 @@ def render_blog_section(user_id, project_id=0):
                 # PDF Download
                 try:
                     from fpdf import FPDF
-                    pdf = FPDF()
-                    pdf.add_page()
-                    # Sanitize
-                    def clean(text):
-                        return text.encode('ascii', 'replace').decode('ascii').replace('?', '') if text else ""
+                    import re as re_mod
                     
+                    def clean(text):
+                        if not text:
+                            return ""
+                        text = str(text)
+                        # Remove ALL non-ASCII and special chars
+                        text = re_mod.sub(r'[^\x20-\x7E\n\r\t]', '', text)
+                        # Remove extra whitespace
+                        text = re_mod.sub(r'\s+', ' ', text)
+                        return text.strip()
+                    
+                    pdf = FPDF()
+                    pdf.set_auto_page_break(auto=True, margin=15)
+                    pdf.add_page()
                     pdf.set_font('Helvetica', 'B', 16)
-                    pdf.cell(0, 10, clean(f"DRAFT - For Medical Review"), ln=True, align='C')
+                    pdf.cell(0, 10, clean("DRAFT - For Medical Review"), ln=True, align='C')
                     pdf.set_font('Helvetica', 'B', 14)
-                    pdf.cell(0, 10, clean(blog_title[:80]), ln=True)
+                    title_clean = clean(blog_title[:80])
+                    if not title_clean:
+                        title_clean = "Blog Draft"
+                    pdf.cell(0, 10, title_clean, ln=True)
                     pdf.ln(5)
                     pdf.set_font('Helvetica', '', 10)
-                    pdf.cell(0, 8, clean(f"Author: Dr. Gurjeet Singh Gill | Gill Heart Clinic, Meerut"), ln=True)
-                    pdf.cell(0, 8, clean(f"Status: DRAFT - Awaiting Doctor's Approval"), ln=True)
+                    pdf.cell(0, 8, clean("Author: Dr. Gurjeet Singh Gill | Gill Heart Clinic, Meerut"), ln=True)
+                    pdf.cell(0, 8, clean("Status: DRAFT - Awaiting Doctor's Approval"), ln=True)
                     pdf.ln(5)
-                    pdf.set_font('Helvetica', '', 10)
-                    # Write content
-                    for line in clean(blog_content[:8000]).split('\n'):
-                        pdf.multi_cell(0, 6, line[:120])
+                    pdf.set_font('Helvetica', '', 9)
+                    
+                    # Write content — break into safe lines
+                    content_clean = clean(blog_content[:10000])
+                    if content_clean:
+                        lines = content_clean.split('\n')
+                        for line in lines:
+                            # Wrap long lines
+                            while len(line) > 100:
+                                pdf.multi_cell(0, 5, line[:100])
+                                line = line[100:]
+                            if line.strip():
+                                pdf.multi_cell(0, 5, line.strip())
+                    else:
+                        pdf.multi_cell(0, 5, "[Content pending review - see app for full text]")
                     
                     import tempfile, os
                     tmp = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
@@ -696,12 +719,14 @@ def render_blog_section(user_id, project_id=0):
                     st.download_button(
                         label="📥 Download PDF for Review",
                         data=pdf_bytes,
-                        file_name=f"DRAFT_Review_{blog_title[:30]}.pdf",
+                        file_name=f"DRAFT_Review_{title_clean[:20]}.pdf",
                         mime="application/pdf",
                         use_container_width=True,
                     )
+                    st.caption(f"PDF size: {len(pdf_bytes)/1024:.1f} KB — Safe text only (Hindi removed for PDF compatibility)")
                 except Exception as e:
-                    st.warning(f"PDF generation skipped: {e}")
+                    st.warning(f"PDF preview not available: {str(e)[:80]}")
+                    st.info("📄 Review content above. Use 'Generate Draft' to try again.")
                 
                 # APPROVE & PUBLISH
                 st.markdown("---")
