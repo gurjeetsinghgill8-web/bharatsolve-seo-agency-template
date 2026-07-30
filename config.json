@@ -89,10 +89,10 @@
       "Women & Heart Disease", "Stress & Heart Health", "Seasonal Heart Care Tips"
     ],
     "competitors": [
-      {"name": "Meerut Heart Centre", "location": "Meerut", "strength": "Maps ranking"},
-      {"name": "Delhi NCR Cardiac Care", "location": "Delhi NCR", "strength": "Blog content"},
-      {"name": "Lifeline Heart Institute", "location": "Meerut Cantt", "strength": "Reviews count"},
-      {"name": "Max Heart & Vascular", "location": "Delhi", "strength": "Domain authority"}
+      {"name": "Anand Hospital Cardiology", "location": "Meerut", "strength": "Multi-specialty brand, Google Ads"},
+      {"name": "Lokpriya Hospital Heart Centre", "location": "Meerut", "strength": "Maps ranking, local citations"},
+      {"name": "Max Hospital Cardiac Care", "location": "Delhi NCR (Vaishali)", "strength": "Brand authority, blog content"},
+      {"name": "Fortis Hospital Noida", "location": "Delhi NCR", "strength": "Domain authority, patient reviews"}
     ],
     "auto_pilot": {
       "auto_blog_interval_hours": 24,
