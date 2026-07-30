@@ -649,7 +649,7 @@ def render_blog_section(user_id, project_id=0):
                 except Exception as e:
                     st.error(f"❌ Error: {str(e)[:500]}")
         
-        # PDF Review
+        # Review Section
         if view_pdf:
             if "gc_last_blog" not in st.session_state:
                 st.warning("⚠️ Pehle 'Generate Draft' dabao — koi draft ready nahi hai.")
@@ -657,87 +657,41 @@ def render_blog_section(user_id, project_id=0):
                 blog_title = st.session_state.get("gc_blog_title", "Draft")
                 blog_content = st.session_state.get("gc_blog_content", "")
                 
-                # Show content for review
-                with st.expander(f"📰 REVIEW: {blog_title}", expanded=True):
-                    st.markdown(blog_content[:5000] if blog_content else "No content", unsafe_allow_html=True)
+                # Show editable content for review
+                st.markdown("---")
+                st.markdown("### 📝 Step 2: Review & Edit Draft")
                 
-                # PDF Download
-                try:
-                    from fpdf import FPDF
-                    import re as re_mod
-                    
-                    def clean(text):
-                        if not text:
-                            return ""
-                        text = str(text)
-                        # Remove ALL non-ASCII and special chars
-                        text = re_mod.sub(r'[^\x20-\x7E\n\r\t]', '', text)
-                        # Remove extra whitespace
-                        text = re_mod.sub(r'\s+', ' ', text)
-                        return text.strip()
-                    
-                    pdf = FPDF()
-                    pdf.set_auto_page_break(auto=True, margin=15)
-                    pdf.add_page()
-                    pdf.set_font('Helvetica', 'B', 16)
-                    pdf.cell(0, 10, clean("DRAFT - For Medical Review"), ln=True, align='C')
-                    pdf.set_font('Helvetica', 'B', 14)
-                    title_clean = clean(blog_title[:80])
-                    if not title_clean:
-                        title_clean = "Blog Draft"
-                    pdf.cell(0, 10, title_clean, ln=True)
-                    pdf.ln(5)
-                    pdf.set_font('Helvetica', '', 10)
-                    pdf.cell(0, 8, clean("Author: Dr. Gurjeet Singh Gill | Gill Heart Clinic, Meerut"), ln=True)
-                    pdf.cell(0, 8, clean("Status: DRAFT - Awaiting Doctor's Approval"), ln=True)
-                    pdf.ln(5)
-                    pdf.set_font('Helvetica', '', 9)
-                    
-                    # Write content — break into safe lines
-                    content_clean = clean(blog_content[:10000])
-                    if content_clean:
-                        lines = content_clean.split('\n')
-                        for line in lines:
-                            # Wrap long lines
-                            while len(line) > 100:
-                                pdf.multi_cell(0, 5, line[:100])
-                                line = line[100:]
-                            if line.strip():
-                                pdf.multi_cell(0, 5, line.strip())
-                    else:
-                        pdf.multi_cell(0, 5, "[Content pending review - see app for full text]")
-                    
-                    import tempfile, os
-                    tmp = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
-                    pdf.output(tmp.name)
-                    tmp.close()
-                    
-                    with open(tmp.name, 'rb') as f:
-                        pdf_bytes = f.read()
-                    os.unlink(tmp.name)
-                    
-                    st.download_button(
-                        label="📥 Download PDF for Review",
-                        data=pdf_bytes,
-                        file_name=f"DRAFT_Review_{title_clean[:20]}.pdf",
-                        mime="application/pdf",
-                        use_container_width=True,
-                    )
-                    st.caption(f"PDF size: {len(pdf_bytes)/1024:.1f} KB — Safe text only (Hindi removed for PDF compatibility)")
-                except Exception as e:
-                    st.warning(f"PDF preview not available: {str(e)[:80]}")
-                    st.info("📄 Review content above. Use 'Generate Draft' to try again.")
+                edited_title = st.text_input("Title", value=blog_title, key="review_title")
+                edited_content = st.text_area(
+                    "Content (Edit if needed)", 
+                    value=blog_content if blog_content else "",
+                    height=500,
+                    key="review_content",
+                    help="Review medical accuracy. Edit directly. Approve when ready."
+                )
+                
+                # Reading preview
+                with st.expander("📖 Reading Preview", expanded=False):
+                    st.markdown(edited_content[:5000] if edited_content else "No content", unsafe_allow_html=True)
+                    if len(edited_content) > 5000:
+                        st.caption(f"... {len(edited_content.split())} words total")
+                
+                st.caption(f"📊 Word count: {len(edited_content.split()) if edited_content else 0}")
                 
                 # APPROVE & PUBLISH
                 st.markdown("---")
-                st.markdown("#### ✅ Step 3: Approve & Publish")
-                st.warning("⚠️ Doctor review required: Verify all medical facts before publishing.")
+                st.markdown("#### ✅ Step 3: Doctor's Approval")
+                st.warning("⚠️ **Dr. Gill**: Please verify ALL medical facts before publishing. Check AHA/ACC guidelines.")
                 
                 col_a, col_b = st.columns(2)
                 with col_a:
                     if st.button("✅ APPROVE — Publish to Website", key="approve_publish", 
                                 use_container_width=True, type="primary"):
-                        with st.spinner("Publishing approved blog..."):
+                        with st.spinner("Publishing approved content..."):
+                            # Save edited content back
+                            st.session_state["gc_blog_title"] = edited_title
+                            st.session_state["gc_blog_content"] = edited_content
+                            
                             try:
                                 from agents.github_publisher import publish_blog_to_github
                                 pub_result = publish_blog_to_github(
@@ -748,6 +702,7 @@ def render_blog_section(user_id, project_id=0):
                                 )
                                 if pub_result.get("status") == "published":
                                     st.success(f"🎉 APPROVED & LIVE → {pub_result.get('published_url', '')}")
+                                    st.balloons()
                                 else:
                                     st.warning(f"Publish issue: {pub_result.get('push_error', '')[:200]}")
                             except Exception as e:
