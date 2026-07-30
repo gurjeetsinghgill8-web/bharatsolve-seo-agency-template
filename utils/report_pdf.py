@@ -18,22 +18,29 @@ def generate_clinic_pdf_report(stats: Dict, user_id: int = None) -> str:
     except ImportError:
         return None
     
-    clinic_name = "Gill Heart Clinic"
-    doctor_name = "Dr. Gurjeet Singh Gill"
-    now = datetime.now().strftime("%d %B %Y, %I:%M %p")
+    # Helper: sanitize text for fpdf (ASCII only)
+    def s(text):
+        """Remove non-ASCII characters for fpdf compatibility."""
+        if not isinstance(text, str):
+            text = str(text)
+        return text.encode('ascii', 'replace').decode('ascii').replace('?', '')
+    
+    clinic_name = s("Gill Heart Clinic")
+    doctor_name = s("Dr. Gurjeet Singh Gill")
+    now = s(datetime.now().strftime("%d %B %Y, %I:%M %p"))
     
     pdf = FPDF()
     pdf.add_page()
     
     # ── Header ──
-    pdf.set_fill_color(0, 119, 182)  # Blue
+    pdf.set_fill_color(0, 119, 182)
     pdf.rect(0, 0, 210, 35, 'F')
     pdf.set_text_color(255, 255, 255)
     pdf.set_font('Helvetica', 'B', 20)
     pdf.set_y(10)
     pdf.cell(0, 10, clinic_name, ln=True, align='C')
     pdf.set_font('Helvetica', '', 10)
-    pdf.cell(0, 6, f"Weekly SEO Report — {now}", ln=True, align='C')
+    pdf.cell(0, 6, f"Weekly SEO Report - {now}", ln=True, align='C')
     pdf.cell(0, 6, f"{doctor_name} | Meerut & Delhi NCR", ln=True, align='C')
     
     pdf.set_text_color(0, 0, 0)
@@ -47,19 +54,19 @@ def generate_clinic_pdf_report(stats: Dict, user_id: int = None) -> str:
     pdf.ln(3)
     
     overview_data = [
-        ("Google Rating", f"⭐ {stats.get('google_rating', '4.8')} ({stats.get('google_reviews', '127')} reviews)"),
-        ("Keywords Tracking", str(stats.get('keywords_count', '16'))),
-        ("Blogs Published", str(stats.get('blogs_count', '0'))),
-        ("Published This Week", str(stats.get('published_count', '0'))),
-        ("Competitors Tracked", str(stats.get('competitors_count', '20'))),
+        ("Google Rating", s(f"{stats.get('google_rating', '4.8')} / 5 ({stats.get('google_reviews', '127')} reviews)")),
+        ("Keywords Tracking", s(str(stats.get('keywords_count', '16')))),
+        ("Blogs Published", s(str(stats.get('blogs_count', '0')))),
+        ("Published This Week", s(str(stats.get('published_count', '0')))),
+        ("Competitors Tracked", s(str(stats.get('competitors_count', '20')))),
         ("Website", "gurjeetsinghgill8-web.github.io/gill-heart-clinic"),
     ]
     
     for label, value in overview_data:
         pdf.set_font('Helvetica', 'B', 10)
-        pdf.cell(60, 7, f"  {label}:", border=0)
+        pdf.cell(60, 7, f"  {s(label)}:", border=0)
         pdf.set_font('Helvetica', '', 10)
-        pdf.cell(0, 7, value, ln=True)
+        pdf.cell(0, 7, s(value), ln=True)
     
     pdf.ln(5)
     
@@ -70,7 +77,6 @@ def generate_clinic_pdf_report(stats: Dict, user_id: int = None) -> str:
     pdf.set_font('Helvetica', '', 10)
     pdf.ln(3)
     
-    # Table header
     pdf.set_fill_color(0, 119, 182)
     pdf.set_text_color(255, 255, 255)
     pdf.set_font('Helvetica', 'B', 9)
@@ -96,11 +102,11 @@ def generate_clinic_pdf_report(stats: Dict, user_id: int = None) -> str:
     ])
     
     for r in rankings:
-        pdf.cell(85, 6, f"  {r['keyword']}", border=1)
-        pdf.cell(25, 6, f"#{r['position']}", border=1, align='C')
-        pdf.cell(25, 6, r['change'], border=1, align='C')
-        pdf.cell(25, 6, r['maps'], border=1, align='C')
-        pdf.cell(25, 6, f"{r['volume']:,}", border=1, align='C')
+        pdf.cell(85, 6, f"  {s(r['keyword'])}", border=1)
+        pdf.cell(25, 6, f"#{s(r['position'])}", border=1, align='C')
+        pdf.cell(25, 6, s(r['change']), border=1, align='C')
+        pdf.cell(25, 6, s(r['maps']), border=1, align='C')
+        pdf.cell(25, 6, f"{s(r['volume']):,}", border=1, align='C')
         pdf.ln()
     
     pdf.ln(5)
@@ -114,16 +120,16 @@ def generate_clinic_pdf_report(stats: Dict, user_id: int = None) -> str:
     
     blogs = stats.get('recent_blogs', [
         "Emergency Heart Care Signs & Treatment",
-        "Pediatric Cardiology — Children Heart Health", 
+        "Pediatric Cardiology - Children Heart Health", 
         "Angioplasty Information Guide",
         "Heart Bypass Surgery Recovery Tips",
-        "Stent Procedure — What Patients Must Know",
-        "Cardiac Checkup Package — Tests Included",
+        "Stent Procedure - What Patients Must Know",
+        "Cardiac Checkup Package - Tests Included",
     ])
     
     for i, blog in enumerate(blogs[:10], 1):
         pdf.cell(8, 6, f"{i}.", border=0)
-        pdf.cell(0, 6, blog[:80], ln=True)
+        pdf.cell(0, 6, s(blog)[:80], ln=True)
     
     pdf.ln(5)
     
@@ -145,10 +151,10 @@ def generate_clinic_pdf_report(stats: Dict, user_id: int = None) -> str:
     
     for task, status, freq in tasks:
         pdf.set_font('Helvetica', 'B', 9)
-        pdf.cell(50, 6, f"  {task}:", border=0)
+        pdf.cell(50, 6, f"  {s(task)}:", border=0)
         pdf.set_font('Helvetica', '', 9)
-        pdf.cell(40, 6, f"[{status}]", border=0)
-        pdf.cell(0, 6, freq, ln=True)
+        pdf.cell(40, 6, f"[{s(status)}]", border=0)
+        pdf.cell(0, 6, s(freq), ln=True)
     
     pdf.ln(5)
     
@@ -170,7 +176,7 @@ def generate_clinic_pdf_report(stats: Dict, user_id: int = None) -> str:
     
     for i, rec in enumerate(recommendations, 1):
         pdf.cell(8, 6, f"{i}.", border=0)
-        pdf.cell(0, 6, rec, ln=True)
+        pdf.cell(0, 6, s(rec), ln=True)
     
     pdf.ln(8)
     
@@ -178,9 +184,9 @@ def generate_clinic_pdf_report(stats: Dict, user_id: int = None) -> str:
     pdf.set_y(-30)
     pdf.set_font('Helvetica', 'I', 8)
     pdf.set_text_color(128, 128, 128)
-    pdf.cell(0, 5, f"Generated by BHARATSOLVE SEO Agency for {clinic_name}", ln=True, align='C')
-    pdf.cell(0, 5, f"Doctor: {doctor_name} | Mohiuddinpur, Meerut | +91-9639011155", ln=True, align='C')
-    pdf.cell(0, 5, f"gurjeetsinghgill8@gmail.com | {now}", ln=True, align='C')
+    pdf.cell(0, 5, s(f"Generated by BHARATSOLVE SEO Agency for {clinic_name}"), ln=True, align='C')
+    pdf.cell(0, 5, s(f"Doctor: {doctor_name} | Mohiuddinpur, Meerut | +91-9639011155"), ln=True, align='C')
+    pdf.cell(0, 5, s(f"gurjeetsinghgill8@gmail.com | {now}"), ln=True, align='C')
     
     # Save to temp file
     temp_dir = tempfile.gettempdir()
