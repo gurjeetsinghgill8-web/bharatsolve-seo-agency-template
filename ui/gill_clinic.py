@@ -1023,7 +1023,10 @@ def render_competitor_section():
         
         all_gaps = []
         for c in comps:
-            for kw in c['gap_keywords']:
+            gaps = c.get('gap_keywords', [])
+            if not gaps:
+                gaps = [f"Local SEO content for {c.get('name','')}"]
+            for kw in gaps:
                 all_gaps.append({"keyword": kw, "competitor": c['name']})
         
         for gap in all_gaps:
