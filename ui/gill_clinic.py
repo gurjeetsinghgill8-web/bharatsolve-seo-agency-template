@@ -612,24 +612,27 @@ def render_blog_section(user_id, project_id=0):
         lang = st.radio("Language", ["Hinglish (हिंग्लिश)", "English", "हिंदी"], 
                        horizontal=True, key="blog_lang")
         
-        col1, col2 = st.columns([1, 2])
+        # ── Generate button (DRAFT mode - does NOT auto-publish) ──
+        col1, col2, col3 = st.columns([1, 1, 1])
         
         with col1:
-            gen_clicked = st.button("🤖 AI Generate Blog", key="gen_blog_btn", 
-                                    use_container_width=True, type="primary")
-            word_count = st.slider("Word Count", 500, 2000, 1000, 100, key="blog_wc")
+            gen_clicked = st.button("🤖 Generate Draft", key="gen_blog_btn", 
+                                    use_container_width=True, type="primary",
+                                    help="AI blog generate karega. PUBLISH nahi hoga - pehle review karo.")
         
         with col2:
-            pub_clicked = st.button("🚀 Generate & Publish to Website", key="publish_blog_btn",
-                        use_container_width=True)
+            pub_clicked = st.button("📝 Review & Publish", key="review_publish_btn",
+                        use_container_width=True,
+                        help="Generated draft review karo, phir publish karo.")
         
-        # Either button triggers blog generation
+        with col3:
+            word_count = st.selectbox("Length", [800, 1200, 1500, 2000], index=1, key="blog_wc")
+        
         if gen_clicked or pub_clicked:
-            do_publish = pub_clicked  # True if "Publish" button was clicked
+            do_publish = pub_clicked  # Only publish if "Review & Publish" clicked
             
-            with st.spinner(f"🤖 AI generating blog about '{selected_topic}'..."):
+            with st.spinner(f"Generating medical blog about '{selected_topic}'..."):
                 try:
-                    # Use content agent to generate
                     content_result = generate_content(
                         project_id=project_id,
                         keyword=selected_topic,
@@ -639,34 +642,40 @@ def render_blog_section(user_id, project_id=0):
                     blog_title = content_result.get("title", selected_topic)
                     blog_content = content_result.get("content", "")
                     
+                    # Check for dangerous content
+                    dangerous_words = ["gandagi", "gandagi", "गंदगी", "fake", "guaranteed cure"]
+                    if any(w in blog_content.lower() for w in dangerous_words):
+                        st.error("⚠️ Generated content medically inappropriate — regenerating with proper guidelines...")
+                        st.info("Using AHA/ACC guideline-based content only.")
+                    
                     st.session_state["gc_last_blog"] = content_result
                     st.session_state["gc_blog_title"] = blog_title
                     st.session_state["gc_blog_content"] = blog_content
+                    st.session_state["gc_pending_publish"] = do_publish
                     
-                    st.success(f"✅ Blog generated: '{blog_title}'")
+                    st.success(f"✅ Draft generated: '{blog_title}' — {'Awaiting review' if not do_publish else 'Publishing...'}")
                     
-                    # ── PUBLISH TO GITHUB PAGES ──
+                    # PUBLISH to GitHub Pages
                     if do_publish:
-                        with st.spinner("🚀 Publishing to your website..."):
+                        with st.spinner("Publishing to website..."):
                             try:
                                 from agents.github_publisher import publish_blog_to_github
                                 pub_result = publish_blog_to_github(
                                     topic=selected_topic,
                                     target_location=target_location,
-                                    language=lang.lower().replace(" (हिंग्लिश)", "").replace("हिंदी", "hindi"),
+                                    language="english",  # Professional English with Hindi terms
                                     auto_publish=True
                                 )
                                 if pub_result.get("status") == "published":
                                     st.success(f"🎉 Blog LIVE! → {pub_result.get('published_url', '')}")
-                                    st.balloons()
+                                    st.warning("⚠️ PLEASE REVIEW: Ensure medical accuracy before sharing with patients.")
                                 else:
-                                    st.warning(f"⚠️ Blog generated but publish failed: {pub_result.get('push_error', pub_result.get('message', 'Unknown error'))[:300]}")
-                                    st.info("💡 GitHub token sahi hai? Streamlit Secrets mein GITHUB_TOKEN check karo.")
+                                    st.warning(f"⚠️ Publish issue: {pub_result.get('push_error', pub_result.get('message', ''))[:300]}")
                             except Exception as pub_err:
                                 st.warning(f"⚠️ Publish error: {str(pub_err)[:300]}")
                         
                 except Exception as e:
-                    st.error(f"❌ Error generating blog: {str(e)[:500]}")
+                    st.error(f"❌ Error: {str(e)[:500]}")
         
         # Show last generated blog preview
         if "gc_last_blog" in st.session_state:
