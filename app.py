@@ -213,11 +213,11 @@ st.markdown("""
     }
     
     /* ═══ ALL TEXT ═══ */
-    * {
+    .stApp, .main, .block-container {
         color: #333;
     }
-    .stMarkdown, p, span, label, li {
-        color: #333 !important;
+    .stMarkdown p, .stMarkdown span, .stMarkdown li, label {
+        color: #333;
     }
     
     /* ═══ HEADERS ═══ */
