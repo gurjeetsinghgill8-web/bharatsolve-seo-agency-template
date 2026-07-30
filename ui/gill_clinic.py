@@ -121,31 +121,30 @@ BLOG_CATEGORIES = [
     "Yoga for Heart Health — Best Asanas",
 ]
 
-COMPETITORS = [
-    # ── Meerut (Mohiuddinpur area) — Individual Doctors ──
-    {"name": "Dr. S. Kumar Cardiology", "location": "Meerut", "strength": "Google Maps #1, 200+ reviews"},
-    {"name": "Dr. R. Sharma Heart Clinic", "location": "Meerut Cantt", "strength": "Practo top-rated, video content"},
-    {"name": "Dr. A. Gupta Cardiac Care", "location": "Meerut City", "strength": "JustDial listing, low fees"},
-    {"name": "Dr. V. Singh Heart Centre", "location": "Meerut (Medical Rd)", "strength": "FB ads, patient testimonials"},
-    {"name": "Dr. P. Jain Cardiology", "location": "Meerut (Saket)", "strength": "Blogging, YouTube channel"},
-    {"name": "Dr. M. Agarwal Heart Care", "location": "Meerut (Shastri Nagar)", "strength": "Instagram health tips"},
-    {"name": "Dr. N. Verma Cardio Clinic", "location": "Meerut (Begum Bridge)", "strength": "WhatsApp groups, referrals"},
-    {"name": "Dr. K. Tiwari Heart Doctor", "location": "Meerut (Lisari Road)", "strength": "Low-cost ECG, walk-in"},
-    # ── Modinagar / Hapur / Ghaziabad — Nearby ──
-    {"name": "Dr. Y. Chaudhary Cardiology", "location": "Modinagar", "strength": "Only cardiologist in Modinagar"},
-    {"name": "Dr. D. Rana Heart Clinic", "location": "Hapur", "strength": "Local newspaper ads, camp visits"},
-    {"name": "Dr. T. Malik Cardiac Care", "location": "Ghaziabad (Raj Nagar)", "strength": "Google Ads, website SEO"},
-    {"name": "Dr. H. Siddiqui Heart Dr", "location": "Ghaziabad (Indirapuram)", "strength": "Apollo experience, premium"},
-    # ── Delhi NCR — Individual Practitioners ──
-    {"name": "Dr. B. Arora Cardiology", "location": "Delhi (Laxmi Nagar)", "strength": "50+ yrs experience, word-of-mouth"},
-    {"name": "Dr. C. Mehta Heart Clinic", "location": "Delhi (Preet Vihar)", "strength": "DM AIIMS, online consultation"},
-    {"name": "Dr. L. Kapoor Cardiac", "location": "Noida (Sector 62)", "strength": "Fortis ex-consultant, premium"},
-    {"name": "Dr. F. Khan Heart Care", "location": "Delhi (Jamia Nagar)", "strength": "Urdu/Hindi blogs, community trust"},
-    {"name": "Dr. G. Reddy Cardiology", "location": "Gurgaon (Sector 14)", "strength": "Corporate tie-ups, insurance"},
-    # ── Muzaffarnagar / Saharanpur area ──
-    {"name": "Dr. J. Tyagi Heart Clinic", "location": "Muzaffarnagar", "strength": "District-level referrals, camps"},
-    {"name": "Dr. O. Bhatnagar Cardiac", "location": "Saharanpur", "strength": "2 clinics, affordable pricing"},
-    {"name": "Dr. E. Saxena Heart Centre", "location": "Bijnor", "strength": "Only cardiologist in Bijnor"},
+# ═══════════════════════════════════════════════════════════════════════
+# COMPETITOR NAMES — Update these with REAL doctor names you know!
+# ═══════════════════════════════════════════════════════════════════════
+MY_COMPETITORS = [
+    "Dr. Amit Sharma — Cardiologist, Meerut",
+    "Dr. Sachit Goel — Cardiologist, Meerut",
+    "Dr. Mamtesh Gupta — Cardiologist, Meerut",
+    "Dr. Deepak (Deek) — Cardiologist, Meerut",
+    "Dr. ________ — Cardiologist, Meerut",
+    "Dr. ________ — Cardiologist, Meerut",
+    "Dr. ________ — Cardiologist, Meerut Cantt",
+    "Dr. ________ — Cardiologist, Modinagar",
+    "Dr. ________ — Cardiologist, Hapur",
+    "Dr. ________ — Cardiologist, Ghaziabad",
+    "Dr. ________ — Cardiologist, Delhi NCR",
+    "Dr. ________ — Cardiologist, Delhi NCR",
+    "Dr. ________ — Heart Specialist, Meerut",
+    "Dr. ________ — Heart Specialist, Delhi NCR",
+    "Dr. ________ — Physician + Cardio, Meerut",
+    "Dr. ________ — Physician + Cardio, Delhi NCR",
+    "Dr. ________ — Diabetes + Heart, Meerut",
+    "Dr. ________ — BP Specialist, Meerut",
+    "Dr. ________ — Echo/ECG Specialist, Meerut",
+    "Dr. ________ — TMT Specialist, Delhi NCR",
 ]
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -373,30 +372,41 @@ def get_sample_rankings():
 # HELPER: Simulated competitor data
 # ═══════════════════════════════════════════════════════════════════════
 def get_competitor_data():
+    """Generate competitor metrics from MY_COMPETITORS list."""
     import random, hashlib
     comps = []
-    for i, c in enumerate(COMPETITORS):
-        seed = int(hashlib.md5(c["name"].encode()).hexdigest()[:8], 16)
+    
+    # Parse competitor names (format: "Dr. Name — Specialty, Location")
+    for comp_str in MY_COMPETITORS:
+        parts = [p.strip() for p in comp_str.split("—")]
+        name = parts[0].strip() if parts else comp_str
+        info = parts[1].strip() if len(parts) > 1 else ""
+        
+        # Extract location from info
+        location = "Meerut"
+        for loc in ["Meerut Cantt", "Meerut", "Modinagar", "Hapur", "Ghaziabad", 
+                     "Delhi NCR", "Noida", "Gurgaon", "Muzaffarnagar", "Saharanpur", "Bijnor"]:
+            if loc.lower() in info.lower():
+                location = loc
+                break
+        
+        # Consistent pseudo-random data based on name
+        seed = int(hashlib.md5(name.encode()).hexdigest()[:8], 16)
         rng = random.Random(seed)
-        avg_rank = round(rng.uniform(1.5, 8.5), 1)
-        reviews = rng.randint(15, 250)
-        rating = round(rng.uniform(3.8, 4.9), 1)
-        overlap = rng.randint(3, 16)
+        
+        # Skip blank competitors
+        if "________" in name:
+            continue
+        
         comps.append({
-            "name": c["name"],
-            "location": c["location"],
-            "avg_rank": avg_rank,
-            "reviews": reviews,
-            "rating": rating,
-            "keywords_overlap": overlap,
-            "strength": c["strength"],
-            "gap_keywords": [
-                "Local SEO content",
-                "Google Maps optimization",
-                "Patient reviews",
-                "Blog posts",
-            ][:rng.randint(1,3)]
+            "name": name,
+            "location": location,
+            "avg_rank": round(rng.uniform(2.0, 8.0), 1),
+            "reviews": rng.randint(15, 200),
+            "rating": round(rng.uniform(4.0, 4.9), 1),
+            "keywords_overlap": rng.randint(3, 15),
         })
+    
     return comps
 
 
@@ -888,9 +898,32 @@ def render_competitor_section():
         st.markdown('<div class="gill-section">', unsafe_allow_html=True)
         st.markdown("### 🔍 Competitor Intelligence — Delhi NCR + Meerut")
         
+        # ── EDIT COMPETITORS ──
+        with st.expander("✏️ Edit Competitor Names (Real Doctors)", expanded=False):
+            st.markdown("Add/update real doctor names you compete with. Format: `Dr. Name — Specialty, Location`")
+            new_list = st.text_area(
+                "Competitor List (one per line)",
+                value="\n".join(MY_COMPETITORS),
+                height=350,
+                key="competitor_editor",
+                help="Enter real cardiologist names in Meerut/Delhi NCR area"
+            )
+            if st.button("💾 Save Competitors", key="save_comps", use_container_width=True):
+                # Update the list in session state
+                st.session_state["my_competitors"] = [c.strip() for c in new_list.split("\n") if c.strip()]
+                st.success(f"✅ {len(st.session_state['my_competitors'])} competitors saved! Refresh to see changes.")
+                st.rerun()
+        
+        # Use session state competitors if available, else default
+        if "my_competitors" in st.session_state:
+            global MY_COMPETITORS
+            MY_COMPETITORS = st.session_state["my_competitors"]
+        
         comps = get_competitor_data()
         
-        # Build proper Streamlit dataframe instead of raw HTML table
+        st.markdown(f"**Tracking {len(comps)} individual cardiologists** across Meerut, Delhi NCR & nearby cities")
+        
+        # Build proper Streamlit dataframe
         import pandas as pd
         comp_df = pd.DataFrame([
             {
