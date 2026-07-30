@@ -28,7 +28,7 @@ from db.operations import save_content, log_agent_action
 DEFAULT_CONFIG = {
     "github_token": "YOUR_GITHUB_TOKEN",  # Set via env var GITHUB_TOKEN
     "github_repo": "gurjeetsinghgill8-web/gill-heart-clinic",
-    "github_branch": "master",
+    "github_branch": "gh-pages",
     "blog_folder": "blogs",
     "website_url": "https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/",
     "clinic_name": "Gill Heart Clinic",
