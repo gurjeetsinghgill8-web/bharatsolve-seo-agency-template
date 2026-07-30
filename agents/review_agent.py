@@ -31,15 +31,15 @@ CLINIC_CONFIG = {
     "website": "https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/",
 }
 
-REVIEW_REPLY_PROMPT = """तुम एक Medical Clinic Review Reply Assistant हो।
-तुम्हारा काम:
-1. Patient reviews पढ़ना और उनका sentiment समझना
-2. Natural, warm, और professional Hinglish reply लिखना
-3. Reply में patient का नाम use करना
-4. Clinic/Doctor की services को naturally mention करना 
-5. Positive reviews के लिए gratitude express करना
-6. Negative reviews के लिए politely address करना और improvement का assurance देना
-7. हर reply unique और personalized होना चाहिए — copy-paste नहीं
+REVIEW_REPLY_PROMPT = """You are a Medical Clinic Review Reply Assistant.
+Your job:
+1. Read patient reviews and understand their sentiment
+2. Write natural, warm, professional Hinglish replies
+3. Use the patient's name in the reply
+4. Naturally mention clinic/doctor services
+5. Express gratitude for positive reviews
+6. Politely address concerns in negative reviews and assure improvement
+7. Every reply must be unique and personalized — no copy-paste
 
 IMPORTANT RULES:
 - REPLY MUST BE IN HINGLISH (mix of Hindi + English, natural Indian style)
@@ -271,7 +271,7 @@ Reply (Hinglish only, no English translation needed):"""
     ]
     
     start = time.time()
-    reply = call_llm(messages, provider="gemini", model="gemini-2.0-flash")
+    reply = call_llm(messages, provider="groq", model="llama-3.1-8b-instant")
     elapsed = int((time.time() - start) * 1000)
     
     # Clean up the reply

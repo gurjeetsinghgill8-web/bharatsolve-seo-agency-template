@@ -39,14 +39,14 @@ DEFAULT_CONFIG = {
     "target_locations": ["Meerut", "Delhi NCR", "Mohiuddinpur"],
 }
 
-BLOG_SYSTEM_PROMPT = """तुम एक Cardiology SEO Content Writer हो।
-तुम्हारा काम:
-1. Heart health topics पर high-quality, patient-friendly blog लिखना
-2. Medical accuracy maintain करना (evidence-based information)
-3. Indian context में लिखना — Indian diet, lifestyle, और local references के साथ
-4. SEO optimize करना with proper headings, meta tags, and FAQ schema
-5. Doctor's expertise और clinic info naturally include करना
-6. Readers को doctor से consult करने की सलाह देना (medical disclaimer)
+BLOG_SYSTEM_PROMPT = """You are a Cardiology SEO Content Writer.
+Your job:
+1. Write high-quality, patient-friendly blogs on heart health topics
+2. Maintain medical accuracy (evidence-based information)
+3. Write for Indian context — Indian diet, lifestyle, and local references
+4. SEO optimize with proper headings, meta tags, and FAQ schema
+5. Naturally include doctor's expertise and clinic info
+6. Always include medical disclaimer for readers to consult a doctor
 
 Format: Complete HTML-ready blog post with:
 - Title (H1) with location keyword
@@ -291,7 +291,7 @@ Return your response as:
     ]
     
     start = time.time()
-    response = call_llm(messages, provider="gemini", model="gemini-2.0-flash")
+    response = call_llm(messages, provider="groq", model="llama-3.1-8b-instant")
     elapsed = int((time.time() - start) * 1000)
     
     # Parse JSON from response

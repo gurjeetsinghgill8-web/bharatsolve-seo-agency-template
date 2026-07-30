@@ -87,13 +87,13 @@ SHARED_KEYWORDS = [
     "Angioplasty Guide", "Heart Surgery Recovery",
 ]
 
-COMPETITOR_ANALYSIS_PROMPT = """तुम एक Local SEO Competitor Analyst हो।
-तुम्हारा काम:
-1. Local competitors के data analyze करना
-2. Keyword gap analysis करना — वो keywords जो competitors rank कर रहे हैं पर आप नहीं
-3. Actionable recommendations देना जो rankings improve कर सकें
-4. Indian healthcare market के context में suggestions देना
-5. Practical, implementable advice देना — theory नहीं
+COMPETITOR_ANALYSIS_PROMPT = """You are a Local SEO Competitor Analyst.
+Your job:
+1. Analyze local competitor data
+2. Do keyword gap analysis — keywords competitors rank for that you don't
+3. Give actionable recommendations to improve rankings
+4. Give suggestions in Indian healthcare market context
+5. Practical, implementable advice — no theory
 
 Focus areas:
 - Local SEO (Google Maps, Google Business Profile)
@@ -342,7 +342,7 @@ Return as JSON:
     ]
     
     start = time.time()
-    response = call_llm(messages, provider="gemini", model="gemini-2.0-flash")
+    response = call_llm(messages, provider="groq", model="llama-3.1-8b-instant")
     elapsed = int((time.time() - start) * 1000)
     
     # Parse JSON

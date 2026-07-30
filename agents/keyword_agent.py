@@ -54,7 +54,7 @@ Focus on:
     ]
     
     start = time.time()
-    response = call_llm(messages, provider="gemini", model="gemini-2.0-flash")
+    response = call_llm(messages, provider="groq", model="llama-3.1-8b-instant")
     elapsed = int((time.time() - start) * 1000)
     
     # Parse JSON from response
