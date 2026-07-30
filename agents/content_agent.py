@@ -88,30 +88,52 @@ Return JSON:
 
 
 def parse_content_response(response: str, fallback_keyword: str) -> dict:
-    """Parse LLM response into structured content dict."""
+    """Parse LLM response into structured content dict. Extract clean HTML content."""
+    
+    content_text = response
+    title = fallback_keyword
+    meta_title = fallback_keyword[:60]
+    meta_desc = f"Learn about {fallback_keyword}. Best tips and information."
+    schema = {}
+    
     try:
+        # Find JSON block
         json_match = re.search(r'\{.*\}', response, re.DOTALL)
         if json_match:
             data = json.loads(json_match.group())
-            return {
-                "title": data.get("title", fallback_keyword),
-                "meta_title": data.get("meta_title", fallback_keyword[:60]),
-                "meta_description": data.get("meta_description", fallback_keyword[:160]),
-                "content": data.get("content", response),
-                "schema_json": data.get("schema_json", {}),
-                "word_count": data.get("word_count", len(response.split()))
-            }
+            title = data.get("title", fallback_keyword)
+            meta_title = data.get("meta_title", fallback_keyword[:60])
+            meta_desc = data.get("meta_description", f"Learn about {fallback_keyword}.")
+            content_text = data.get("content", response)
+            schema = data.get("schema_json", {})
+            
+            # Clean content: remove JSON code blocks and markdown artifacts
+            content_text = re.sub(r'```(?:json|html)?\s*', '', content_text)
+            content_text = re.sub(r'```\s*$', '', content_text)
+            content_text = re.sub(r'\*\*JSON Response\*\*.*?(?=<h|\Z)', '', content_text, flags=re.DOTALL)
+            content_text = re.sub(r'\*\*स्कीमा.*?\*\*.*?(?=<h|\Z)', '', content_text, flags=re.DOTALL)
     except:
         pass
     
-    # Fallback: use response as content
+    # If content is still the full raw response, try to extract just the HTML part
+    if len(content_text) > 1000 and ('{' in content_text or 'json' in content_text.lower()[:200]):
+        # Try to extract H2/H3 content
+        html_match = re.search(r'<h[123][^>]*>.*?</h[123]>', content_text, re.DOTALL | re.IGNORECASE)
+        if html_match:
+            start = content_text.find(html_match.group())
+            content_text = content_text[start:] if start >= 0 else content_text
+    
+    # Ensure content starts with HTML
+    if not content_text.strip().startswith('<'):
+        content_text = f"<h2>{fallback_keyword}</h2>\n<p>{content_text[:2000]}</p>"
+    
     return {
-        "title": fallback_keyword,
-        "meta_title": fallback_keyword[:60],
-        "meta_description": f"Learn about {fallback_keyword}. Best tips and information.",
-        "content": response,
-        "schema_json": {},
-        "word_count": len(response.split())
+        "title": title,
+        "meta_title": meta_title,
+        "meta_description": meta_desc,
+        "content": content_text,
+        "schema_json": schema,
+        "word_count": len(content_text.split())
     }
 
 

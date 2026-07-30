@@ -670,11 +670,22 @@ def render_blog_section(user_id, project_id=0):
                     help="Review medical accuracy. Edit directly. Approve when ready."
                 )
                 
-                # Reading preview
-                with st.expander("📖 Reading Preview", expanded=False):
-                    st.markdown(edited_content[:5000] if edited_content else "No content", unsafe_allow_html=True)
-                    if len(edited_content) > 5000:
-                        st.caption(f"... {len(edited_content.split())} words total")
+                # Reading preview - clean HTML rendering
+                with st.expander("📖 Full Screen Reading Preview", expanded=True):
+                    # Clean the content for display
+                    display_content = edited_content if edited_content else ""
+                    # Remove JSON artifacts
+                    import re as _re
+                    display_content = _re.sub(r'\*\*JSON Response\*\*.*?```', '', display_content, flags=_re.DOTALL)
+                    display_content = _re.sub(r'```json\s*\{.*?\}\s*```', '', display_content, flags=_re.DOTALL)
+                    display_content = _re.sub(r'\*\*स्कीमा.*?\*\*.*$', '', display_content, flags=_re.DOTALL)
+                    display_content = _re.sub(r'"content":\s*"', '', display_content)
+                    display_content = display_content.replace('\\n', '\n').replace('\\"', '"')
+                    
+                    if display_content.strip():
+                        st.markdown(display_content[:10000], unsafe_allow_html=True)
+                    else:
+                        st.info("Content pending...")
                 
                 st.caption(f"📊 Word count: {len(edited_content.split()) if edited_content else 0}")
                 
