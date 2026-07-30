@@ -18,7 +18,7 @@ from db.operations import log_agent_action
 HEART_TIPS_HINDI = [
     "❤️ दिल को स्वस्थ रखने के लिए रोज़ 30 मिनट वॉक करें। brisk walking आपके heart muscles को strong बनाती है। #HeartHealth #GillHeartClinic",
     "🧂 नमक कम करें! High BP patients को रोज़ 5gm से कम नमक लेना चाहिए। packaged food में hidden salt होता है — label ज़रूर पढ़ें। #BPControl #Meerut",
-    "🩺 साल में एक बार heart checkup ज़रूर कराएं — ECG, BP, Sugar, Cholesterol. Prevention is better than cure! Book appointment: 9639011155",
+    "🩺 साल में एक बार heart checkup ज़रूर कराएं — ECG, BP, Sugar, Cholesterol. Prevention is better than cure! Book appointment: 9258879884",
     "🥗 दिल के मरीज़ों के लिए best diet: हरी सब्ज़ियाँ, fruits, whole grains, nuts. तली-भुनी चीज़ें avoid करें। आपका दिल आपको thank you बोलेगा!",
     "😰 Stress आपके दिल का दुश्मन है! daily 10 min meditation या deep breathing करें। BP control में रहेगा और heart attack का risk कम होगा।",
     "🚭 सिगरेट और तंबाकू छोड़ें! smoking से heart attack का risk 2-4 गुना बढ़ जाता है। quitting के 1 साल बाद ही risk आधा हो जाता है।",
@@ -28,7 +28,7 @@ HEART_TIPS_HINDI = [
     "🧘‍♂️ Yoga आपके दिल के लिए वरदान है! Anulom Vilom, Bhramari, और Shavasana — रोज़ 15 मिनट करें। BP control और stress relief दोनों।",
     "🌙 7-8 घंटे की नींद ज़रूर लें। sleep deprivation से BP बढ़ता है और heart attack का risk 48% तक बढ़ जाता है।",
     "🥤 Cold drinks और packaged juices छोड़ें — इनमें hidden sugar होता है जो diabetes और heart disease का कारण बनता है।",
-    "🏥 सीने में दर्द हो तो ignore न करें! तुरंत cardiologist से consult करें। हर मिनट कीमती है। आपातकाल में कॉल करें: 9639011155",
+    "🏥 सीने में दर्द हो तो ignore न करें! तुरंत cardiologist से consult करें। हर मिनट कीमती है। आपातकाल में कॉल करें: 9258879884",
     "🐟 हफ्ते में 2 बार fish खाएं — omega-3 fatty acids आपके दिल की arteries को clean रखते हैं। vegetarian हैं तो flaxseeds और walnuts खाएं।",
     "💧 रोज़ 8-10 glass पानी पिएं। dehydration से blood thick होता है जिससे heart पर extra pressure पड़ता है।",
     "🍌 Potassium-rich foods खाएं — केला, पालक, शकरकंद, नारियल पानी। potassium BP control करने में मदद करता है।",
@@ -51,7 +51,7 @@ HEART_TIPS_HINDI = [
 HEART_TIPS_ENGLISH = [
     "❤️ Walk 30 min daily — brisk walking strengthens your heart muscles. Your heart will thank you! #HeartHealth #GillHeartClinic",
     "🧂 Cut salt! High BP patients should limit salt to <5g/day. Hidden salt in packaged foods — always read labels! #BPControl",
-    "🩺 Annual heart checkup is a MUST — ECG, BP, Sugar, Cholesterol. Prevention beats cure! Book: 9639011155",
+    "🩺 Annual heart checkup is a MUST — ECG, BP, Sugar, Cholesterol. Prevention beats cure! Book: 9258879884",
     "🥗 Best diet for heart: green veggies, fruits, whole grains, nuts. Avoid fried foods. Your heart deserves the best!",
     "😰 Stress kills your heart! Just 10 min daily meditation or deep breathing keeps BP in check and reduces heart attack risk.",
     "🚭 Quit smoking today! Heart attack risk drops by 50% within 1 year of quitting. Your lungs AND heart will heal.",
@@ -61,7 +61,7 @@ HEART_TIPS_ENGLISH = [
     "🧘‍♂️ Yoga is magic for your heart — Anulom Vilom, Bhramari, Shavasana. 15 min daily for BP + stress control.",
     "🌙 Get 7-8 hours of sleep! Sleep deprivation raises BP and increases heart attack risk by 48%.",
     "🥤 Ditch cold drinks — hidden sugars lead to diabetes and heart disease. Choose water, coconut water, or buttermilk instead.",
-    "🏥 Chest pain? DON'T IGNORE! Consult a cardiologist immediately. Every minute counts. Emergency: 9639011155",
+    "🏥 Chest pain? DON'T IGNORE! Consult a cardiologist immediately. Every minute counts. Emergency: 9258879884",
     "🐟 Eat fish twice a week — omega-3 keeps arteries clean. Vegetarian? Try flaxseeds and walnuts!",
     "💧 Drink 8-10 glasses of water daily. Dehydration thickens blood = extra load on your heart.",
 ]

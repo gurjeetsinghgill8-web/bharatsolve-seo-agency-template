@@ -27,7 +27,7 @@ CLINIC_CONFIG = {
     "name": "Gill Heart Clinic",
     "doctor": "Dr. Gurjeet Singh Gill",
     "location": "Mohiuddinpur, Meerut",
-    "phone": "+91-9639011155",
+    "phone": "+91-9258879884",
     "website": "https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/",
 }
 

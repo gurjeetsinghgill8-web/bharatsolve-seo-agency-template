@@ -18,8 +18,8 @@ City:           Meerut
 State:          Uttar Pradesh
 Pincode:        250002
 
-Phone:          +91-9639011155
-WhatsApp:       +91-9639011155
+Phone:          +91-9258879884
+WhatsApp:       +91-9258879884
 Email:          gurjeetsinghgill8@gmail.com
 Website:        https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/
 
@@ -49,7 +49,7 @@ Google Maps:    https://www.google.com/maps/place/Gill+Heart+Clinic/@28.8841507,
 ## 📝 Clinic Description (Copy-Paste Ready)
 
 ### Short (100 words):
-> Gill Heart Clinic, led by Dr. Gurjeet Singh Gill (MBBS, Diploma Cardiology from UN Mehta, PGDCCP), is a trusted cardiology clinic in Mohiuddinpur, Meerut. With 12+ years of experience and 50,000+ patients treated, we provide comprehensive heart care including ECG, 2D Echo, TMT, BP management, chest pain evaluation, and preventive cardiology. Associated with Yashoda Hospital and IIT Kanpur. Affordable, quality heart treatment for every patient. By appointment only. Call +91-9639011155.
+> Gill Heart Clinic, led by Dr. Gurjeet Singh Gill (MBBS, Diploma Cardiology from UN Mehta, PGDCCP), is a trusted cardiology clinic in Mohiuddinpur, Meerut. With 12+ years of experience and 50,000+ patients treated, we provide comprehensive heart care including ECG, 2D Echo, TMT, BP management, chest pain evaluation, and preventive cardiology. Associated with Yashoda Hospital and IIT Kanpur. Affordable, quality heart treatment for every patient. By appointment only. Call +91-9258879884.
 
 ### Long (250 words):
 > **Gill Heart Clinic** — Your Trusted Heart Care Partner in Meerut & Delhi NCR.
@@ -70,7 +70,7 @@ Google Maps:    https://www.google.com/maps/place/Gill+Heart+Clinic/@28.8841507,
 >
 > **Services Offered:** ECG Test, 2D Echo, TMT, BP Management, Chest Pain Evaluation, Diabetes Heart Care, Cholesterol Treatment, Heart Failure Management, Preventive Cardiology, Diet & Lifestyle Counseling.
 >
-> 📞 Call/WhatsApp: +91-9639011155 | 🌐 gurjeetsinghgill8-web.github.io/gill-heart-clinic
+> 📞 Call/WhatsApp: +91-9258879884 | 🌐 gurjeetsinghgill8-web.github.io/gill-heart-clinic
 
 ---
 

@@ -37,7 +37,7 @@ DEFAULT_CONFIG = {
     "doctor_qualifications": "MBBS, Diploma Cardiology (UN Mehta), PGDCCP, AI in Healthcare (IIT Kanpur)",
     "doctor_specialty": "Non-Invasive Cardiology & Preventive Heart Care",
     "clinic_address": "Mohiuddinpur, Meerut, Uttar Pradesh",
-    "clinic_phone": "+91-9639011155",
+    "clinic_phone": "+91-9258879884",
     "target_locations": ["Meerut", "Delhi NCR", "Mohiuddinpur"],
 }
 
