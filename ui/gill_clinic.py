@@ -797,33 +797,20 @@ def render_competitor_section():
         
         comps = get_competitor_data()
         
-        # Competitor comparison table
-        table_html = """
-        <table class="comp-table">
-            <tr>
-                <th>Competitor</th>
-                <th>Location</th>
-                <th>Avg Rank</th>
-                <th>Reviews</th>
-                <th>Rating</th>
-                <th>Keyword Gap</th>
-            </tr>
-        """
-        
-        for c in comps:
-            table_html += f"""
-            <tr>
-                <td><strong>{c['name']}</strong></td>
-                <td>{c['location']}</td>
-                <td>#{c['avg_rank']}</td>
-                <td>{c['reviews']}</td>
-                <td>⭐ {c['rating']}</td>
-                <td>{c['keywords_overlap']} overlapping</td>
-            </tr>
-            """
-        
-        table_html += "</table>"
-        st.markdown(table_html, unsafe_allow_html=True)
+        # Build proper Streamlit dataframe instead of raw HTML table
+        import pandas as pd
+        comp_df = pd.DataFrame([
+            {
+                "Competitor": c['name'],
+                "Location": c['location'],
+                "Avg Rank": f"#{c['avg_rank']}",
+                "Reviews": c['reviews'],
+                "Rating": f"⭐ {c['rating']}",
+                "Keyword Gap": f"{c['keywords_overlap']} overlapping"
+            }
+            for c in comps
+        ])
+        st.dataframe(comp_df, use_container_width=True, hide_index=True)
         
         st.markdown("---")
         st.markdown("#### 🎯 Your Competitive Position")
