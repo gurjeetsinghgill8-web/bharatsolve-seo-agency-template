@@ -112,6 +112,13 @@ BLOG_CATEGORIES = [
     "Safe Exercises for Heart Patients", "Heart Failure Management",
     "Women & Heart Disease", "Stress & Heart Health",
     "Seasonal Heart Care Tips",
+    "Emergency Heart Care Signs & Treatment",
+    "Pediatric Cardiology — Children Heart Health",
+    "Angioplasty Information Guide — Procedure Recovery",
+    "Heart Bypass Surgery Recovery Tips",
+    "Stent Procedure — What Patients Must Know",
+    "Cardiac Checkup Package — Tests Included",
+    "Yoga for Heart Health — Best Asanas",
 ]
 
 COMPETITORS = [
