@@ -612,26 +612,23 @@ def render_blog_section(user_id, project_id=0):
         lang = st.radio("Language", ["Hinglish (हिंग्लिश)", "English", "हिंदी"], 
                        horizontal=True, key="blog_lang")
         
-        # ── Generate button (DRAFT mode - does NOT auto-publish) ──
-        col1, col2, col3 = st.columns([1, 1, 1])
+        # ── NEW: 3-STEP WORKFLOW ──
+        st.markdown("#### 📝 Blog Workflow: Draft → PDF Review → Publish")
+        
+        col1, col2 = st.columns([1, 1])
         
         with col1:
-            gen_clicked = st.button("🤖 Generate Draft", key="gen_blog_btn", 
+            gen_clicked = st.button("🤖 Step 1: Generate Draft", key="gen_draft_btn", 
                                     use_container_width=True, type="primary",
-                                    help="AI blog generate karega. PUBLISH nahi hoga - pehle review karo.")
+                                    help="AI blog draft banayega. Publish NAHI hoga.")
         
         with col2:
-            pub_clicked = st.button("📝 Review & Publish", key="review_publish_btn",
-                        use_container_width=True,
-                        help="Generated draft review karo, phir publish karo.")
+            view_pdf = st.button("📄 Step 2: View as PDF for Review", key="view_pdf_btn",
+                                 use_container_width=True,
+                                 help="Last generated draft ko PDF mein dekho. Review karo pehle.")
         
-        with col3:
-            word_count = st.selectbox("Length", [800, 1200, 1500, 2000], index=1, key="blog_wc")
-        
-        if gen_clicked or pub_clicked:
-            do_publish = pub_clicked  # Only publish if "Review & Publish" clicked
-            
-            with st.spinner(f"Generating medical blog about '{selected_topic}'..."):
+        if gen_clicked:
+            with st.spinner(f"Generating draft for '{selected_topic}'..."):
                 try:
                     content_result = generate_content(
                         project_id=project_id,
@@ -642,40 +639,102 @@ def render_blog_section(user_id, project_id=0):
                     blog_title = content_result.get("title", selected_topic)
                     blog_content = content_result.get("content", "")
                     
-                    # Check for dangerous content
-                    dangerous_words = ["gandagi", "gandagi", "गंदगी", "fake", "guaranteed cure"]
-                    if any(w in blog_content.lower() for w in dangerous_words):
-                        st.error("⚠️ Generated content medically inappropriate — regenerating with proper guidelines...")
-                        st.info("Using AHA/ACC guideline-based content only.")
-                    
                     st.session_state["gc_last_blog"] = content_result
                     st.session_state["gc_blog_title"] = blog_title
                     st.session_state["gc_blog_content"] = blog_content
-                    st.session_state["gc_pending_publish"] = do_publish
                     
-                    st.success(f"✅ Draft generated: '{blog_title}' — {'Awaiting review' if not do_publish else 'Publishing...'}")
+                    st.success(f"✅ Draft Ready: '{blog_title}'")
+                    st.info("⬇️ Ab 'View as PDF' button se review karo. Sahi lage to publish karo.")
                     
-                    # PUBLISH to GitHub Pages
-                    if do_publish:
-                        with st.spinner("Publishing to website..."):
+                except Exception as e:
+                    st.error(f"❌ Error: {str(e)[:500]}")
+        
+        # PDF Review
+        if view_pdf:
+            if "gc_last_blog" not in st.session_state:
+                st.warning("⚠️ Pehle 'Generate Draft' dabao — koi draft ready nahi hai.")
+            else:
+                blog_title = st.session_state.get("gc_blog_title", "Draft")
+                blog_content = st.session_state.get("gc_blog_content", "")
+                
+                # Show content for review
+                with st.expander(f"📰 REVIEW: {blog_title}", expanded=True):
+                    st.markdown(blog_content[:5000] if blog_content else "No content", unsafe_allow_html=True)
+                
+                # PDF Download
+                try:
+                    from fpdf import FPDF
+                    pdf = FPDF()
+                    pdf.add_page()
+                    # Sanitize
+                    def clean(text):
+                        return text.encode('ascii', 'replace').decode('ascii').replace('?', '') if text else ""
+                    
+                    pdf.set_font('Helvetica', 'B', 16)
+                    pdf.cell(0, 10, clean(f"DRAFT - For Medical Review"), ln=True, align='C')
+                    pdf.set_font('Helvetica', 'B', 14)
+                    pdf.cell(0, 10, clean(blog_title[:80]), ln=True)
+                    pdf.ln(5)
+                    pdf.set_font('Helvetica', '', 10)
+                    pdf.cell(0, 8, clean(f"Author: Dr. Gurjeet Singh Gill | Gill Heart Clinic, Meerut"), ln=True)
+                    pdf.cell(0, 8, clean(f"Status: DRAFT - Awaiting Doctor's Approval"), ln=True)
+                    pdf.ln(5)
+                    pdf.set_font('Helvetica', '', 10)
+                    # Write content
+                    for line in clean(blog_content[:8000]).split('\n'):
+                        pdf.multi_cell(0, 6, line[:120])
+                    
+                    import tempfile, os
+                    tmp = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
+                    pdf.output(tmp.name)
+                    tmp.close()
+                    
+                    with open(tmp.name, 'rb') as f:
+                        pdf_bytes = f.read()
+                    os.unlink(tmp.name)
+                    
+                    st.download_button(
+                        label="📥 Download PDF for Review",
+                        data=pdf_bytes,
+                        file_name=f"DRAFT_Review_{blog_title[:30]}.pdf",
+                        mime="application/pdf",
+                        use_container_width=True,
+                    )
+                except Exception as e:
+                    st.warning(f"PDF generation skipped: {e}")
+                
+                # APPROVE & PUBLISH
+                st.markdown("---")
+                st.markdown("#### ✅ Step 3: Approve & Publish")
+                st.warning("⚠️ Doctor review required: Verify all medical facts before publishing.")
+                
+                col_a, col_b = st.columns(2)
+                with col_a:
+                    if st.button("✅ APPROVE — Publish to Website", key="approve_publish", 
+                                use_container_width=True, type="primary"):
+                        with st.spinner("Publishing approved blog..."):
                             try:
                                 from agents.github_publisher import publish_blog_to_github
                                 pub_result = publish_blog_to_github(
                                     topic=selected_topic,
                                     target_location=target_location,
-                                    language="english",  # Professional English with Hindi terms
+                                    language="english",
                                     auto_publish=True
                                 )
                                 if pub_result.get("status") == "published":
-                                    st.success(f"🎉 Blog LIVE! → {pub_result.get('published_url', '')}")
-                                    st.warning("⚠️ PLEASE REVIEW: Ensure medical accuracy before sharing with patients.")
+                                    st.success(f"🎉 APPROVED & LIVE → {pub_result.get('published_url', '')}")
                                 else:
-                                    st.warning(f"⚠️ Publish issue: {pub_result.get('push_error', pub_result.get('message', ''))[:300]}")
-                            except Exception as pub_err:
-                                st.warning(f"⚠️ Publish error: {str(pub_err)[:300]}")
-                        
-                except Exception as e:
-                    st.error(f"❌ Error: {str(e)[:500]}")
+                                    st.warning(f"Publish issue: {pub_result.get('push_error', '')[:200]}")
+                            except Exception as e:
+                                st.error(f"Error: {e}")
+                
+                with col_b:
+                    if st.button("❌ REJECT — Delete Draft", key="reject_draft", use_container_width=True):
+                        st.session_state.pop("gc_last_blog", None)
+                        st.session_state.pop("gc_blog_title", None)
+                        st.session_state.pop("gc_blog_content", None)
+                        st.success("Draft deleted. Generate new one.")
+                        st.rerun()
         
         # Show last generated blog preview
         if "gc_last_blog" in st.session_state:
