@@ -26,6 +26,10 @@ from .competitor_agent import (
     get_competitors, add_competitor, compare_rankings,
     generate_gap_analysis, compare_reviews, competitor_scan_task
 )
+from .gbp_poster import (
+    post_weekly_heart_tip, get_random_heart_tip,
+    generate_ai_heart_tip, post_multiple_tips, gbp_weekly_tip_task
+)
 
 __all__ = [
     'get_manager_response', 'analyze_user_intent',
@@ -46,4 +50,7 @@ __all__ = [
     # Competitor Agent
     'get_competitors', 'add_competitor', 'compare_rankings',
     'generate_gap_analysis', 'compare_reviews', 'competitor_scan_task',
+    # GBP Poster
+    'post_weekly_heart_tip', 'get_random_heart_tip',
+    'generate_ai_heart_tip', 'post_multiple_tips', 'gbp_weekly_tip_task',
 ]

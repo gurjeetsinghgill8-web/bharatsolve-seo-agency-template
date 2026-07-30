@@ -316,6 +316,18 @@ def run_delhi_rank_check():
         return {"status": "error", "error": str(e)}
 
 
+def run_gbp_weekly_tip():
+    """Gill Clinic: Post weekly heart health tip to Google Business Profile."""
+    try:
+        from agents.gbp_poster import gbp_weekly_tip_task
+        result = gbp_weekly_tip_task()
+        log_agent_action("gbp_poster", f"GBP tip posted: {'success' if result.get('success') else 'failed'}")
+        return result
+    except Exception as e:
+        log_agent_action("gbp_poster", f"GBP tip failed", status="error", error_message=str(e))
+        return {"status": "error", "error": str(e)}
+
+
 # ═══════════════════════════════════════════════════════════════
 # RUN ALL AGENTS
 # ═══════════════════════════════════════════════════════════════
@@ -385,6 +397,12 @@ def run_all_agents():
         all_results['delhi_rank'] = run_delhi_rank_check()
     except:
         all_results['delhi_rank'] = "skipped"
+    
+    # GBP weekly tip
+    try:
+        all_results['gbp_poster'] = run_gbp_weekly_tip()
+    except:
+        all_results['gbp_poster'] = "skipped"
     
     print(f"✅ All agents completed at {datetime.now().isoformat()}")
     log_agent_action("scheduler", "run_all_agents completed", status="ok")
@@ -460,6 +478,10 @@ def start_apscheduler():
     _apscheduler.add_job(run_delhi_rank_check, 'interval', hours=12,
                          id='delhi_rank', replace_existing=True)
     
+    # GBP weekly heart tip — every 7 days (168 hours)
+    _apscheduler.add_job(run_gbp_weekly_tip, 'interval', hours=168,
+                         id='gbp_weekly_tip', replace_existing=True)
+    
     # Daily full run at 3 AM
     _apscheduler.add_job(run_all_agents, 'cron', hour=3, minute=0,
                          id='daily_full_run', replace_existing=True)
@@ -502,6 +524,7 @@ def try_cloud_tasks():
         ("auto_review", 6, run_auto_review_task),
         ("competitor_scan", 48, run_competitor_scan),
         ("delhi_rank", 12, run_delhi_rank_check),
+        ("gbp_weekly_tip", 168, run_gbp_weekly_tip),
     ]
     
     for task_name, interval_hours, task_fn in task_schedule:
@@ -525,7 +548,8 @@ def get_task_status() -> List[Dict]:
     tasks = [
         "rank_check", "keyword_research", "social_posting",
         "email_digest", "wp_auto_publish",
-        "auto_blog", "auto_review", "competitor_scan", "delhi_rank"
+        "auto_blog", "auto_review", "competitor_scan", "delhi_rank",
+        "gbp_weekly_tip"
     ]
     
     statuses = []
