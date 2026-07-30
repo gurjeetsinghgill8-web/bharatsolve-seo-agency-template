@@ -237,102 +237,85 @@ def generate_heart_blog(topic: str, target_location: str = "Meerut",
                        language: str = "hinglish") -> dict:
     """
     Generate a complete heart health blog using AI.
-    
-    Args:
-        topic: Blog topic (e.g., "Chest Pain Warning Signs")
-        target_location: Target city for local SEO
-        language: Blog language (hinglish, english, hindi)
-    
-    Returns:
-        dict with title, content, meta_title, meta_description, keywords, faq
+    Simplified prompt for reliable JSON output.
     """
-    prompt = f"""Write a comprehensive heart health blog on: {topic}
+    prompt = f"""Write a heart health blog on: "{topic}"
 Target Location: {target_location}
-Language: {language}
+Language: {language} (Hinglish = natural Hindi+English mix used by Indian doctors)
 Clinic: {DEFAULT_CONFIG['clinic_name']}
-Doctor: {DEFAULT_CONFIG['doctor_name']}, {DEFAULT_CONFIG['doctor_qualifications']}
+Doctor: {DEFAULT_CONFIG['doctor_name']}
 
-Include ALL of the following:
-1. Catchy title with "{target_location}" keyword (e.g., "... in {target_location}")
-2. Meta title (55-60 chars) and meta description (150-160 chars)
-3. Introduction explaining why this topic matters for Indian patients
-4. 4-6 sections with H2 headings covering different aspects
-5. Indian-specific advice (diet, lifestyle, common concerns)
-6. Statistics or facts relevant to Indian population where possible
-7. FAQ section with 5 common questions Indian patients ask
-8. Doctor's expertise mentioned naturally (Dr. Gill / Gill Heart Clinic)
-9. Local references to {target_location}
-10. Strong call-to-action for booking a heart checkup
-11. Medical disclaimer
+Write a complete blog article (1000 words). Include:
+- SEO title with location keyword
+- Introduction for Indian patients
+- 5-6 sections with subheadings
+- Indian-specific diet and lifestyle advice
+- Doctor mention naturally
+- FAQ section with 3-4 questions
+- Appointment booking CTA
+- Medical disclaimer
 
-Requirements:
-- Patient-friendly language (avoid overly technical terms)
-- 800-1200 words
-- Proper HTML formatting with <h2>, <h3>, <p>, <ul> tags
-- Mobile-friendly reading experience
-
-First, write the CONTENT (the blog body in HTML).
-Then, separately, return the META information.
-
-Return your response as:
-{{
-  "title": "Full blog title with location keyword",
-  "meta_title": "SEO meta title (55-60 chars with clinic name)",
-  "meta_description": "SEO meta description (150-160 chars)",
-  "keywords": "comma, separated, keywords",
-  "content": "Full HTML blog body with H2/H3/p/ul tags",
-  "faq": [{{"question": "...", "answer": "..."}}],
-  "word_count": 1000
-}}"""
+RETURN ONLY VALID JSON. No markdown, no explanation:
+{{"title":"...","meta_title":"...","meta_description":"...","keywords":"...","content":"<h2>Title</h2><p>Full article HTML here...</p><h2>FAQ</h2>...","faq":[{{"question":"...","answer":"..."}}]}}"""
 
     messages = [
-        {"role": "system", "content": BLOG_SYSTEM_PROMPT},
+        {"role": "system", "content": "You are a medical blog writer. Write in Hinglish (Hindi+English mix). Return ONLY valid JSON. The 'content' field must contain complete HTML article body."},
         {"role": "user", "content": prompt}
     ]
     
     start = time.time()
-    response = call_llm(messages, provider="groq", model="llama-3.1-8b-instant")
+    response = call_llm(messages, provider="groq", model="llama-3.1-8b-instant", temperature=0.7)
     elapsed = int((time.time() - start) * 1000)
     
-    # Parse JSON from response
-    parsed = False
+    # Parse JSON
     try:
-        json_match = re.search(r'\{.*\}', response, re.DOTALL)
-        if json_match:
-            data = json.loads(json_match.group())
+        # Find JSON between { and }
+        start_idx = response.find('{')
+        end_idx = response.rfind('}')
+        if start_idx >= 0 and end_idx > start_idx:
+            json_str = response[start_idx:end_idx+1]
+            data = json.loads(json_str)
             content = data.get("content", "")
-            if content and len(content) > 200:  # Valid content
-                parsed = True
-                result = {
-                    "title": data.get("title", topic),
+            
+            if not content or len(content) < 300:
+                # Try to extract HTML content from the raw response
+                html_match = re.search(r'<h[123][^>]*>.*?</h[123]>', response, re.DOTALL | re.IGNORECASE)
+                if html_match:
+                    # Extract everything after the first heading
+                    content_start = response.find(html_match.group())
+                    content = response[content_start:] if content_start >= 0 else response
+            
+            if content and len(content) > 200:
+                return {
+                    "title": data.get("title", f"{topic} - Guide by {DEFAULT_CONFIG['doctor_name']}"),
                     "meta_title": data.get("meta_title", f"{topic} - {DEFAULT_CONFIG['clinic_name']}, {target_location}"),
-                    "meta_description": data.get("meta_description", f"Learn about {topic.lower()} from {DEFAULT_CONFIG['doctor_name']} at {DEFAULT_CONFIG['clinic_name']}, {target_location}. Expert heart care advice."),
-                    "keywords": data.get("keywords", f"{topic}, heart health, cardiologist {target_location}, {DEFAULT_CONFIG['clinic_name']}"),
+                    "meta_description": data.get("meta_description", f"{topic} explained by {DEFAULT_CONFIG['doctor_name']}. Best cardiologist in {target_location}."),
+                    "keywords": data.get("keywords", f"{topic}, cardiologist {target_location}"),
                     "content": content,
                     "faq": data.get("faq", []),
-                    "word_count": data.get("word_count", len(content.split())),
+                    "word_count": len(content.split()),
                 }
-    except:
-        pass
+    except Exception as e:
+        print(f"JSON parse error: {e}")
     
-    if not parsed:
-        # Use raw response as HTML content (AI generated HTML directly)
-        raw_content = response
-        # Clean up common prefixes
-        raw_content = re.sub(r'^```(?:json|html)?\s*', '', raw_content.strip())
-        raw_content = re.sub(r'\s*```$', '', raw_content.strip())
-        
-        result = {
-            "title": f"{topic} - Guide by {DEFAULT_CONFIG['doctor_name']}",
-            "meta_title": f"{topic} - {DEFAULT_CONFIG['clinic_name']}, {target_location}",
-            "meta_description": f"Expert guide on {topic.lower()} from {DEFAULT_CONFIG['doctor_name']} at {DEFAULT_CONFIG['clinic_name']}, {target_location}. Best cardiologist in Meerut & Delhi NCR.",
-            "keywords": f"{topic}, cardiologist {target_location}, heart care, {DEFAULT_CONFIG['clinic_name']}",
-            "content": raw_content if len(raw_content) > 200 else f"<h2>{topic}</h2><p>Generated by AI. Please try again.</p>",
-            "faq": [],
-            "word_count": len(raw_content.split()),
-        }
+    # Last resort: use raw response as HTML if it has enough content
+    if len(response) > 400:
+        # Strip any non-HTML prefixes
+        cleaned = re.sub(r'^.*?<h[123]', '<h', response, count=1, flags=re.DOTALL | re.IGNORECASE)
+        if '<h' in cleaned and len(cleaned) > 300:
+            return {
+                "title": f"{topic} - {DEFAULT_CONFIG['doctor_name']}",
+                "meta_title": f"{topic} - {DEFAULT_CONFIG['clinic_name']}, {target_location}",
+                "meta_description": f"Expert guide on {topic.lower()} by {DEFAULT_CONFIG['doctor_name']}, {target_location}.",
+                "keywords": f"{topic}, cardiologist {target_location}",
+                "content": cleaned,
+                "faq": [],
+                "word_count": len(cleaned.split()),
+            }
     
-    return result
+    # Absolute fallback - should never reach here
+    log_agent_action("github_publisher", f"Blog generation failed for: {topic}", status="error")
+    return {"title": "", "content": "", "error": "AI generation failed — please try again"}
 
 
 def build_blog_html(blog_data: dict, slug: str = None) -> str:
@@ -435,8 +418,10 @@ def publish_blog_to_github(topic: str, target_location: str = "Meerut",
     # Step 1: Generate content
     blog_data = generate_heart_blog(topic, target_location, language)
     
-    if not blog_data.get("content"):
-        return {"status": "error", "message": "Blog generation failed — no content returned"}
+    if not blog_data.get("content") or blog_data.get("error"):
+        error_msg = blog_data.get("error", "Blog generation failed — no content returned")
+        log_agent_action("github_publisher", error_msg, status="error", error_message=error_msg)
+        return {"status": "error", "message": error_msg}
     
     # Step 2: Build HTML
     slug = re.sub(r'[^a-z0-9]+', '-', blog_data["title"].lower()).strip('-')[:60]
