@@ -803,11 +803,56 @@ def render_blog_section(user_id, project_id=0):
         st.markdown("#### 📚 Manage Published Blogs")
         
         try:
-            pieces = get_content_pieces(project_id=project_id, limit=30) if project_id else []
+            pieces = get_content_pieces(project_id=project_id, limit=50) if project_id else []
             published = [p for p in pieces if p.get('status') == 'published' or p.get('published_url')]
             
             if published:
-                st.markdown(f"**{len(published)} blogs published** — click DELETE to remove:")
+                # DELETE ALL button
+                if st.button("🗑️ DELETE ALL PUBLISHED BLOGS", key="delete_all_blogs", 
+                            use_container_width=True, type="secondary"):
+                    with st.spinner("Deleting all blogs from GitHub..."):
+                        from agents.github_publisher import _github_api
+                        repo = "gurjeetsinghgill8-web/gill-heart-clinic"
+                        branch = "gh-pages"
+                        
+                        # Get all files in blogs/ folder
+                        files_list = _github_api(f"/repos/{repo}/contents/blogs?ref={branch}")
+                        deleted = 0
+                        errors = 0
+                        
+                        if isinstance(files_list, list):
+                            for f in files_list:
+                                fname = f.get("name", "")
+                                sha = f.get("sha", "")
+                                if sha and fname.endswith('.html'):
+                                    try:
+                                        result = _github_api(
+                                            f"/repos/{repo}/contents/blogs/{fname}",
+                                            method="DELETE",
+                                            data={"message": f"Delete: {fname} [Cleanup]", 
+                                                  "sha": sha, "branch": branch}
+                                        )
+                                        if "error" not in result:
+                                            deleted += 1
+                                        else:
+                                            errors += 1
+                                    except:
+                                        errors += 1
+                        
+                        # Clear DB
+                        try:
+                            from db.schema import get_connection
+                            conn = get_connection()
+                            conn.execute("UPDATE content_pieces SET status='deleted', published_url='' WHERE project_id=?", (project_id,))
+                            conn.commit()
+                            conn.close()
+                        except:
+                            pass
+                        
+                        st.success(f"🗑️ {deleted} blogs deleted! {errors} errors.")
+                        st.rerun()
+                
+                st.markdown(f"**{len(published)} blogs** — or use 🗑️ for individual delete:")
                 for piece in published[:20]:
                     title = piece.get('title', 'Untitled')[:60]
                     url = piece.get('published_url', '')
