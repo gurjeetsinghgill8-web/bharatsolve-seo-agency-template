@@ -481,6 +481,27 @@ def render_blog_section(user_id, project_id=0):
             st.markdown('</div>', unsafe_allow_html=True)
             return
         
+        # ── API Key Diagnostic ──
+        with st.expander("🔧 Test API Connection (agar blog generate nahi ho raha)", expanded=False):
+            if st.button("🔍 Test Gemini API Key", key="test_api_btn"):
+                with st.spinner("Testing connection..."):
+                    try:
+                        import google.generativeai as genai
+                        import streamlit as st2
+                        key = st2.secrets.get("GEMINI_API_KEY", "")
+                        if not key:
+                            st.error("❌ GEMINI_API_KEY Streamlit Secrets mein nahi mila!")
+                            st.code("Secrets mein ye likho:\nGEMINI_API_KEY = \"AIzaSy...\"", language="toml")
+                        else:
+                            st.success(f"✅ Key mili: {key[:10]}...{key[-4:]}")
+                            genai.configure(api_key=key)
+                            model = genai.GenerativeModel('gemini-2.0-flash')
+                            response = model.generate_content('Say hello in one word')
+                            st.success(f"✅ Gemini WORKING! Response: {response.text}")
+                    except Exception as e:
+                        st.error(f"❌ Gemini Error: {str(e)[:500]}")
+                        st.info("💡 Solution: Naya API key banao → https://aistudio.google.com/apikey")
+        
         # Topic selector
         selected_topic = st.selectbox(
             "Select Blog Topic",

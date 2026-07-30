@@ -217,8 +217,15 @@ def call_llm(messages, provider=None, model=None, temperature=0.7, use_fallback=
                 print(f"⚠️ {fb_provider} also failed: {str(e)[:100]}")
                 continue
     
-    # Ultimate fallback — return a simple response
-    return "⚠️ सभी LLM providers failed हो गए। कृपया अपनी API keys check करें और internet connection verify करें।"
+    # Ultimate fallback — return detailed error
+    error_details = []
+    if provider:
+        error_details.append(f"{provider}: FAILED")
+    for fb in FALLBACK_CHAIN:
+        if fb["provider"] != provider:
+            error_details.append(f"{fb['provider']}: FAILED (no key or API error)")
+    detail = " | ".join(error_details)
+    return f"⚠️ LLM Error — Sabhi providers fail ho gaye.\nDetails: {detail}\n\nSetup karein:\n1. Streamlit Secrets mein GEMINI_API_KEY = \"AIzaSy...\" daalein\n2. Key yahan se free lein: https://aistudio.google.com/apikey\n3. Save karein → App Rerun karein"
 
 # ── Parse model string like "groq/llama-3.1-8b-instant" ──
 
