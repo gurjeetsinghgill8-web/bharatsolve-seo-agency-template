@@ -8,15 +8,19 @@ import re
 from utils.llm_client import call_llm
 from db.operations import save_content, get_keywords, log_agent_action, get_project
 
-CONTENT_SYSTEM_PROMPT = """तुम एक SEO Content Writer Agent हो।
-तुम्हारा काम:
-1. SEO-optimized Hinglish/Hindi/English content लिखना
-2. Proper heading structure (H1, H2, H3) के साथ
-3. Meta title और meta description generate करना
-4. FAQ schema JSON-LD include करना
-5. Keyword density 1-2% maintain करना
+CONTENT_SYSTEM_PROMPT = """You are an SEO Content Writer Agent (Medical Specialist).
+Your job:
+1. Write SEO-optimized Hinglish/Hindi/English content about heart health
+2. Proper heading structure (H1, H2, H3) 
+3. Generate meta title and meta description
+4. Include FAQ schema JSON-LD
+5. Maintain keyword density 1-2%
+6. Write in patient-friendly, warm, doctor-like tone
+7. Include Indian context — Indian diet, lifestyle, statistics
 
-हमेशा unique, informative, और reader-friendly content दो।"""
+Always give unique, informative, and reader-friendly content.
+Output in JSON format with title, meta_title, meta_description, content, schema_json, word_count.
+Write in the requested language (Hinglish = mix of Hindi + English the way Indian doctors naturally communicate)."""
 
 
 def generate_content(project_id: int, keyword: str, content_type: str = "blog") -> dict:
@@ -58,7 +62,8 @@ Return JSON:
     ]
     
     start = time.time()
-    response = call_llm(messages, provider="gemini", model="gemini-2.0-flash")
+    # Try Groq first (free, unlimited), fall back to Gemini
+    response = call_llm(messages, provider="groq", model="llama-3.1-8b-instant")
     elapsed = int((time.time() - start) * 1000)
     
     # Parse JSON from response
