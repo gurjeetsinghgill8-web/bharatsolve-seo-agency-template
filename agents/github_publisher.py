@@ -58,7 +58,7 @@ Format: HTML article with:
 - CTA for appointment booking"""
 
 BLOG_HTML_TEMPLATE = """<!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -69,74 +69,53 @@ BLOG_HTML_TEMPLATE = """<!DOCTYPE html>
     <meta property="og:title" content="{meta_title}">
     <meta property="og:description" content="{meta_description}">
     <meta property="og:type" content="article">
-    <meta property="og:url" content="{website_url}blogs/{slug}.html">
     <link rel="canonical" href="{website_url}blogs/{slug}.html">
-    <!-- Clinic Styles -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../style.css">
     <style>
-        body {{ font-family: 'Poppins', 'Noto Sans Devanagari', sans-serif; background: #f8f9fa; }}
-        .blog-container {{ max-width: 850px; margin: 2rem auto; padding: 2rem; background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }}
-        .blog-container h1 {{ color: #d90429; font-family: 'Playfair Display', serif; font-size: 2.2rem; margin-bottom: 0.5rem; }}
-        .blog-container h2 {{ color: #1a1a2e; font-size: 1.5rem; margin-top: 2rem; border-bottom: 2px solid #d90429; padding-bottom: 0.4rem; }}
-        .blog-container h3 {{ color: #333; font-size: 1.2rem; margin-top: 1.5rem; }}
-        .blog-container p {{ color: #444; line-height: 1.8; font-size: 1.05rem; margin: 1rem 0; }}
-        .blog-meta {{ color: #888; font-size: 0.9rem; margin-bottom: 1.5rem; }}
-        .doctor-card {{ background: linear-gradient(135deg, #fdf2f2, #fff5f5); border-left: 4px solid #d90429; padding: 1rem 1.5rem; border-radius: 10px; margin: 2rem 0; }}
-        .doctor-card strong {{ color: #d90429; }}
-        .faq-section {{ background: #f8f9fa; padding: 1.5rem; border-radius: 10px; margin: 2rem 0; }}
-        .faq-section details {{ margin: 0.8rem 0; }}
-        .faq-section summary {{ font-weight: 600; color: #d90429; cursor: pointer; }}
-        .cta-box {{ background: linear-gradient(135deg, #d90429, #ef233c); color: white; padding: 1.5rem; border-radius: 12px; text-align: center; margin: 2rem 0; }}
-        .cta-box a {{ color: white; font-weight: bold; text-decoration: underline; }}
-        .disclaimer {{ background: #fff3cd; padding: 1rem; border-radius: 8px; font-size: 0.9rem; color: #856404; margin: 2rem 0; }}
-        .back-link {{ display: inline-block; margin-bottom: 1.5rem; color: #d90429; text-decoration: none; font-weight: 500; }}
-        .back-link:hover {{ text-decoration: underline; }}
-{extra_css}
+        * {{ margin:0; padding:0; box-sizing:border-box; }}
+        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8f9fa; color: #333; line-height:1.8; font-size:16px; }}
+        .blog-container {{ max-width: 800px; margin: 0 auto; padding: 20px; background: white; min-height:100vh; }}
+        h1 {{ color: #d90429; font-size: 1.8rem; margin: 1rem 0 0.5rem; }}
+        h2 {{ color: #1a1a2e; font-size: 1.3rem; margin: 2rem 0 0.5rem; border-bottom: 2px solid #d90429; padding-bottom: 0.3rem; }}
+        h3 {{ color: #444; font-size: 1.1rem; margin: 1.2rem 0 0.3rem; }}
+        p {{ margin: 0.8rem 0; }}
+        ul, ol {{ margin: 0.5rem 0 0.5rem 1.5rem; }}
+        li {{ margin: 0.3rem 0; }}
+        .doctor-card {{ background: #fdf2f2; border-left: 4px solid #d90429; padding: 1rem; border-radius: 8px; margin: 2rem 0; }}
+        .cta-box {{ background: #d90429; color: white; padding: 1.2rem; border-radius: 10px; text-align: center; margin: 2rem 0; }}
+        .cta-box a {{ color: white; font-weight: bold; }}
+        .disclaimer {{ background: #fff3cd; padding: 0.8rem; border-radius: 6px; font-size: 0.85rem; color: #856404; margin: 2rem 0; }}
+        .back-link {{ color: #d90429; text-decoration: none; font-weight: 500; display:inline-block; margin-bottom:1rem; }}
+        .refs {{ font-size:0.85rem; color:#666; margin-top:2rem; }}
+        @media(max-width:600px) {{ .blog-container {{ padding:12px; }} h1 {{ font-size:1.4rem; }} }}
     </style>
     {schema_json}
 </head>
 <body>
     <div class="blog-container">
-        <a href="{website_url}" class="back-link">← Back to {clinic_name}</a>
+        <a href="{website_url}" class="back-link">← {clinic_name}</a>
         <h1>{title}</h1>
-        <div class="blog-meta">
-            📅 Published: {date} &nbsp;|&nbsp; ✍️ By {doctor_name} &nbsp;|&nbsp; 🏥 {clinic_name}
-        </div>
+        <p style="color:#888;font-size:0.85rem;">Published: {date} | By {doctor_name} | {clinic_name}</p>
         {content}
         
         <div class="doctor-card">
-            <strong>👨‍⚕️ About the Author:</strong> <strong>{doctor_name}</strong> — {doctor_qualifications}. 
-            Practicing at <strong>{clinic_name}</strong>, {clinic_address}. With {years_experience}+ years of experience 
-            and {patients_treated}+ patients treated, Dr. Gill is one of the most trusted cardiologists in Meerut & Delhi NCR.
+            <strong>About the Author:</strong> {doctor_name} — {doctor_qualifications}. 
+            Practicing at {clinic_name}, {clinic_address}. {years_experience}+ years of experience, {patients_treated}+ patients treated.
             <br>📞 <strong>Book Appointment:</strong> <a href="tel:{clinic_phone}">{clinic_phone}</a>
         </div>
         
         <div class="cta-box">
-            <h3 style="color: white; margin: 0 0 0.5rem 0;">❤️ Book Your Heart Checkup Today</h3>
-            <p style="color: rgba(255,255,255,0.9); margin: 0;">
-                📞 Call/WhatsApp: <a href="tel:{clinic_phone}">{clinic_phone}</a><br>
-                📍 Visit: {clinic_address}<br>
-                🕐 Timings: Mon-Sun, 9 AM — 7 PM (By Appointment Only)
+            <h3 style="color:white;margin:0 0 0.5rem;">Book Your Heart Checkup</h3>
+            <p style="color:rgba(255,255,255,0.9);margin:0;">
+                📞 <a href="tel:{clinic_phone}">{clinic_phone}</a><br>
+                📍 {clinic_address}<br>
+                🕐 Mon-Sun, 9 AM — 7 PM (By Appointment)
             </p>
         </div>
         
         <div class="disclaimer">
-            ⚠️ <strong>Medical Disclaimer:</strong> This article is for informational purposes only and does not 
-            constitute medical advice. Always consult a qualified cardiologist for diagnosis and treatment. 
-            If you experience chest pain, difficulty breathing, or other heart-related symptoms, seek immediate medical attention.
+            <strong>Medical Disclaimer:</strong> This article is for informational purposes only and does not constitute medical advice. Always consult a qualified cardiologist for diagnosis and treatment. In case of emergency, call your local emergency services immediately.
         </div>
     </div>
-    
-    <!-- Back to top -->
-    <button onclick="window.scrollTo({{top: 0, behavior: 'smooth'}})" 
-            style="position: fixed; bottom: 20px; right: 20px; background: #d90429; color: white; 
-                   border: none; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; 
-                   font-size: 1.2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 1000;">
-        ↑
-    </button>
 </body>
 </html>"""
 
@@ -330,55 +309,22 @@ def build_blog_html(blog_data: dict, slug: str = None) -> str:
     if not slug:
         slug = re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-')[:60]
     
+    # Build FAQ section HTML if FAQ exists
+    if blog_data.get("faq"):
+        faq_html = '<div style="background:#f8f9fa;padding:1rem;border-radius:8px;margin:2rem 0;">\n<h2>Frequently Asked Questions</h2>\n'
+        for f in blog_data["faq"]:
+            faq_html += f'<details style="margin:0.5rem 0;"><summary style="font-weight:600;color:#d90429;cursor:pointer;">{f.get("question", "")}</summary><p>{f.get("answer", "")}</p></details>\n'
+        faq_html += '</div>'
+        blog_data["content"] = blog_data.get("content", "") + "\n" + faq_html
+    
     # Build FAQ schema JSON-LD
     faq_items = blog_data.get("faq", [])
     faq_schema = ""
     if faq_items:
-        faq_entities = []
-        for f in faq_items:
-            faq_entities.append({
-                "@type": "Question",
-                "name": f.get("question", ""),
-                "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": f.get("answer", "")
-                }
-            })
-        
-        schema = {
-            "@context": "https://schema.org",
-            "@type": "MedicalArticle",
-            "headline": blog_data.get("meta_title", title),
-            "description": blog_data.get("meta_description", ""),
-            "author": {
-                "@type": "Person",
-                "name": DEFAULT_CONFIG["doctor_name"]
-            },
-            "publisher": {
-                "@type": "MedicalOrganization",
-                "name": DEFAULT_CONFIG["clinic_name"],
-                "address": DEFAULT_CONFIG["clinic_address"]
-            },
-            "datePublished": datetime.now().strftime("%Y-%m-%d"),
-            "mainEntityOfPage": {
-                "@type": "FAQPage",
-                "mainEntity": faq_entities
-            }
-        }
+        faq_entities = [{"@type": "Question", "name": f.get("question", ""), "acceptedAnswer": {"@type": "Answer", "text": f.get("answer", "")}} for f in faq_items]
+        schema = {"@context": "https://schema.org", "@type": "MedicalArticle", "headline": blog_data.get("meta_title", title), "description": blog_data.get("meta_description", ""), "author": {"@type": "Person", "name": DEFAULT_CONFIG["doctor_name"]}, "datePublished": datetime.now().strftime("%Y-%m-%d")}
         faq_schema = f'\n    <script type="application/ld+json">\n    {json.dumps(schema, indent=4, ensure_ascii=False)}\n    </script>'
     
-    # Build extra CSS for FAQ section if needed
-    extra_css = ""
-    if faq_items:
-        faq_html = '<div class="faq-section">\n            <h2>❓ अक्सर पूछे जाने वाले सवाल (FAQs)</h2>\n'
-        for f in faq_items:
-            faq_html += f'            <details>\n                <summary>{f.get("question", "")}</summary>\n                <p>{f.get("answer", "")}</p>\n            </details>\n'
-        faq_html += '        </div>'
-        
-        # Append FAQ HTML to content
-        blog_data["content"] = blog_data.get("content", "") + "\n        " + faq_html
-    
-    # Fill the template
     html = BLOG_HTML_TEMPLATE.format(
         meta_title=blog_data.get("meta_title", title),
         meta_description=blog_data.get("meta_description", ""),
@@ -395,10 +341,8 @@ def build_blog_html(blog_data: dict, slug: str = None) -> str:
         years_experience="12",
         patients_treated="50,000",
         content=blog_data.get("content", ""),
-        extra_css=extra_css,
         schema_json=faq_schema,
     )
-    
     return html
 
 
