@@ -901,16 +901,44 @@ def render_competitor_section():
         # ── EDIT COMPETITORS ──
         with st.expander("✏️ Edit Competitor Names (Real Doctors)", expanded=False):
             st.markdown("Add/update real doctor names you compete with. Format: `Dr. Name — Specialty, Location`")
-            new_list = st.text_area(
-                "Competitor List (one per line)",
-                value="\n".join(MY_COMPETITORS),
-                height=350,
-                key="competitor_editor",
-                help="Enter real cardiologist names in Meerut/Delhi NCR area"
-            )
+            
+            col1, col2 = st.columns([3, 1])
+            with col2:
+                ai_discover = st.button("🤖 AI Discover Real Competitors", key="ai_discover_comps", 
+                                        use_container_width=True, type="primary")
+            with col1:
+                new_list = st.text_area(
+                    "Competitor List (one per line)",
+                    value="\n".join(MY_COMPETITORS),
+                    height=350,
+                    key="competitor_editor",
+                    help="Enter real cardiologist names in Meerut/Delhi NCR area"
+                )
+            
+            if ai_discover:
+                with st.spinner("🤖 AI searching for real cardiologists in Meerut & Delhi NCR..."):
+                    try:
+                        from agents.competitor_discovery import discover_competitors_ai, format_for_ui
+                        doctors = discover_competitors_ai("Meerut", count=20)
+                        if doctors:
+                            formatted = format_for_ui(doctors)
+                            st.session_state["discovered_comps"] = formatted
+                            st.success(f"✅ AI found {len(doctors)} potential doctors! Review and save below.")
+                            st.text_area("AI Discovered Competitors (review & edit)", 
+                                        value=formatted, height=350, key="discovered_view")
+                        else:
+                            st.warning("AI couldn't find enough verified names. Try again or enter manually.")
+                    except Exception as e:
+                        st.error(f"Discovery error: {e}")
+            
             if st.button("💾 Save Competitors", key="save_comps", use_container_width=True):
-                # Update the list in session state
-                st.session_state["my_competitors"] = [c.strip() for c in new_list.split("\n") if c.strip()]
+                # Use discovered list if available, else text area
+                if "discovered_comps" in st.session_state:
+                    lines = st.session_state["discovered_comps"].split("\n")
+                else:
+                    lines = new_list.split("\n")
+                
+                st.session_state["my_competitors"] = [c.strip() for c in lines if c.strip()]
                 st.success(f"✅ {len(st.session_state['my_competitors'])} competitors saved! Refresh to see changes.")
                 st.rerun()
         
