@@ -1202,7 +1202,7 @@ def render_local_search_engine():
 # ═══════════════════════════════════════════════════════════════════════
 # SECTION: Auto-Pilot Status Panel
 # ═══════════════════════════════════════════════════════════════════════
-def render_autopilot_section():
+def render_autopilot_section(user_id=None):
     with st.container():
         st.markdown('<div class="gill-section">', unsafe_allow_html=True)
         st.markdown("### 🤖 AI Auto-Pilot Status")
@@ -1397,7 +1397,7 @@ def show_gill_clinic():
     
     # ── Auto-Pilot Panel ──
     st.markdown("<br>", unsafe_allow_html=True)
-    render_autopilot_section()
+    render_autopilot_section(user_id)
     
     # ── Footer ──
     st.markdown("---")
