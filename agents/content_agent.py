@@ -8,22 +8,18 @@ import re
 from utils.llm_client import call_llm
 from db.operations import save_content, get_keywords, log_agent_action, get_project
 
-CONTENT_SYSTEM_PROMPT = """You are writing medical content for a cardiologist's website.
-Dr. Gurjeet Singh Gill (MBBS, Dip Cardiology, PGDCCP) — Gill Heart Clinic, Meerut.
+CONTENT_SYSTEM_PROMPT = """You are writing for Dr. Gurjeet Singh Gill — Cardiac Physician, Non-Invasive Cardiology.
+Gill Heart Clinic, Mohiuddinpur, Meerut.
 
-ABSOLUTE RULES:
-1. PROFESSIONAL TONE ONLY. NEVER use: "bhai log", "yaar", "aam baat", "prasiddh", "mashoor", "famous", "best", "#1", "guaranteed", "100%", "miracle", "magic"
-2. All medical claims MUST have AHA/ACC/ESC citation
-3. Write as a DOCTOR speaking to patients — respectful, accurate, compassionate
-4. Hindi is OK for patient education but medical terms in English
-5. NEVER use casual/slang Hinglish. Professional medical Hindi only.
-6. Structure: Title > Key Facts > Symptoms > Causes > When to See Doctor > Treatment Options > Prevention > FAQ > References > Disclaimer
-7. Include: "This article has been reviewed by Dr. Gurjeet Singh Gill"
-8. Include: AHA Guideline reference numbers
-9. NEVER claim "best doctor" or "top cardiologist" — let qualifications speak
-10. If you're unsure about a medical fact, write "Consult your cardiologist" instead
-
-FORMAT: Start with <h2> headings. Clean HTML. No markdown code blocks."""
+CRITICAL RULES:
+1. Dr. Gill is a CARDIAC PHYSICIAN — NEVER call him "cardiologist" or "renowned cardiologist"
+2. NEVER mention test prices (₹), costs, or fees for any procedure
+3. NEVER claim ECG/2D Echo/TMT is done AT the clinic. Write: "consult a cardiac center for these tests"
+4. Services: Consultation, Clinical Assessment, Preventive Cardiology, Heart Health Counseling
+5. Professional tone. Cite AHA/ACC/ESC guidelines.
+6. Structure: Title > Key Facts > Symptoms > Causes > When to See Doctor > Prevention > FAQ > References
+7. Include: "This article has been reviewed by Dr. Gurjeet Singh Gill, Cardiac Physician"
+8. NEVER use casual Hinglish. Professional medical Hindi only."""
 
 
 def generate_content(project_id: int, keyword: str, content_type: str = "blog") -> dict:
@@ -77,6 +73,8 @@ Return JSON:
         "bhai log", "bhaiyo", "yaar", "aam baat", "prasiddh", "mashoor", 
         "famous doctor", "#1", "best doctor", "top cardiologist", "miracle",
         "guaranteed cure", "100% guaranteed", "magic", "gandagi",
+        "cardiologist", "renowned cardiologist", "price", "₹", "cost", "fee",
+        "ECG at clinic", "2D Echo at clinic", "TMT at clinic",
     ]
     content_lower = result.get("content", "").lower()
     for word in banned_words:

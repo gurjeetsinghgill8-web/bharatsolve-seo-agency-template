@@ -77,7 +77,9 @@ def _ensure_clinic_setup(user_id: int) -> int:
 CLINIC = {
     "name": "Gill Heart Clinic",
     "doctor": "Dr. Gurjeet Singh Gill",
+    "title": "Cardiac Physician",
     "qualifications": "MBBS, Diploma Cardiology (UN Mehta), PGDCCP, AI in Healthcare (IIT Kanpur)",
+    "specialty": "Non-Invasive Cardiology & Preventive Heart Care",
     "tagline": "Quality Heart Treatment for Every Patient — Meerut & Delhi NCR",
     "address": "Mohiuddinpur, Meerut, Uttar Pradesh",
     "phone": "+91-9639011155",
@@ -92,6 +94,7 @@ CLINIC = {
     "google_review_count": 127,
     "associated_hospitals": ["Yashoda Hospital", "UN Mehta Institute", "IIT Kanpur"],
     "youtube": "https://www.youtube.com/@dr.gurjeetsinghgill",
+    "services": "Consultation, Clinical Assessment, Preventive Cardiology, Heart Health Counseling, ECG Interpretation",
 }
 
 TARGET_LOCATIONS = ["Meerut", "Delhi NCR", "Mohiuddinpur", "Modinagar", "Hapur"]
