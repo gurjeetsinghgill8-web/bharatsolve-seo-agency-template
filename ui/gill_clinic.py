@@ -612,20 +612,17 @@ def render_blog_section(user_id, project_id=0):
         lang = st.radio("Language", ["Hinglish (हिंग्लिश)", "English", "हिंदी"], 
                        horizontal=True, key="blog_lang")
         
-        # ── NEW: 3-STEP WORKFLOW ──
-        st.markdown("#### 📝 Blog Workflow: Draft → PDF Review → Publish")
-        
+        # ── 3-STEP WORKFLOW ──
         col1, col2 = st.columns([1, 1])
         
         with col1:
             gen_clicked = st.button("🤖 Step 1: Generate Draft", key="gen_draft_btn", 
-                                    use_container_width=True, type="primary",
-                                    help="AI blog draft banayega. Publish NAHI hoga.")
+                                    use_container_width=True, type="primary")
         
         with col2:
-            view_pdf = st.button("📄 Step 2: View as PDF for Review", key="view_pdf_btn",
-                                 use_container_width=True,
-                                 help="Last generated draft ko PDF mein dekho. Review karo pehle.")
+            if st.button("📝 Step 2: Review Draft", key="view_review_btn", use_container_width=True):
+                st.session_state["gc_review_mode"] = True
+                st.rerun()
         
         if gen_clicked:
             with st.spinner(f"Generating draft for '{selected_topic}'..."):
@@ -635,113 +632,88 @@ def render_blog_section(user_id, project_id=0):
                         keyword=selected_topic,
                         content_type="blog"
                     )
-                    
-                    blog_title = content_result.get("title", selected_topic)
-                    blog_content = content_result.get("content", "")
-                    
                     st.session_state["gc_last_blog"] = content_result
-                    st.session_state["gc_blog_title"] = blog_title
-                    st.session_state["gc_blog_content"] = blog_content
-                    
-                    st.success(f"✅ Draft Ready: '{blog_title}'")
-                    st.info("⬇️ Ab 'View as PDF' button se review karo. Sahi lage to publish karo.")
-                    
+                    st.session_state["gc_blog_title"] = content_result.get("title", selected_topic)
+                    st.session_state["gc_blog_content"] = content_result.get("content", "")
+                    st.session_state["gc_review_mode"] = True  # Auto-enter review
+                    st.rerun()
                 except Exception as e:
                     st.error(f"❌ Error: {str(e)[:500]}")
         
-        # Review Section
-        if view_pdf:
-            if "gc_last_blog" not in st.session_state:
-                st.warning("⚠️ Pehle 'Generate Draft' dabao — koi draft ready nahi hai.")
-            else:
-                blog_title = st.session_state.get("gc_blog_title", "Draft")
-                blog_content = st.session_state.get("gc_blog_content", "")
-                
-                # Show editable content for review
-                st.markdown("---")
-                st.markdown("### 📝 Step 2: Review & Edit Draft")
-                
-                edited_title = st.text_input("Title", value=blog_title, key="review_title")
-                edited_content = st.text_area(
-                    "Content (Edit if needed)", 
-                    value=blog_content if blog_content else "",
-                    height=500,
-                    key="review_content",
-                    help="Review medical accuracy. Edit directly. Approve when ready."
-                )
-                
-                # Full-width reading preview
-                st.markdown("---")
-                st.markdown("### 📖 Reading Preview (Full Width)")
-                
-                # Clean the content for display
-                display_content = edited_content if edited_content else ""
-                import re as _re
-                display_content = _re.sub(r'\*\*JSON Response\*\*.*?```', '', display_content, flags=_re.DOTALL)
-                display_content = _re.sub(r'```json\s*\{.*?\}\s*```', '', display_content, flags=_re.DOTALL)
-                display_content = _re.sub(r'\*\*स्कीमा.*?\*\*.*$', '', display_content, flags=_re.DOTALL)
-                display_content = _re.sub(r'"content":\s*"', '', display_content)
-                display_content = display_content.replace('\\n', '\n').replace('\\"', '"')
-                
-                if display_content.strip():
-                    # Full width container
-                    st.markdown(f"""
-                    <div style="max-width:100%; padding:20px; background:#fff; border-radius:12px; 
-                                border:1px solid #ddd; font-size:16px; line-height:1.8;">
-                        {display_content[:15000]}
-                    </div>
-                    """, unsafe_allow_html=True)
-                    st.caption(f"📊 {len(edited_content.split())} words | Scroll to read full article")
-                else:
-                    st.info("Content pending...")
-                
-                st.caption(f"📊 Word count: {len(edited_content.split()) if edited_content else 0}")
-                
-                # APPROVE & PUBLISH
-                st.markdown("---")
-                st.markdown("#### ✅ Step 3: Doctor's Approval")
-                st.warning("⚠️ **Dr. Gill**: Please verify ALL medical facts before publishing. Check AHA/ACC guidelines.")
-                
-                col_a, col_b = st.columns(2)
-                with col_a:
-                    if st.button("✅ APPROVE — Publish to Website", key="approve_publish", 
-                                use_container_width=True, type="primary"):
-                        with st.spinner("Publishing approved content..."):
-                            # Save edited content back
-                            st.session_state["gc_blog_title"] = edited_title
-                            st.session_state["gc_blog_content"] = edited_content
-                            
-                            try:
-                                from agents.github_publisher import publish_blog_to_github
-                                pub_result = publish_blog_to_github(
-                                    topic=selected_topic,
-                                    target_location=target_location,
-                                    language="english",
-                                    auto_publish=True
-                                )
-                                if pub_result.get("status") == "published":
-                                    pub_url = pub_result.get('published_url', '')
-                                    st.success("🎉 APPROVED & PUBLISHED!")
-                                    st.markdown(f"""
-                                    ### 🔗 Live URL:
-                                    [{pub_url}]({pub_url})
-                                    
-                                    **Open in browser to verify.**
-                                    """)
-                                    st.balloons()
-                                    st.info("⚠️ Doctor: Please open the link and verify medical accuracy.")
-                                else:
-                                    st.warning(f"Publish issue: {pub_result.get('push_error', '')[:200]}")
-                            except Exception as e:
-                                st.error(f"Error: {e}")
-                
-                with col_b:
-                    if st.button("❌ REJECT — Delete Draft", key="reject_draft", use_container_width=True):
-                        st.session_state.pop("gc_last_blog", None)
-                        st.session_state.pop("gc_blog_title", None)
-                        st.session_state.pop("gc_blog_content", None)
-                        st.success("Draft deleted. Generate new one.")
-                        st.rerun()
+        # REVIEW MODE — persistent with session_state (not button!)
+        if st.session_state.get("gc_review_mode") and "gc_last_blog" in st.session_state:
+            blog_title = st.session_state.get("gc_blog_title", "Draft")
+            blog_content = st.session_state.get("gc_blog_content", "")
+            
+            st.markdown("---")
+            st.markdown("### 📝 Review & Edit Draft")
+            
+            edited_title = st.text_input("Title", value=blog_title, key="review_title")
+            edited_content = st.text_area(
+                "Content (Edit if needed)", 
+                value=blog_content if blog_content else "",
+                height=400,
+                key="review_content"
+            )
+            st.session_state["gc_blog_title"] = edited_title
+            st.session_state["gc_blog_content"] = edited_content
+            
+            # Full-width reading preview
+            st.markdown("---")
+            st.markdown("### 📖 Reading Preview")
+            display_content = edited_content or ""
+            import re as _re
+            display_content = _re.sub(r'\*\*JSON.*?```', '', display_content, flags=_re.DOTALL)
+            display_content = _re.sub(r'```json\s*\{.*?\}\s*```', '', display_content, flags=_re.DOTALL)
+            display_content = display_content.replace('\\n', '\n').replace('\\"', '"')
+            
+            if display_content.strip():
+                st.markdown(f"""
+                <div style="max-width:100%; padding:20px; background:#fff; border-radius:12px; 
+                            border:1px solid #ddd; font-size:16px; line-height:1.8;">
+                    {display_content[:12000]}
+                </div>
+                """, unsafe_allow_html=True)
+            
+            st.caption(f"📊 {len(edited_content.split())} words")
+            
+            # APPROVE & PUBLISH
+            st.markdown("---")
+            st.markdown("### ✅ Step 3: Doctor's Approval")
+            st.warning("⚠️ Dr. Gill: Verify ALL medical facts before publishing.")
+            
+            col_a, col_b = st.columns(2)
+            with col_a:
+                if st.button("✅ APPROVE — Publish to Website", key="approve_publish", 
+                            use_container_width=True, type="primary"):
+                    with st.spinner("Publishing..."):
+                        try:
+                            from agents.github_publisher import publish_blog_to_github
+                            pub_result = publish_blog_to_github(
+                                topic=selected_topic,
+                                target_location=target_location,
+                                language="english",
+                                auto_publish=True
+                            )
+                            if pub_result.get("status") == "published":
+                                pub_url = pub_result.get('published_url', '')
+                                st.session_state["gc_review_mode"] = False
+                                st.success("🎉 PUBLISHED!")
+                                st.markdown(f"### 🔗 [{pub_url}]({pub_url})")
+                                st.balloons()
+                            else:
+                                st.error(f"Publish failed: {pub_result.get('push_error','')[:200]}")
+                        except Exception as e:
+                            st.error(f"Error: {str(e)[:300]}")
+            
+            with col_b:
+                if st.button("❌ REJECT — Delete Draft", key="reject_draft", use_container_width=True):
+                    st.session_state.pop("gc_last_blog", None)
+                    st.session_state.pop("gc_blog_title", None)
+                    st.session_state.pop("gc_blog_content", None)
+                    st.session_state["gc_review_mode"] = False
+                    st.success("Draft deleted")
+                    st.rerun()
         
         # ── Blog Manager: View & Delete Published Blogs ──
         st.markdown("---")
