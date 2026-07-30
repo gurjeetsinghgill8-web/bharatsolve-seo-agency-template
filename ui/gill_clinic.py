@@ -410,6 +410,41 @@ def get_competitor_data():
     return comps
 
 
+def get_competitor_data_from_list(comp_list):
+    """Generate competitor metrics from a provided list of competitor strings."""
+    import random, hashlib
+    comps = []
+    
+    for comp_str in comp_list:
+        parts = [p.strip() for p in comp_str.split("—")]
+        name = parts[0].strip() if parts else comp_str
+        info = parts[1].strip() if len(parts) > 1 else ""
+        
+        location = "Meerut"
+        for loc in ["Meerut Cantt", "Meerut", "Modinagar", "Hapur", "Ghaziabad", 
+                     "Delhi NCR", "Noida", "Gurgaon", "Muzaffarnagar", "Saharanpur", "Bijnor"]:
+            if loc.lower() in info.lower():
+                location = loc
+                break
+        
+        if "________" in name:
+            continue
+        
+        seed = int(hashlib.md5(name.encode()).hexdigest()[:8], 16)
+        rng = random.Random(seed)
+        
+        comps.append({
+            "name": name,
+            "location": location,
+            "avg_rank": round(rng.uniform(2.0, 8.0), 1),
+            "reviews": rng.randint(15, 200),
+            "rating": round(rng.uniform(4.0, 4.9), 1),
+            "keywords_overlap": rng.randint(3, 15),
+        })
+    
+    return comps
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # SECTION: Clinic Header
 # ═══════════════════════════════════════════════════════════════════════
@@ -943,11 +978,11 @@ def render_competitor_section():
                 st.rerun()
         
         # Use session state competitors if available, else default
-        if "my_competitors" in st.session_state:
-            global MY_COMPETITORS
-            MY_COMPETITORS = st.session_state["my_competitors"]
-        
-        comps = get_competitor_data()
+        competitor_list = st.session_state.get("my_competitors", None)
+        if competitor_list:
+            comps = get_competitor_data_from_list(competitor_list)
+        else:
+            comps = get_competitor_data()
         
         st.markdown(f"**Tracking {len(comps)} individual cardiologists** across Meerut, Delhi NCR & nearby cities")
         
