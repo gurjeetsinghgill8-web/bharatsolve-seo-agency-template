@@ -670,22 +670,30 @@ def render_blog_section(user_id, project_id=0):
                     help="Review medical accuracy. Edit directly. Approve when ready."
                 )
                 
-                # Reading preview - clean HTML rendering
-                with st.expander("📖 Full Screen Reading Preview", expanded=True):
-                    # Clean the content for display
-                    display_content = edited_content if edited_content else ""
-                    # Remove JSON artifacts
-                    import re as _re
-                    display_content = _re.sub(r'\*\*JSON Response\*\*.*?```', '', display_content, flags=_re.DOTALL)
-                    display_content = _re.sub(r'```json\s*\{.*?\}\s*```', '', display_content, flags=_re.DOTALL)
-                    display_content = _re.sub(r'\*\*स्कीमा.*?\*\*.*$', '', display_content, flags=_re.DOTALL)
-                    display_content = _re.sub(r'"content":\s*"', '', display_content)
-                    display_content = display_content.replace('\\n', '\n').replace('\\"', '"')
-                    
-                    if display_content.strip():
-                        st.markdown(display_content[:10000], unsafe_allow_html=True)
-                    else:
-                        st.info("Content pending...")
+                # Full-width reading preview
+                st.markdown("---")
+                st.markdown("### 📖 Reading Preview (Full Width)")
+                
+                # Clean the content for display
+                display_content = edited_content if edited_content else ""
+                import re as _re
+                display_content = _re.sub(r'\*\*JSON Response\*\*.*?```', '', display_content, flags=_re.DOTALL)
+                display_content = _re.sub(r'```json\s*\{.*?\}\s*```', '', display_content, flags=_re.DOTALL)
+                display_content = _re.sub(r'\*\*स्कीमा.*?\*\*.*$', '', display_content, flags=_re.DOTALL)
+                display_content = _re.sub(r'"content":\s*"', '', display_content)
+                display_content = display_content.replace('\\n', '\n').replace('\\"', '"')
+                
+                if display_content.strip():
+                    # Full width container
+                    st.markdown(f"""
+                    <div style="max-width:100%; padding:20px; background:#fff; border-radius:12px; 
+                                border:1px solid #ddd; font-size:16px; line-height:1.8;">
+                        {display_content[:15000]}
+                    </div>
+                    """, unsafe_allow_html=True)
+                    st.caption(f"📊 {len(edited_content.split())} words | Scroll to read full article")
+                else:
+                    st.info("Content pending...")
                 
                 st.caption(f"📊 Word count: {len(edited_content.split()) if edited_content else 0}")
                 
@@ -712,8 +720,16 @@ def render_blog_section(user_id, project_id=0):
                                     auto_publish=True
                                 )
                                 if pub_result.get("status") == "published":
-                                    st.success(f"🎉 APPROVED & LIVE → {pub_result.get('published_url', '')}")
+                                    pub_url = pub_result.get('published_url', '')
+                                    st.success("🎉 APPROVED & PUBLISHED!")
+                                    st.markdown(f"""
+                                    ### 🔗 Live URL:
+                                    [{pub_url}]({pub_url})
+                                    
+                                    **Open in browser to verify.**
+                                    """)
                                     st.balloons()
+                                    st.info("⚠️ Doctor: Please open the link and verify medical accuracy.")
                                 else:
                                     st.warning(f"Publish issue: {pub_result.get('push_error', '')[:200]}")
                             except Exception as e:
