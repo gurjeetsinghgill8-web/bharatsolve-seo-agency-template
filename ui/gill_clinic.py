@@ -523,40 +523,20 @@ def render_blog_section(user_id, project_id=0):
         col1, col2 = st.columns([1, 2])
         
         with col1:
-            generate_btn = st.button("🤖 AI Generate Blog", key="gen_blog_btn", 
+            gen_clicked = st.button("🤖 AI Generate Blog", key="gen_blog_btn", 
                                     use_container_width=True, type="primary")
             word_count = st.slider("Word Count", 500, 2000, 1000, 100, key="blog_wc")
         
         with col2:
-            if st.button("🚀 Generate & Publish to Website", key="publish_blog_btn",
-                        use_container_width=True):
-                st.session_state["gc_auto_publish"] = True
-                generate_btn = True
+            pub_clicked = st.button("🚀 Generate & Publish to Website", key="publish_blog_btn",
+                        use_container_width=True)
         
-        if generate_btn:
+        # Either button triggers blog generation
+        if gen_clicked or pub_clicked:
+            do_publish = pub_clicked  # True if "Publish" button was clicked
+            
             with st.spinner(f"🤖 AI generating blog about '{selected_topic}'..."):
                 try:
-                    # Build a rich prompt for the content agent
-                    prompt = f"""Write a comprehensive heart health blog about: {selected_topic}
-Target Location: {target_location}
-Target Language: {lang}
-Doctor: {CLINIC['doctor']}, {CLINIC['qualifications']}
-Clinic: {CLINIC['name']}, {CLINIC['address']}
-Word Count: {word_count}
-
-Include:
-1. Catchy medical title with location keyword
-2. Meta title (55-60 chars) and meta description (150-160 chars)
-3. Introduction explaining the importance for Indian patients
-4. Main content with H2/H3 sections
-5. Doctor's expertise mention naturally
-6. Local references to {target_location}
-7. Call-to-action for appointment booking
-8. FAQ section with MedicalArticle Schema JSON-LD
-9. Disclaimer about consulting a doctor
-
-Make it patient-friendly, medically accurate, and SEO-optimized."""
-                    
                     # Use content agent to generate
                     content_result = generate_content(
                         project_id=project_id,
@@ -564,18 +544,37 @@ Make it patient-friendly, medically accurate, and SEO-optimized."""
                         content_type="blog"
                     )
                     
+                    blog_title = content_result.get("title", selected_topic)
+                    blog_content = content_result.get("content", "")
+                    
                     st.session_state["gc_last_blog"] = content_result
-                    st.session_state["gc_blog_title"] = content_result.get("title", selected_topic)
-                    st.session_state["gc_blog_content"] = content_result.get("content", "")
+                    st.session_state["gc_blog_title"] = blog_title
+                    st.session_state["gc_blog_content"] = blog_content
                     
-                    st.success(f"✅ Blog generated: '{content_result.get('title', '')}'")
+                    st.success(f"✅ Blog generated: '{blog_title}'")
                     
-                    if st.session_state.get("gc_auto_publish"):
-                        st.info("🚀 Auto-publish feature will push to: " + CLINIC['website'])
-                        st.session_state["gc_auto_publish"] = False
+                    # ── PUBLISH TO GITHUB PAGES ──
+                    if do_publish:
+                        with st.spinner("🚀 Publishing to your website..."):
+                            try:
+                                from agents.github_publisher import publish_blog_to_github
+                                pub_result = publish_blog_to_github(
+                                    topic=selected_topic,
+                                    target_location=target_location,
+                                    language=lang.lower().replace(" (हिंग्लिश)", "").replace("हिंदी", "hindi"),
+                                    auto_publish=True
+                                )
+                                if pub_result.get("status") == "published":
+                                    st.success(f"🎉 Blog LIVE! → {pub_result.get('published_url', '')}")
+                                    st.balloons()
+                                else:
+                                    st.warning(f"⚠️ Blog generated but publish failed: {pub_result.get('push_error', pub_result.get('message', 'Unknown error'))[:300]}")
+                                    st.info("💡 GitHub token sahi hai? Streamlit Secrets mein GITHUB_TOKEN check karo.")
+                            except Exception as pub_err:
+                                st.warning(f"⚠️ Publish error: {str(pub_err)[:300]}")
                         
                 except Exception as e:
-                    st.error(f"❌ Error generating blog: {e}")
+                    st.error(f"❌ Error generating blog: {str(e)[:500]}")
         
         # Show last generated blog preview
         if "gc_last_blog" in st.session_state:
