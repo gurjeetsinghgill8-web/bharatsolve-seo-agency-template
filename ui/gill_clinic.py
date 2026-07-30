@@ -743,68 +743,6 @@ def render_blog_section(user_id, project_id=0):
                         st.success("Draft deleted. Generate new one.")
                         st.rerun()
         
-        # Show last generated blog preview
-        if "gc_last_blog" in st.session_state:
-            st.markdown("---")
-            st.markdown("#### 📄 Blog Preview")
-            with st.expander(f"📰 {st.session_state.get('gc_blog_title', 'Blog Preview')}", expanded=True):
-                content = st.session_state.get("gc_blog_content", "")
-                st.markdown(f'<div class="blog-preview">{content[:2000]}{"..." if len(content) > 2000 else ""}</div>', 
-                           unsafe_allow_html=True)
-                
-                meta_title = st.session_state["gc_last_blog"].get("meta_title", "")
-                meta_desc = st.session_state["gc_last_blog"].get("meta_description", "")
-                if meta_title or meta_desc:
-                    st.markdown("**🔍 SEO Meta:**")
-                    st.code(f"Title: {meta_title}\nDescription: {meta_desc}", language="text")
-        
-        # ── BULK PUBLISH: All Gap-Analysis Blogs ──
-        st.markdown("---")
-        st.markdown("#### 🚀 Bulk Publish — All Gap-Analysis Blogs")
-        
-        GAP_BLOGS = [
-            ("Emergency Heart Care Signs & Treatment", "Meerut"),
-            ("Pediatric Cardiology — Children Heart Health", "Delhi NCR"),
-            ("Angioplasty Information Guide — Procedure Recovery", "Meerut"),
-            ("Heart Bypass Surgery Recovery Tips", "Delhi NCR"),
-            ("Stent Procedure — What Patients Must Know", "Mohiuddinpur"),
-            ("Cardiac Checkup Package — Tests Included", "Meerut"),
-        ]
-        
-        if st.button("⚡ PUBLISH ALL 6 BLOGS TO WEBSITE", key="bulk_publish", 
-                     use_container_width=True, type="primary"):
-            progress_bar = st.progress(0)
-            status_text = st.empty()
-            results = []
-            
-            for i, (topic, loc) in enumerate(GAP_BLOGS):
-                status_text.markdown(f"🔄 **{i+1}/6** Generating: _{topic}_...")
-                try:
-                    from agents.github_publisher import publish_blog_to_github
-                    result = publish_blog_to_github(
-                        topic=topic,
-                        target_location=loc,
-                        language="hinglish",
-                        auto_publish=True
-                    )
-                    if result.get("status") == "published":
-                        results.append(f"✅ [{i+1}/6] {topic[:50]} → LIVE!")
-                    else:
-                        err = result.get('push_error', result.get('message', 'Unknown'))[:100]
-                        results.append(f"⚠️ [{i+1}/6] {topic[:40]} — {err}")
-                except Exception as e:
-                    results.append(f"❌ [{i+1}/6] {topic[:40]} — {str(e)[:100]}")
-                
-                progress_bar.progress((i + 1) / 6)
-            
-            status_text.markdown("### 📊 Bulk Publish Results:")
-            for r in results:
-                st.markdown(r)
-            
-            if any("✅" in r for r in results):
-                st.balloons()
-                st.success(f"🎉 {sum(1 for r in results if '✅' in r)}/6 blogs published to your website!")
-        
         # ── Blog Manager: View & Delete Published Blogs ──
         st.markdown("---")
         st.markdown("#### 📚 Manage Published Blogs")
