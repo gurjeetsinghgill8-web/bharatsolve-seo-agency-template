@@ -63,5 +63,44 @@
     "sitrep_enabled": true,
     "alert_on_error": true,
     "max_response_time_ms": 5000
+  },
+  "gill_clinic": {
+    "name": "Gill Heart Clinic",
+    "doctor": "Dr. Gurjeet Singh Gill",
+    "qualifications": "MBBS, Diploma Cardiology (UN Mehta), PGDCCP, AI in Healthcare (IIT Kanpur)",
+    "tagline": "Quality Heart Treatment for Every Patient — Meerut & Delhi NCR",
+    "address": "Mohiuddinpur, Meerut, Uttar Pradesh",
+    "phone": "+91-9639011155",
+    "email": "gurjeetsinghgill8@gmail.com",
+    "google_maps": "https://www.google.com/maps/place/Gill+Heart+Clinic/@28.8841507,77.6132279,17z/",
+    "website": "https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/",
+    "github_repo": "gurjeetsinghgill8-web/gill-heart-clinic",
+    "github_branch": "main",
+    "years_experience": 12,
+    "patients_treated": "50,000+",
+    "google_rating": 4.8,
+    "google_review_count": 127,
+    "associated_hospitals": ["Yashoda Hospital", "UN Mehta Institute", "IIT Kanpur"],
+    "target_locations": ["Meerut", "Delhi NCR", "Mohiuddinpur", "Modinagar", "Hapur"],
+    "blog_categories": [
+      "Chest Pain Warning Signs", "High BP Control Tips", "ECG vs 2D Echo vs TMT",
+      "Diabetes & Heart Connection", "Cholesterol Management", "Indian Heart-Healthy Diet",
+      "Heart Attack Prevention", "Safe Exercises for Heart Patients", "Heart Failure Management",
+      "Women & Heart Disease", "Stress & Heart Health", "Seasonal Heart Care Tips"
+    ],
+    "competitors": [
+      {"name": "Meerut Heart Centre", "location": "Meerut", "strength": "Maps ranking"},
+      {"name": "Delhi NCR Cardiac Care", "location": "Delhi NCR", "strength": "Blog content"},
+      {"name": "Lifeline Heart Institute", "location": "Meerut Cantt", "strength": "Reviews count"},
+      {"name": "Max Heart & Vascular", "location": "Delhi", "strength": "Domain authority"}
+    ],
+    "auto_pilot": {
+      "auto_blog_interval_hours": 24,
+      "auto_review_reply_interval_hours": 6,
+      "competitor_scan_interval_hours": 48,
+      "rank_check_interval_hours": 12,
+      "weekly_report_day": "Monday",
+      "weekly_report_time": "09:00"
+    }
   }
 }

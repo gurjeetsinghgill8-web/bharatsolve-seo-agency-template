@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Database
+*.db
+*.sqlite3
+
+# Environment
+.env
+*.env.local
+
+# Scheduler state
+.scheduler_state.json
+
+# IDE
+.vscode/
+.idea/
+.zcode/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Streamlit
+.streamlit/secrets.toml

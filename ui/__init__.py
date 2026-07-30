@@ -2,6 +2,7 @@
 BHARATSOLVE SEO AGENCY — UI Package
 """
 from .auth import login_page, check_auth, logout
+from .gill_clinic import show_gill_clinic
 from .dashboard import show_dashboard
 from .clients import show_clients_page
 from .keywords import show_keywords_page
@@ -18,6 +19,7 @@ from .backup import show_backup_page
 
 __all__ = [
     'login_page', 'check_auth', 'logout',
+    'show_gill_clinic',
     'show_dashboard', 'show_clients_page',
     'show_keywords_page', 'show_content_page',
     'show_rankings_page', 'show_social_page',

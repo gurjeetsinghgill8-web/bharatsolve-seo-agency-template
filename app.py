@@ -20,6 +20,7 @@ IS_STREAMLIT_CLOUD = os.environ.get('STREAMLIT_RUNNER_ID') is not None
 
 # Import UI modules
 from ui.auth import login_page, check_auth, logout
+from ui.gill_clinic import show_gill_clinic
 from ui.dashboard import show_dashboard
 from ui.clients import show_clients_page
 from ui.keywords import show_keywords_page
@@ -280,6 +281,7 @@ def main():
         
         # Navigation
         nav_items = {
+            "🏥 Gill Clinic": "gill_clinic",
             "🏠 Dashboard": "dashboard",
             "👥 Clients": "clients",
             "🔑 Keywords": "keywords",
@@ -348,9 +350,11 @@ def main():
             st.rerun()
     
     # ── Page Router ──
-    page = st.session_state.get("page", "dashboard")
+    page = st.session_state.get("page", "gill_clinic")
     
-    if page == "dashboard":
+    if page == "gill_clinic":
+        show_gill_clinic()
+    elif page == "dashboard":
         show_dashboard()
     elif page == "clients":
         show_clients_page()

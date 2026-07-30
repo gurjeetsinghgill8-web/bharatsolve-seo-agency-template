@@ -388,6 +388,34 @@ def get_single_content(content_id):
     conn.close()
     return dict(row) if row else None
 
+
+def get_content_pieces(project_id=None, limit=20, content_type=None):
+    """Get content pieces, optionally filtered by project and type."""
+    conn = get_connection()
+    if project_id:
+        if content_type:
+            rows = conn.execute(
+                """SELECT * FROM content_pieces 
+                   WHERE project_id = ? AND content_type = ?
+                   ORDER BY created_at DESC LIMIT ?""",
+                (project_id, content_type, limit)
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                """SELECT * FROM content_pieces 
+                   WHERE project_id = ?
+                   ORDER BY created_at DESC LIMIT ?""",
+                (project_id, limit)
+            ).fetchall()
+    else:
+        rows = conn.execute(
+            "SELECT * FROM content_pieces ORDER BY created_at DESC LIMIT ?",
+            (limit,)
+        ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
 def get_unpublished_content(project_id, limit=20):
     """Get content pieces that haven't been published yet."""
     conn = get_connection()
@@ -437,3 +465,179 @@ def search_all(user_id, query):
     
     conn.close()
     return results
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# CLINIC CONFIG OPERATIONS
+# ═══════════════════════════════════════════════════════════════════════
+
+def save_clinic_config(user_id, key, value):
+    """Save or update a clinic configuration key-value pair."""
+    conn = get_connection()
+    existing = conn.execute(
+        "SELECT id FROM clinic_config WHERE user_id = ? AND key = ?", 
+        (user_id, key)
+    ).fetchone()
+    
+    if existing:
+        conn.execute(
+            "UPDATE clinic_config SET value = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND key = ?",
+            (str(value), user_id, key)
+        )
+    else:
+        conn.execute(
+            "INSERT INTO clinic_config (user_id, key, value) VALUES (?, ?, ?)",
+            (user_id, key, str(value))
+        )
+    conn.commit()
+    conn.close()
+
+
+def get_clinic_config(user_id, key=None):
+    """Get clinic configuration. If key is None, returns all config as dict."""
+    conn = get_connection()
+    if key:
+        row = conn.execute(
+            "SELECT value FROM clinic_config WHERE user_id = ? AND key = ?",
+            (user_id, key)
+        ).fetchone()
+        conn.close()
+        return row['value'] if row else None
+    
+    rows = conn.execute(
+        "SELECT key, value FROM clinic_config WHERE user_id = ?", 
+        (user_id,)
+    ).fetchall()
+    conn.close()
+    return {r['key']: r['value'] for r in rows}
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# COMPETITOR OPERATIONS
+# ═══════════════════════════════════════════════════════════════════════
+
+def add_competitor(user_id, name, location="", specialty="", strengths=None, website=""):
+    """Add a new competitor to track."""
+    conn = get_connection()
+    strengths_json = json.dumps(strengths if strengths else [])
+    conn.execute(
+        """INSERT INTO competitors (user_id, name, location, specialty, strengths, website)
+           VALUES (?, ?, ?, ?, ?, ?)""",
+        (user_id, name, location, specialty, strengths_json, website)
+    )
+    conn.commit()
+    comp_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+    conn.close()
+    return {"id": comp_id, "name": name, "location": location, "specialty": specialty}
+
+
+def get_competitors(user_id=None):
+    """Get all tracked competitors for a user."""
+    conn = get_connection()
+    if user_id:
+        rows = conn.execute(
+            "SELECT * FROM competitors WHERE user_id = ? ORDER BY estimated_rating DESC",
+            (user_id,)
+        ).fetchall()
+    else:
+        rows = conn.execute(
+            "SELECT * FROM competitors ORDER BY estimated_rating DESC"
+        ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def update_competitor_rank(competitor_id, avg_rank, keywords_overlap=0):
+    """Update competitor's tracked average rank and keyword overlap count."""
+    conn = get_connection()
+    conn.execute(
+        """UPDATE competitors 
+           SET avg_rank = ?, keywords_overlap = ?, last_scanned = CURRENT_TIMESTAMP 
+           WHERE id = ?""",
+        (avg_rank, keywords_overlap, competitor_id)
+    )
+    conn.commit()
+    conn.close()
+
+
+def update_competitor_reviews(competitor_id, estimated_reviews, estimated_rating):
+    """Update competitor's estimated review count and rating."""
+    conn = get_connection()
+    conn.execute(
+        "UPDATE competitors SET estimated_reviews = ?, estimated_rating = ? WHERE id = ?",
+        (estimated_reviews, estimated_rating, competitor_id)
+    )
+    conn.commit()
+    conn.close()
+
+
+def delete_competitor(competitor_id):
+    """Remove a competitor from tracking."""
+    conn = get_connection()
+    conn.execute("DELETE FROM competitors WHERE id = ?", (competitor_id,))
+    conn.commit()
+    conn.close()
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# REVIEW REPLY OPERATIONS
+# ═══════════════════════════════════════════════════════════════════════
+
+def save_review_reply(user_id, review_id, reviewer_name, review_text, rating, reply_text, status="pending"):
+    """Save a review reply record."""
+    conn = get_connection()
+    conn.execute(
+        """INSERT INTO review_replies (user_id, review_id, reviewer_name, review_text, rating, reply_text, status)
+           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+        (user_id, review_id, reviewer_name, review_text, rating, reply_text, status)
+    )
+    conn.commit()
+    conn.close()
+
+
+def get_review_history(user_id, limit=20):
+    """Get recent review reply history."""
+    conn = get_connection()
+    rows = conn.execute(
+        """SELECT * FROM review_replies 
+           WHERE user_id = ? 
+           ORDER BY created_at DESC LIMIT ?""",
+        (user_id, limit)
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def is_review_replied(review_id):
+    """Check if a review has already been replied to."""
+    conn = get_connection()
+    row = conn.execute(
+        "SELECT id FROM review_replies WHERE review_id = ? AND status = 'posted'",
+        (review_id,)
+    ).fetchone()
+    conn.close()
+    return row is not None
+
+
+def mark_reply_posted(reply_id, posted_at=None):
+    """Mark a reply as successfully posted."""
+    conn = get_connection()
+    conn.execute(
+        "UPDATE review_replies SET status = 'posted', posted_at = ? WHERE id = ?",
+        (posted_at or datetime.now().isoformat(), reply_id)
+    )
+    conn.commit()
+    conn.close()
+
+
+def get_review_stats(user_id):
+    """Get review reply statistics."""
+    conn = get_connection()
+    total = conn.execute(
+        "SELECT COUNT(*) as cnt FROM review_replies WHERE user_id = ?", (user_id,)
+    ).fetchone()['cnt']
+    posted = conn.execute(
+        "SELECT COUNT(*) as cnt FROM review_replies WHERE user_id = ? AND status = 'posted'", (user_id,)
+    ).fetchone()['cnt']
+    conn.close()
+    return {"total_processed": total, "posted": posted, "pending": total - posted}

@@ -254,6 +254,55 @@ def init_db():
         )
     """)
 
+    # ── Clinic Configuration (for Gill Heart Clinic) ──
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS clinic_config (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            key TEXT NOT NULL,
+            value TEXT DEFAULT '',
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    """)
+
+    # ── Competitors Tracking ──
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS competitors (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            location TEXT DEFAULT '',
+            specialty TEXT DEFAULT '',
+            estimated_reviews INTEGER DEFAULT 0,
+            estimated_rating REAL DEFAULT 0,
+            strengths TEXT DEFAULT '[]',
+            website TEXT DEFAULT '',
+            keywords_overlap INTEGER DEFAULT 0,
+            avg_rank REAL DEFAULT 0,
+            last_scanned TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    """)
+
+    # ── Review Replies History ──
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS review_replies (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            review_id TEXT NOT NULL,
+            reviewer_name TEXT DEFAULT '',
+            review_text TEXT DEFAULT '',
+            rating INTEGER DEFAULT 0,
+            reply_text TEXT DEFAULT '',
+            status TEXT DEFAULT 'pending',
+            posted_at TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    """)
+
     conn.commit()
     conn.close()
     print(f"✅ Database initialized at {DB_PATH}")

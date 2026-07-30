@@ -257,6 +257,69 @@ def run_gbp_posting():
         return []
 
 
+# ═══════════════════════════════════════════════════════════════
+# GILL CLINIC SPECIFIC TASKS
+# ═══════════════════════════════════════════════════════════════
+
+def run_auto_blog_task():
+    """Gill Clinic: Auto-generate and publish a heart health blog."""
+    try:
+        from agents.github_publisher import auto_blog_task
+        result = auto_blog_task()
+        log_agent_action("auto_blog", f"Blog: {result.get('title', 'Unknown')[:50]} — {result.get('status', 'unknown')}")
+        return result
+    except Exception as e:
+        log_agent_action("auto_blog", f"Auto-blog failed", status="error", error_message=str(e))
+        return {"status": "error", "error": str(e)}
+
+
+def run_auto_review_task():
+    """Gill Clinic: Auto-reply to new Google reviews."""
+    try:
+        from agents.review_agent import auto_review_task
+        result = auto_review_task()
+        log_agent_action("auto_review", f"Review replies: {result.get('replied', 0)} sent")
+        return result
+    except Exception as e:
+        log_agent_action("auto_review", f"Auto-review failed", status="error", error_message=str(e))
+        return {"status": "error", "error": str(e)}
+
+
+def run_competitor_scan():
+    """Gill Clinic: Analyze competitors in Delhi NCR + Meerut."""
+    try:
+        from agents.competitor_agent import competitor_scan_task
+        result = competitor_scan_task()
+        log_agent_action("competitor", f"Competitor scan: {result.get('summary', {}).get('win_rate', 0)}% win rate")
+        return result
+    except Exception as e:
+        log_agent_action("competitor", f"Competitor scan failed", status="error", error_message=str(e))
+        return {"status": "error", "error": str(e)}
+
+
+def run_delhi_rank_check():
+    """Gill Clinic: Check rankings for Delhi NCR + Meerut target keywords."""
+    try:
+        from agents.rank_agent import check_rankings
+        projects = get_all_projects()
+        results = []
+        for p in projects:
+            try:
+                check_rankings(p['id'], simulate=True)
+                results.append({"project_id": p['id'], "status": "ok"})
+            except Exception as e:
+                results.append({"project_id": p['id'], "status": "error", "error": str(e)})
+        log_agent_action("delhi_rank", f"Delhi rank check: {len(results)} projects")
+        return results
+    except Exception as e:
+        log_agent_action("delhi_rank", f"Delhi rank check failed", status="error", error_message=str(e))
+        return {"status": "error", "error": str(e)}
+
+
+# ═══════════════════════════════════════════════════════════════
+# RUN ALL AGENTS
+# ═══════════════════════════════════════════════════════════════
+
 def run_all_agents():
     """Run ALL agents once (comprehensive run)."""
     print(f"🚀 Running all agents at {datetime.now().isoformat()}")
@@ -301,6 +364,27 @@ def run_all_agents():
         all_results['backup'] = "ok" if backup_result.get('success') else "failed"
     except:
         all_results['backup'] = "skipped"
+    
+    # ── Gill Clinic Tasks ──
+    try:
+        all_results['auto_blog'] = run_auto_blog_task()
+    except:
+        all_results['auto_blog'] = "skipped"
+    
+    try:
+        all_results['auto_review'] = run_auto_review_task()
+    except:
+        all_results['auto_review'] = "skipped"
+    
+    try:
+        all_results['competitor'] = run_competitor_scan()
+    except:
+        all_results['competitor'] = "skipped"
+    
+    try:
+        all_results['delhi_rank'] = run_delhi_rank_check()
+    except:
+        all_results['delhi_rank'] = "skipped"
     
     print(f"✅ All agents completed at {datetime.now().isoformat()}")
     log_agent_action("scheduler", "run_all_agents completed", status="ok")
@@ -359,6 +443,23 @@ def start_apscheduler():
     _apscheduler.add_job(run_wordpress_publish, 'interval', hours=12,
                          id='wp_publish', replace_existing=True)
     
+    # ── Gill Clinic Tasks ──
+    # Auto-blog — every 24h
+    _apscheduler.add_job(run_auto_blog_task, 'interval', hours=24,
+                         id='auto_blog', replace_existing=True)
+    
+    # Auto-review reply — every 6h
+    _apscheduler.add_job(run_auto_review_task, 'interval', hours=6,
+                         id='auto_review', replace_existing=True)
+    
+    # Competitor scan — every 48h
+    _apscheduler.add_job(run_competitor_scan, 'interval', hours=48,
+                         id='competitor_scan', replace_existing=True)
+    
+    # Delhi rank check — every 12h
+    _apscheduler.add_job(run_delhi_rank_check, 'interval', hours=12,
+                         id='delhi_rank', replace_existing=True)
+    
     # Daily full run at 3 AM
     _apscheduler.add_job(run_all_agents, 'cron', hour=3, minute=0,
                          id='daily_full_run', replace_existing=True)
@@ -396,6 +497,11 @@ def try_cloud_tasks():
         ("social_posting", 8, run_social_posting),
         ("email_digest", 24, run_email_campaigns),
         ("wp_auto_publish", 12, run_wordpress_publish),
+        # Gill Clinic tasks
+        ("auto_blog", 24, run_auto_blog_task),
+        ("auto_review", 6, run_auto_review_task),
+        ("competitor_scan", 48, run_competitor_scan),
+        ("delhi_rank", 12, run_delhi_rank_check),
     ]
     
     for task_name, interval_hours, task_fn in task_schedule:
@@ -418,7 +524,8 @@ def get_task_status() -> List[Dict]:
     """Get status of all scheduled tasks and their last run times."""
     tasks = [
         "rank_check", "keyword_research", "social_posting",
-        "email_digest", "wp_auto_publish"
+        "email_digest", "wp_auto_publish",
+        "auto_blog", "auto_review", "competitor_scan", "delhi_rank"
     ]
     
     statuses = []
