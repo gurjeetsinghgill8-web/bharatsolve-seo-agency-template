@@ -177,6 +177,8 @@ def _github_api(endpoint: str, method: str = "GET", data: dict = None) -> dict:
             resp = requests.put(url, headers=headers, json=data, timeout=30)
         elif method == "POST":
             resp = requests.post(url, headers=headers, json=data, timeout=30)
+        elif method == "DELETE":
+            resp = requests.delete(url, headers=headers, json=data, timeout=30)
         else:
             return {"error": f"Unsupported method: {method}"}
         
