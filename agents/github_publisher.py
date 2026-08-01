@@ -406,9 +406,10 @@ def publish_reviewed_draft_to_github(title: str, content: str, target_location: 
     except Exception as e:
         print(f"DB save note: {e}")
         
-    # Update master blog index catalog
+    # Update master blog index catalog & homepage index.html
     try:
         update_master_blog_index()
+        update_homepage_articles()
     except Exception as e:
         print(f"Master index update note: {e}")
         
@@ -418,6 +419,90 @@ def publish_reviewed_draft_to_github(title: str, content: str, target_location: 
         "slug": slug,
         "title": clean_title
     }
+
+
+def update_homepage_articles() -> dict:
+    """
+    Scans blogs/ folder on GitHub repository, fetches all published articles,
+    and updates index.html (Homepage) to prominently display all published articles
+    under the "Heart Health Articles & Patient Guides" section with direct clickable links!
+    Also scrubs non-compliant superlatives (like "Best heart doctor") for NMC ethics compliance.
+    """
+    repo = DEFAULT_CONFIG["github_repo"]
+    branch = DEFAULT_CONFIG["github_branch"]
+    
+    files_list = _github_api(f"/repos/{repo}/contents/blogs?ref={branch}")
+    if not isinstance(files_list, list):
+        return {"error": "Could not list blogs folder"}
+    
+    articles = []
+    for f in files_list:
+        fname = f.get("name", "")
+        if fname.endswith(".html") and fname != "index.html":
+            clean_title = fname.replace(".html", "").replace("-", " ").title()
+            url = f"{DEFAULT_CONFIG['website_url']}blogs/{fname}"
+            articles.append({"title": clean_title, "url": url, "filename": fname})
+    
+    if not articles:
+        return {"status": "no_articles_to_update"}
+        
+    cards_html = ""
+    for a in articles:
+        cards_html += f"""
+        <div style="background:#ffffff; border:1px solid #d4edff; border-radius:12px; padding:1.2rem; margin:1rem 0; box-shadow:0 2px 8px rgba(0,119,182,0.08);">
+            <span style="background:#e63946; color:white; font-size:0.75rem; font-weight:bold; padding:2px 8px; border-radius:6px;">🫀 Heart Health Article</span>
+            <h3 style="color:#0077b6; margin:0.5rem 0 0.4rem; font-size:1.15rem;">
+                <a href="{a['url']}" target="_blank" style="color:#0077b6; text-decoration:none;">{a['title']}</a>
+            </h3>
+            <p style="color:#555; font-size:0.9rem; margin:0.3rem 0;">Expert heart health guide by Dr. Gurjeet Singh Gill, Cardiac Physician (Mohiuddinpur, Meerut).</p>
+            <a href="{a['url']}" target="_blank" style="display:inline-block; background:#0077b6; color:white; padding:0.4rem 1rem; border-radius:8px; text-decoration:none; font-weight:bold; font-size:0.85rem; margin-top:0.5rem;">Read Article →</a>
+        </div>
+        """
+    
+    res = _github_api(f"/repos/{repo}/contents/index.html?ref={branch}")
+    if not isinstance(res, dict) or "content" not in res:
+        return {"error": "Could not fetch index.html from GitHub"}
+        
+    raw_html = base64.b64decode(res["content"]).decode("utf-8", errors="ignore")
+    
+    # Scrub non-compliant terms for NMC ethics compliance
+    raw_html = raw_html.replace("Best heart doctor in Meerut", "Experienced Cardiac Physician in Meerut")
+    raw_html = raw_html.replace("Best Heart Doctor in Meerut", "Experienced Cardiac Physician in Meerut")
+    raw_html = raw_html.replace("Best Cardiologist in Meerut", "Experienced Cardiac Physician in Meerut")
+    raw_html = raw_html.replace("best heart doctor", "experienced heart doctor")
+    raw_html = raw_html.replace("best cardiologist", "cardiac physician")
+    
+    articles_section_html = f"""
+<!-- START DYNAMIC AI BLOGS SECTION -->
+<div id="latest-published-blogs" style="background:#f4f9fc; padding:40px 20px; border-radius:16px; margin:30px 0; border:1px solid #d4edff;">
+    <div style="max-width:900px; margin:0 auto; text-align:center;">
+        <span style="background:#0077b6; color:white; padding:4px 12px; border-radius:12px; font-size:0.85rem; font-weight:bold;">📚 Patient Education Articles</span>
+        <h2 style="color:#1a1a2e; margin:10px 0 5px; font-size:1.6rem;">Heart Health Articles by Dr. Gurjeet Singh Gill</h2>
+        <p style="color:#666; font-size:0.95rem; margin-bottom:20px;">Simple, expert-written medical guides in Hindi & English for your heart health.</p>
+        <div style="text-align:left;">
+            {cards_html}
+        </div>
+        <div style="margin-top:25px;">
+            <a href="{DEFAULT_CONFIG['website_url']}blogs/index.html" target="_blank" style="background:#0077b6; color:white; padding:12px 24px; border-radius:10px; text-decoration:none; font-weight:bold; font-size:1rem; display:inline-block; box-shadow:0 4px 12px rgba(0,119,182,0.2);">
+                🌐 View All Articles in Master Catalog →
+            </a>
+        </div>
+    </div>
+</div>
+<!-- END DYNAMIC AI BLOGS SECTION -->
+    """
+    
+    if "<!-- START DYNAMIC AI BLOGS SECTION -->" in raw_html and "<!-- END DYNAMIC AI BLOGS SECTION -->" in raw_html:
+        pattern = r"<!-- START DYNAMIC AI BLOGS SECTION -->.*?<!-- END DYNAMIC AI BLOGS SECTION -->"
+        updated_html = re.sub(pattern, articles_section_html.strip(), raw_html, flags=re.DOTALL)
+    elif "</body>" in raw_html:
+        updated_html = raw_html.replace("</body>", f"{articles_section_html}\n</body>")
+    else:
+        updated_html = raw_html + articles_section_html
+        
+    commit_msg = f"📰 Update Homepage Articles Section ({len(articles)} articles live) [BHARATSOLVE AI]"
+    push_res = _push_file_to_repo("index.html", updated_html, commit_msg)
+    return push_res
 
 
 def publish_blog_to_github(topic: str, target_location: str = "Meerut", 
@@ -494,9 +579,10 @@ def publish_blog_to_github(topic: str, target_location: str = "Meerut",
                            f"Published: {blog_data['title'][:50]} → {result['published_url']}",
                            response_time_ms=0)
             
-            # Automatically update master blogs catalog page
+            # Automatically update master blogs catalog page & homepage index.html
             try:
                 update_master_blog_index()
+                update_homepage_articles()
             except Exception as catalog_err:
                 print(f"Catalog update warning: {catalog_err}")
     
