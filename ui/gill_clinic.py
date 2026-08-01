@@ -738,12 +738,12 @@ def render_blog_section(user_id, project_id=0):
                             use_container_width=True, type="primary"):
                     with st.spinner(f"Publishing {lang} blog to GitHub website..."):
                         try:
-                            from agents.github_publisher import publish_blog_to_github
-                            pub_result = publish_blog_to_github(
-                                topic=selected_topic,
+                            from agents.github_publisher import publish_reviewed_draft_to_github
+                            pub_result = publish_reviewed_draft_to_github(
+                                title=edited_title,
+                                content=edited_content,
                                 target_location=target_location,
-                                language=lang,
-                                auto_publish=True
+                                language=lang
                             )
                             if pub_result.get("status") == "published":
                                 pub_url = pub_result.get('published_url', '')

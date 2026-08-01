@@ -350,6 +350,70 @@ def build_blog_html(blog_data: dict, slug: str = None) -> str:
     return html
 
 
+def publish_reviewed_draft_to_github(title: str, content: str, target_location: str = "Meerut", language: str = "hi") -> dict:
+    """
+    Publish Doctor-Reviewed exact draft (with custom edits) to GitHub Pages.
+    Pushes the exact title & content reviewed by Dr. Gill.
+    """
+    log_agent_action("github_publisher", f"Publishing reviewed draft: {title[:50]} [{target_location}]")
+    
+    clean_title = title.strip()
+    clean_content = content.strip()
+    
+    slug = re.sub(r'[^a-z0-9]+', '-', clean_title.lower()).strip('-')[:60]
+    if not slug:
+        slug = f"blog-{int(time.time())}"
+        
+    blog_data = {
+        "title": clean_title,
+        "meta_title": f"{clean_title} — Dr. Gurjeet Singh Gill",
+        "meta_description": f"Read expert guide on {clean_title} by Dr. Gurjeet Singh Gill, Cardiac Physician in {target_location}.",
+        "keywords": f"{clean_title}, Cardiac Physician {target_location}",
+        "content": clean_content,
+        "faq": []
+    }
+    
+    blog_html = build_blog_html(blog_data, slug)
+    file_path = f"blogs/{slug}.html"
+    commit_msg = f"📝 Publish Reviewed Blog: {clean_title[:60]} [Dr. Gill Approved]"
+    
+    push_result = _push_file_to_repo(file_path, blog_html, commit_msg)
+    
+    if "error" in push_result:
+        return {"status": "error", "push_error": push_result["error"], "message": push_result["error"]}
+        
+    pub_url = f"{DEFAULT_CONFIG['website_url']}blogs/{slug}.html"
+    
+    # Save to local DB
+    try:
+        save_content(
+            project_id=1,
+            title=clean_title,
+            content=blog_html,
+            content_type="blog",
+            target_keyword=clean_title,
+            meta_title=blog_data["meta_title"],
+            meta_description=blog_data["meta_description"],
+            schema_json="{}",
+            published_url=pub_url
+        )
+    except Exception as e:
+        print(f"DB save note: {e}")
+        
+    # Update master blog index catalog
+    try:
+        update_master_blog_index()
+    except Exception as e:
+        print(f"Master index update note: {e}")
+        
+    return {
+        "status": "published",
+        "published_url": pub_url,
+        "slug": slug,
+        "title": clean_title
+    }
+
+
 def publish_blog_to_github(topic: str, target_location: str = "Meerut", 
                           language: str = "hinglish", auto_publish: bool = True) -> dict:
     """
