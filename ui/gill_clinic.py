@@ -927,11 +927,16 @@ def render_review_section():
         with col_rev_a:
             if st.button("🚀 Auto-Reply All Reviews Now (Zero Typing)", key="auto_reply_all_btn", type="primary", use_container_width=True):
                 with st.spinner("🤖 AI reading Google reviews and auto-generating responses..."):
-                    from agents.review_agent import process_auto_replies
-                    res = process_auto_replies()
-                    st.success("🎉 All unreplied Google reviews auto-processed & replied by AI!")
-                    st.balloons()
-                    st.rerun()
+                    from agents.review_agent import process_auto_replies, _get_gbp_token
+                    token = _get_gbp_token()
+                    if not token:
+                        st.warning("⚠️ Direct Google API Token Pending Connection in Secrets")
+                        st.info("💡 Hands-Free Direct Posting requires `GOOGLE_BUSINESS_TOKEN` in Streamlit Cloud Secrets. Meanwhile, use the Instant AI Reply tool below to generate & post your live reviews in 1 click!")
+                    else:
+                        res = process_auto_replies()
+                        st.success("🎉 All unreplied Google reviews auto-processed & replied by AI!")
+                        st.balloons()
+                        st.rerun()
         with col_rev_b:
             if st.button("🔄 Refresh Review Stream", key="refresh_reviews", use_container_width=True):
                 st.toast("📡 Syncing live Google Business Profile reviews...", icon="🔄")
