@@ -479,8 +479,28 @@ def render_clinic_header():
                     <p style="color: #ccc; font-size: 0.8rem; margin: 0;">{CLINIC['google_review_count']} Reviews</p>
                     <p style="color: #00b4d8; font-size: 0.8rem; margin: 0;">{CLINIC['years_experience']}+ Years</p>
                     <p style="color: #90e0ef; font-size: 0.8rem; margin: 0;">{CLINIC['patients_treated']} Patients</p>
-                </div>
-            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def render_live_links_directory():
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, #001f3f, #003366); border: 2px solid #00b4d8; border-radius: 14px; padding: 16px 20px; margin: 15px 0; color: white; box-shadow: 0 4px 15px rgba(0,180,216,0.2);">
+        <h4 style="color: #f1c40f; margin: 0 0 10px 0; font-size: 1.15rem;">🔗 Directory of Live Links & Web Systems</h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
+            <a href="https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/" target="_blank" style="background: rgba(255,255,255,0.1); color: #90e0ef; padding: 10px 14px; border-radius: 10px; text-decoration: none; font-weight: bold; border: 1px solid #00b4d8; display: block;">
+                🌐 Clinic Main Website →
+            </a>
+            <a href="https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/blogs/index.html" target="_blank" style="background: rgba(255,255,255,0.1); color: #f1c40f; padding: 10px 14px; border-radius: 10px; text-decoration: none; font-weight: bold; border: 1px solid #f1c40f; display: block;">
+                📚 Master Blog Catalog →
+            </a>
+            <a href="https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/llms.txt" target="_blank" style="background: rgba(255,255,255,0.1); color: #2ecc71; padding: 10px 14px; border-radius: 10px; text-decoration: none; font-weight: bold; border: 1px solid #2ecc71; display: block;">
+                🤖 AI Knowledge Blueprint (llms.txt) →
+            </a>
+            <a href="https://bharatsolve-seo-agency-template-d7c7gtbuaxpkxkya3dsmcz.streamlit.app/" target="_blank" style="background: rgba(255,255,255,0.1); color: #ff7675; padding: 10px 14px; border-radius: 10px; text-decoration: none; font-weight: bold; border: 1px solid #ff7675; display: block;">
+                🚀 Streamlit App Control Panel →
+            </a>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -1659,8 +1679,9 @@ def show_gill_clinic():
     if "gc_action" not in st.session_state:
         st.session_state["gc_action"] = None
     
-    # ── Clinic Header ──
+    # ── Clinic Header & Live Links Directory ──
     render_clinic_header()
+    render_live_links_directory()
     
     # ── Stats Row ──
     render_stats_row(user_id)
