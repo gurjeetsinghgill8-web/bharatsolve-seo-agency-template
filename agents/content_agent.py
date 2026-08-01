@@ -36,14 +36,14 @@ def generate_content(project_id: int, keyword: str, content_type: str = "blog", 
     """
     project = get_project(project_id)
     
-    # Map language string
-    lang_lower = str(language).lower()
-    if "english" in lang_lower or lang_lower == "en":
-        target_lang_instruction = "ENGLISH ONLY (Professional medical English)."
-    elif "hindi" in lang_lower and "hinglish" not in lang_lower:
-        target_lang_instruction = "HINDI ONLY (शुद्ध एवं स्पष्ट हिंदी भाषा)."
+    # Map language string (handles both Devanagari "हिंदी" and English "Hindi")
+    lang_str = str(language).lower().strip()
+    if "english" in lang_str or lang_str == "en":
+        target_lang_instruction = "PURE ENGLISH (Professional medical English text)."
+    elif "हिंदी" in lang_str or "hindi" in lang_str or lang_str == "hi":
+        target_lang_instruction = "PURE HINDI IN DEVANAGARI SCRIPT (शुद्ध देवनागरी हिंदी लिपि में लिखें - जैसे: 'सीने में दर्द के लक्षण', 'हृदय स्वास्थ्य' - NOT Roman script). DO NOT USE CASUAL WORDS LIKE 'Bhai' OR 'Yaar'."
     else:
-        target_lang_instruction = "HINGLISH (Easy-to-understand Hindi with medical terms in English)."
+        target_lang_instruction = "HINGLISH (Easy-to-understand Hindi using Roman English script)."
     
     prompt = f"""
 Project: {project['name'] if project else 'General'}
@@ -52,7 +52,7 @@ TARGET LANGUAGE: {target_lang_instruction}
 Content Type: {content_type}
 Primary Keyword: {keyword}
 
-CRITICAL: Write the entire title and article content strictly in the requested TARGET LANGUAGE ({target_lang_instruction}).
+CRITICAL MANDATE FOR HINDI: If target language is HINDI, write the title, headings, and entire article strictly in DEVANAGARI HINDI SCRIPT (देवनागरी लिपि में लिखें). Do NOT write in Roman script or Hinglish.
 
 Generate complete SEO content including:
 1. Catchy title (with keyword in requested language)

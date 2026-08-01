@@ -243,9 +243,16 @@ Write a complete blog article (1000 words). Include:
 RETURN ONLY VALID JSON. No markdown, no explanation:
 {{"title":"...","meta_title":"...","meta_description":"...","keywords":"...","content":"<h2>Title</h2><p>Full article HTML here...</p><h2>FAQ</h2>...","faq":[{{"question":"...","answer":"..."}}]}}"""
 
-    lang_instruction = "English only" if "english" in str(language).lower() else ("Hindi only" if "hindi" in str(language).lower() and "hinglish" not in str(language).lower() else "Hinglish (Hindi+English mix)")
+    lang_str = str(language).lower().strip()
+    if "english" in lang_str or lang_str == "en":
+        lang_instruction = "PURE ENGLISH ONLY (Professional medical English text)"
+    elif "हिंदी" in lang_str or "hindi" in lang_str or lang_str == "hi":
+        lang_instruction = "PURE DEVANAGARI HINDI SCRIPT ONLY (शुद्ध देवनागरी लिपि में लिखें - जैसे: 'सीने में दर्द के लक्षण', 'हृदय स्वास्थ्य' - NOT Roman Hinglish). DO NOT USE CASUAL WORDS LIKE 'Bhai' OR 'Yaar'."
+    else:
+        lang_instruction = "HINGLISH (Natural Hindi using Roman English script)"
+        
     messages = [
-        {"role": "system", "content": f"You are a medical blog writer. Write strictly in {lang_instruction}. Return ONLY valid JSON. The 'content' field must contain complete HTML article body."},
+        {"role": "system", "content": f"You are a medical content writer for Dr. Gurjeet Singh Gill, Cardiac Physician. Write strictly in {lang_instruction}. Return ONLY valid JSON. The 'content' field must contain complete HTML article body."},
         {"role": "user", "content": prompt}
     ]
     
