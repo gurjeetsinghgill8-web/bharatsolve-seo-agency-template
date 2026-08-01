@@ -153,6 +153,22 @@ def get_rankings_history(keyword_id, days=30):
 
 def save_content(project_id, title, content, content_type="blog", target_keyword="", meta_title="", meta_description="", schema_json="", published_url=""):
     conn = get_connection()
+    # Check if project_id exists, else fallback to first available project
+    p_check = conn.execute("SELECT id FROM projects WHERE id = ?", (project_id,)).fetchone()
+    if not p_check:
+        first_p = conn.execute("SELECT id FROM projects LIMIT 1").fetchone()
+        if first_p:
+            project_id = first_p['id']
+        else:
+            # Create emergency project 1
+            u = conn.execute("SELECT id FROM users LIMIT 1").fetchone()
+            uid = u['id'] if u else 1
+            c = conn.execute("SELECT id FROM clients LIMIT 1").fetchone()
+            cid = c['id'] if c else conn.execute("INSERT INTO clients (user_id, name) VALUES (?, ?)", (uid, "Gill Heart Clinic")).lastrowid
+            conn.execute("INSERT INTO projects (client_id, name) VALUES (?, ?)", (cid, "Gill Clinic SEO"))
+            conn.commit()
+            project_id = conn.execute("SELECT id FROM projects LIMIT 1").fetchone()['id']
+
     conn.execute("""
         INSERT INTO content_pieces (project_id, title, content, content_type, target_keyword, meta_title, meta_description, schema_json, word_count, published_url, status)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)

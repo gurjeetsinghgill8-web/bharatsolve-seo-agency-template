@@ -326,13 +326,28 @@ def init_db():
             )
             print("Default user 'drgill' created (password: gill123)")
 
-        user_admin = cursor.execute("SELECT id FROM users WHERE username = ?", ("admin",)).fetchone()
-        if not user_admin:
-            cursor.execute(
-                "INSERT INTO users (username, password_hash, full_name, email, is_admin, subscription_tier) VALUES (?, ?, ?, ?, ?, ?)",
-                ("admin", _h("gill123"), "Dr. Gill Admin", "gurjeetsinghgill8@gmail.com", 1, "agency")
-            )
-            print("Default user 'admin' created (password: gill123)")
+        # Check if default Gill Clinic client exists
+        user_id_ref = cursor.execute("SELECT id FROM users WHERE username = ?", ("GG",)).fetchone()
+        if user_id_ref:
+            uid = user_id_ref[0]
+            client_check = cursor.execute("SELECT id FROM clients WHERE user_id = ?", (uid,)).fetchone()
+            if not client_check:
+                cursor.execute(
+                    "INSERT INTO clients (user_id, name, website, email, phone, business_type, location) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (uid, "Gill Heart Clinic", "https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/", "gurjeetsinghgill8@gmail.com", "+91-9258879884", "Cardiology Clinic", "Mohiuddinpur, Meerut")
+                )
+                print("Default client created")
+                client_id = cursor.lastrowid
+            else:
+                client_id = client_check[0]
+
+            proj_check = cursor.execute("SELECT id FROM projects WHERE client_id = ?", (client_id,)).fetchone()
+            if not proj_check:
+                cursor.execute(
+                    "INSERT INTO projects (client_id, name, target_location, target_language) VALUES (?, ?, ?, ?)",
+                    (client_id, "Gill Clinic SEO", "Meerut, Delhi NCR", "hi")
+                )
+                print("Default project created")
         
         conn.commit()
     except Exception as e:
