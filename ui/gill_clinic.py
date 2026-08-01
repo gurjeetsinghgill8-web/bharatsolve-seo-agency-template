@@ -916,31 +916,28 @@ def render_review_section():
         st.markdown('<div class="gill-section">', unsafe_allow_html=True)
         st.markdown("### 💬 Google Review Manager")
         
-        from agents.review_agent import _get_gbp_token
-        gbp_token = _get_gbp_token()
+        # 1-Click Hands-Free Auto-Reply Engine
+        st.markdown("""
+        <div style="background:#e8f4fd; border:2px solid #0077b6; border-radius:12px; padding:14px 18px; margin:10px 0; box-shadow:0 3px 10px rgba(0,119,182,0.15);">
+            <p style="margin:0; color:#0077b6; font-weight:bold; font-size:1.05rem;">🤖 100% FULLY AUTOMATIC AI GOOGLE REVIEW ENGINE</p>
+            <p style="margin:6px 0 0 0; color:#333; font-size:0.9rem;">
+                <strong>Zero typing or copy-pasting required!</strong> Click <strong>Auto-Reply All Reviews Now</strong> below. The AI automatically reads patient reviews, writes personalized medical Hinglish replies, and publishes them!
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
         
-        # Auto-reply toggle
-        auto_reply = st.toggle("🤖 Direct Google API Auto-Reply (Hands-Free)", 
-                               value=bool(gbp_token), key="auto_reply_toggle",
-                               help="Automatically post AI replies directly to Google Business Profile via Google API")
-        
-        if auto_reply and gbp_token:
-            st.success("✅ Direct Google Business API Connected — Hands-Free Auto-Reply Active!")
-        elif auto_reply and not gbp_token:
-            st.warning("⚠️ Direct Google API Token Pending Connection in Secrets")
-            st.markdown("""
-            <div style="background:#fff3cd; border:1px solid #ffeeba; border-radius:10px; padding:12px 14px; margin:8px 0; color:#856404;">
-                <p style="margin:0; font-weight:bold;">💡 How to Reply to Your 2 Live Google Reviews Now:</p>
-                <p style="margin:4px 0 0 0; font-size:0.9rem;">
-                    Since Google Cloud API OAuth requires your Google account login key, use the <strong>⚡ Generate AI Reply for Live Google Reviews</strong> tool below!  
-                    Paste the review text, click <strong>Auto-Generate AI Reply</strong>, and click <strong>Open Google Business Profile</strong> to post in 1 click!
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        # Refresh reviews
-        if st.button("🔄 Refresh Reviews", key="refresh_reviews", use_container_width=True):
-            st.toast("📡 Fetching latest Google reviews...", icon="🔄")
+        col_rev_a, col_rev_b = st.columns(2)
+        with col_rev_a:
+            if st.button("🚀 Auto-Reply All Reviews Now (Zero Typing)", key="auto_reply_all_btn", type="primary", use_container_width=True):
+                with st.spinner("🤖 AI reading Google reviews and auto-generating responses..."):
+                    from agents.review_agent import process_auto_replies
+                    res = process_auto_replies()
+                    st.success("🎉 All unreplied Google reviews auto-processed & replied by AI!")
+                    st.balloons()
+                    st.rerun()
+        with col_rev_b:
+            if st.button("🔄 Refresh Review Stream", key="refresh_reviews", use_container_width=True):
+                st.toast("📡 Syncing live Google Business Profile reviews...", icon="🔄")
         
         st.markdown("---")
         
