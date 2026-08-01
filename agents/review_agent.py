@@ -55,7 +55,7 @@ IMPORTANT RULES:
 # GBP REVIEW API HELPERS
 # ═══════════════════════════════════════════════════════════════════════
 
-def _get_gbp_token() -> str:
+def get_gbp_token() -> str:
     """Get Google Business Profile token from multiple sources."""
     token = os.getenv("GOOGLE_BUSINESS_TOKEN", "")
     if not token:
@@ -65,6 +65,8 @@ def _get_gbp_token() -> str:
         except:
             pass
     return token
+
+_get_gbp_token = get_gbp_token
 
 
 def _get_gbp_account() -> str:
