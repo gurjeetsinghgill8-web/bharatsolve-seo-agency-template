@@ -11,46 +11,64 @@ from db.operations import save_content, get_keywords, log_agent_action, get_proj
 CONTENT_SYSTEM_PROMPT = """You are writing for Dr. Gurjeet Singh Gill — Cardiac Physician, Non-Invasive Cardiology.
 Gill Heart Clinic, Mohiuddinpur, Meerut.
 
+DR. GILL'S 5 CORE PATIENT ATTRACTION PILLARS (Highlight naturally in every article):
+1. AFFORDABLE MEDICINES: Patient-first advice recommending quality generic medicines from PM Jan Aushadhi Kendras (Pradhan Mantri Bhartiya Janaushadhi Kendras) to keep medicine costs ultra-low.
+2. LOW OPD FEES: Highly affordable consultation fees compared to expensive corporate hospitals.
+3. PERSONALIZED LIFESTYLE & DIET COUNSELING: Detailed discussions on Indian heart-healthy diet, safe exercise, and lifestyle planning.
+4. MINIMAL MEDICINES PRESCRIBED: Prescribes only essential, minimal necessary medications (no over-prescription).
+5. CLINICAL JUDGEMENT FIRST: Expert clinical assessment prioritized, avoiding unnecessary expensive hospital tests.
+
 CRITICAL RULES:
 1. Dr. Gill is a CARDIAC PHYSICIAN — NEVER call him "cardiologist" or "renowned cardiologist"
 2. NEVER mention test prices (₹), costs, or fees for any procedure
 3. NEVER claim ECG/2D Echo/TMT is done AT the clinic. Write: "consult a cardiac center for these tests"
-4. Services: Consultation, Clinical Assessment, Preventive Cardiology, Heart Health Counseling
+4. Services: Consultation, Clinical Assessment, Preventive Cardiology, Heart Health Counseling, Lifestyle Modification
 5. Professional tone. Cite AHA/ACC/ESC guidelines.
-6. Structure: Title > Key Facts > Symptoms > Causes > When to See Doctor > Prevention > FAQ > References
+6. Structure: Title > Key Facts > Symptoms > Causes > When to See Doctor > Low-Cost Prevention & Diet Tips > FAQ > References
 7. Include: "This article has been reviewed by Dr. Gurjeet Singh Gill, Cardiac Physician"
-8. NEVER use casual Hinglish. Professional medical Hindi only."""
+8. RESPECT USER LANGUAGE SELECTION STRICTLY (Hindi, English, or Hinglish)."""
 
 
-def generate_content(project_id: int, keyword: str, content_type: str = "blog") -> dict:
+def generate_content(project_id: int, keyword: str, content_type: str = "blog", language: str = "hi") -> dict:
     """
     Generate SEO-optimized content for a keyword.
     Returns dict with title, content, meta_title, meta_description, schema.
     """
     project = get_project(project_id)
     
+    # Map language string
+    lang_lower = str(language).lower()
+    if "english" in lang_lower or lang_lower == "en":
+        target_lang_instruction = "ENGLISH ONLY (Professional medical English)."
+    elif "hindi" in lang_lower and "hinglish" not in lang_lower:
+        target_lang_instruction = "HINDI ONLY (शुद्ध एवं स्पष्ट हिंदी भाषा)."
+    else:
+        target_lang_instruction = "HINGLISH (Easy-to-understand Hindi with medical terms in English)."
+    
     prompt = f"""
 Project: {project['name'] if project else 'General'}
 Target Location: {project.get('target_location', '') if project else ''}
-Target Language: {project.get('target_language', 'hi') if project else ''}
+TARGET LANGUAGE: {target_lang_instruction}
 Content Type: {content_type}
 Primary Keyword: {keyword}
 
+CRITICAL: Write the entire title and article content strictly in the requested TARGET LANGUAGE ({target_lang_instruction}).
+
 Generate complete SEO content including:
-1. Catchy title (with keyword)
+1. Catchy title (with keyword in requested language)
 2. Meta title (55-60 chars)
 3. Meta description (150-160 chars)
 4. Full article with H1, H2, H3 structure
 5. FAQ schema JSON-LD
 6. Word count: 800-1500 words
 
-Return JSON:
+Return JSON format:
 {{
   "title": "...",
   "meta_title": "...",
   "meta_description": "...",
-  "content": "Full article with HTML headings...",
-  "schema_json": {{"@context": "...", ...}},
+  "content": "<h2>Title</h2><p>Full article in requested language with HTML tags...</p>",
+  "schema_json": {{"@context": "https://schema.org", "@type": "FAQPage"}},
   "word_count": number
 }}
 """
@@ -68,24 +86,6 @@ Return JSON:
     # Parse JSON from response
     result = parse_content_response(response, keyword)
     
-    # CONTENT FILTER: Reject unprofessional language
-    banned_words = [
-        "bhai log", "bhaiyo", "yaar", "aam baat", "prasiddh", "mashoor", 
-        "famous doctor", "#1", "best doctor", "top cardiologist", "miracle",
-        "guaranteed cure", "100% guaranteed", "magic", "gandagi",
-        "cardiologist", "renowned cardiologist", "price", "₹", "cost", "fee",
-        "ECG at clinic", "2D Echo at clinic", "TMT at clinic",
-    ]
-    content_lower = result.get("content", "").lower()
-    for word in banned_words:
-        if word in content_lower:
-            # Regenerate with stricter prompt
-            log_agent_action("content", f"Banned word '{word}' detected — regenerating")
-            messages.append({"role": "user", "content": "REGENERATE with PROFESSIONAL MEDICAL TONE. No casual language. No self-promotion. Write as a qualified cardiologist."})
-            response = call_llm(messages, provider="groq", model="llama-3.1-8b-instant")
-            result = parse_content_response(response, keyword)
-            break
-    
     # Save to database
     cid = save_content(
         project_id=project_id,
@@ -99,7 +99,7 @@ Return JSON:
     )
     result["id"] = cid
     
-    log_agent_action("content", f"Generated {content_type}: {result.get('title', '')[:50]}",
+    log_agent_action("content", f"Generated {content_type} [{language}]: {result.get('title', '')[:50]}",
                      response_time_ms=elapsed)
     
     return result
@@ -118,32 +118,32 @@ def parse_content_response(response: str, fallback_keyword: str) -> dict:
         # Find JSON block
         json_match = re.search(r'\{.*\}', response, re.DOTALL)
         if json_match:
-            data = json.loads(json_match.group())
-            title = data.get("title", fallback_keyword)
-            meta_title = data.get("meta_title", fallback_keyword[:60])
-            meta_desc = data.get("meta_description", f"Learn about {fallback_keyword}.")
-            content_text = data.get("content", response)
-            schema = data.get("schema_json", {})
-            
-            # Clean content: remove JSON code blocks and markdown artifacts
-            content_text = re.sub(r'```(?:json|html)?\s*', '', content_text)
-            content_text = re.sub(r'```\s*$', '', content_text)
-            content_text = re.sub(r'\*\*JSON Response\*\*.*?(?=<h|\Z)', '', content_text, flags=re.DOTALL)
-            content_text = re.sub(r'\*\*स्कीमा.*?\*\*.*?(?=<h|\Z)', '', content_text, flags=re.DOTALL)
+            try:
+                data = json.loads(json_match.group())
+                title = data.get("title", fallback_keyword)
+                meta_title = data.get("meta_title", fallback_keyword[:60])
+                meta_desc = data.get("meta_description", f"Learn about {fallback_keyword}.")
+                content_text = data.get("content", response)
+                schema = data.get("schema_json", {})
+            except:
+                pass
     except:
         pass
     
-    # If content is still the full raw response, try to extract just the HTML part
-    if len(content_text) > 1000 and ('{' in content_text or 'json' in content_text.lower()[:200]):
-        # Try to extract H2/H3 content
-        html_match = re.search(r'<h[123][^>]*>.*?</h[123]>', content_text, re.DOTALL | re.IGNORECASE)
-        if html_match:
-            start = content_text.find(html_match.group())
-            content_text = content_text[start:] if start >= 0 else content_text
+    # Sanitize content_text to strip all JSON wrappers or code fences
+    content_text = re.sub(r'```(?:json|html)?\s*', '', content_text)
+    content_text = re.sub(r'```\s*$', '', content_text)
+    content_text = re.sub(r'^\s*\{\s*"title".*?"content":\s*"', '', content_text, flags=re.DOTALL)
+    content_text = content_text.replace('\\n', '\n').replace('\\"', '"').replace('\\/', '/')
+    content_text = re.sub(r'\s*"\s*,\s*"schema_json".*$', '', content_text, flags=re.DOTALL)
     
-    # Ensure content starts with HTML
-    if not content_text.strip().startswith('<'):
-        content_text = f"<h2>{fallback_keyword}</h2>\n<p>{content_text[:2000]}</p>"
+    # If content is empty or short, fallback
+    if len(content_text.strip()) < 50:
+        content_text = f"<h2>{fallback_keyword}</h2>\n<p>{response[:2000]}</p>"
+    
+    # Ensure content starts with clean HTML heading if missing
+    if not re.search(r'^\s*<h[123]', content_text, re.IGNORECASE):
+        content_text = f"<h2>{title}</h2>\n" + content_text
     
     return {
         "title": title,

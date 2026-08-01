@@ -117,12 +117,39 @@ def login_page():
     with tab1:
         with st.container():
             st.markdown("### 👋 Welcome Back!")
-            username = st.text_input("Username", key="login_user", placeholder="Enter your username")
-            password = st.text_input("Password", type="password", key="login_pass", placeholder="Enter your password")
+            
+            # Quick 1-Click Demo Login Button for Dr. Gill
+            st.markdown("""
+            <div style="background: rgba(0,180,216,0.1); border: 1px solid #00b4d8; padding: 12px; border-radius: 12px; margin-bottom: 15px; text-align: center;">
+                <p style="margin: 0 0 8px 0; color: #0077b6; font-weight: bold; font-size: 0.95rem;">🏥 Dr. Gill Heart Clinic Command Center</p>
+                <p style="margin: 0; color: #555; font-size: 0.82rem;">Click below for instant 1-click login without entering credentials:</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if st.button("⚡ 1-CLICK QUICK LOGIN (Dr. Gill Admin)", key="quick_login_btn", type="primary", use_container_width=True):
+                user = get_user("GG") or get_user("drgill") or get_user("admin")
+                if not user:
+                    # Fallback auto-create user
+                    create_user("GG", hash_password("12"), "Dr. Gurjeet Singh Gill", "gurjeetsinghgill8@gmail.com")
+                    user = get_user("GG")
+                
+                if user:
+                    st.session_state["authenticated"] = True
+                    st.session_state["username"] = user['username']
+                    st.session_state["user_id"] = user['id']
+                    st.session_state["user_data"] = user
+                    st.session_state["page"] = "gill_clinic"
+                    st.success("✅ Logged in as Dr. Gurjeet Singh Gill (GG)!")
+                    st.rerun()
+
+            st.markdown("<p style='text-align: center; color: #888; font-size: 0.85rem; margin: 15px 0 10px 0;'>— OR LOGIN WITH USERNAME & PASSWORD —</p>", unsafe_allow_html=True)
+
+            username = st.text_input("Username", key="login_user", placeholder="Enter username (Permanent: GG)")
+            password = st.text_input("Password", type="password", key="login_pass", placeholder="Enter password (Permanent: 12)")
             
             col1, col2 = st.columns([3, 1])
             with col1:
-                if st.button("🚀 Login", use_container_width=True):
+                if st.button("🚀 Standard Login", use_container_width=True):
                     if username and password:
                         user = get_user(username)
                         if user and user['password_hash'] == hash_password(password):
@@ -132,7 +159,7 @@ def login_page():
                             st.session_state["user_data"] = user
                             st.rerun()
                         else:
-                            st.error("❌ Invalid username or password!")
+                            st.error("❌ Invalid username or password! Try 'GG' / '12'")
                     else:
                         st.warning("⚠️ Please fill in all fields")
             with col2:

@@ -14,6 +14,7 @@ from db.operations import (
     create_client, create_project
 )
 from agents.content_agent import generate_content
+from utils.pdf_generator import clean_text_for_pdf as clean_text_for_pdf_snippet
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -628,12 +629,13 @@ def render_blog_section(user_id, project_id=0):
                 st.rerun()
         
         if gen_clicked:
-            with st.spinner(f"Generating draft for '{selected_topic}'..."):
+            with st.spinner(f"Generating {lang} draft for '{selected_topic}'..."):
                 try:
                     content_result = generate_content(
                         project_id=project_id,
                         keyword=selected_topic,
-                        content_type="blog"
+                        content_type="blog",
+                        language=lang
                     )
                     st.session_state["gc_last_blog"] = content_result
                     st.session_state["gc_blog_title"] = content_result.get("title", selected_topic)
@@ -655,7 +657,7 @@ def render_blog_section(user_id, project_id=0):
             edited_content = st.text_area(
                 "Content (Edit if needed)", 
                 value=blog_content if blog_content else "",
-                height=400,
+                height=350,
                 key="review_content"
             )
             st.session_state["gc_blog_title"] = edited_title
@@ -663,49 +665,95 @@ def render_blog_section(user_id, project_id=0):
             
             # Full-width reading preview
             st.markdown("---")
-            st.markdown("### 📖 Reading Preview")
+            st.markdown("### 📖 Clean Reading Preview")
             display_content = edited_content or ""
             import re as _re
-            display_content = _re.sub(r'\*\*JSON.*?```', '', display_content, flags=_re.DOTALL)
-            display_content = _re.sub(r'```json\s*\{.*?\}\s*```', '', display_content, flags=_re.DOTALL)
+            display_content = _re.sub(r'```(?:json|html)?\s*', '', display_content)
+            display_content = _re.sub(r'```\s*$', '', display_content)
             display_content = display_content.replace('\\n', '\n').replace('\\"', '"')
             
             if display_content.strip():
                 st.markdown(f"""
-                <div style="max-width:100%; padding:20px; background:#fff; border-radius:12px; 
-                            border:1px solid #ddd; font-size:16px; line-height:1.8;">
-                    {display_content[:12000]}
+                <div style="max-width:100%; padding:24px; background:#ffffff; border-radius:12px; 
+                            border:1px solid #90e0ef; font-size:18px; line-height:1.8; color:#222; box-shadow:0 4px 15px rgba(0,119,182,0.06);">
+                    <h2 style="color:#0077b6; margin-top:0;">{edited_title}</h2>
+                    {display_content[:15000]}
                 </div>
                 """, unsafe_allow_html=True)
             
-            st.caption(f"📊 {len(edited_content.split())} words")
+            st.caption(f"📊 Word count: {len(edited_content.split())} words | Target Language: {lang}")
+            
+            # 📄 PDF DOWNLOAD & 📱 WHATSAPP / TELEGRAM SHARE BUTTONS
+            col_share1, col_share2, col_share3 = st.columns([2, 1.5, 1.5])
+            with col_share1:
+                try:
+                    from utils.pdf_generator import create_blog_pdf
+                    pdf_file_path = create_blog_pdf(edited_title, edited_content, CLINIC['doctor'])
+                    with open(pdf_file_path, "rb") as pf:
+                        st.download_button(
+                            label="📄 Download PDF Document",
+                            data=pf.read(),
+                            file_name=f"{re.sub(r'[^a-zA-Z0-9_]', '_', edited_title[:25])}.pdf",
+                            mime="application/pdf",
+                            use_container_width=True,
+                            key="dl_pdf_draft"
+                        )
+                except Exception as pdf_err:
+                    st.warning(f"⚠️ PDF note: {pdf_err}")
+            
+            with col_share2:
+                from utils.share_links import get_whatsapp_share_url
+                wa_text = f"🏥 *{edited_title}*\n\n{clean_text_for_pdf_snippet(edited_content[:500])}...\n\nReviewed by: {CLINIC['doctor']} ({CLINIC['phone']})"
+                wa_url = get_whatsapp_share_url(wa_text)
+                st.markdown(f'''
+                <a href="{wa_url}" target="_blank" style="text-decoration:none;">
+                    <div style="background:#25D366; color:white; font-weight:bold; text-align:center; 
+                                padding:0.5rem 1rem; border-radius:10px; font-size:0.9rem;">
+                        📱 Send to WhatsApp
+                    </div>
+                </a>
+                ''', unsafe_allow_html=True)
+            
+            with col_share3:
+                from utils.share_links import get_telegram_share_url
+                tg_url = get_telegram_share_url(wa_text)
+                st.markdown(f'''
+                <a href="{tg_url}" target="_blank" style="text-decoration:none;">
+                    <div style="background:#0088cc; color:white; font-weight:bold; text-align:center; 
+                                padding:0.5rem 1rem; border-radius:10px; font-size:0.9rem;">
+                        ✈️ Send to Telegram
+                    </div>
+                </a>
+                ''', unsafe_allow_html=True)
             
             # APPROVE & PUBLISH
             st.markdown("---")
-            st.markdown("### ✅ Step 3: Doctor's Approval")
+            st.markdown("### ✅ Step 3: Doctor's Approval & Push to Website")
             st.warning("⚠️ Dr. Gill: Verify ALL medical facts before publishing.")
             
             col_a, col_b = st.columns(2)
             with col_a:
-                if st.button("✅ APPROVE — Publish to Website", key="approve_publish", 
+                if st.button("🚀 APPROVE & PUSH TO WEBSITE (GitHub)", key="approve_publish", 
                             use_container_width=True, type="primary"):
-                    with st.spinner("Publishing..."):
+                    with st.spinner(f"Publishing {lang} blog to GitHub website..."):
                         try:
                             from agents.github_publisher import publish_blog_to_github
                             pub_result = publish_blog_to_github(
                                 topic=selected_topic,
                                 target_location=target_location,
-                                language="english",
+                                language=lang,
                                 auto_publish=True
                             )
                             if pub_result.get("status") == "published":
                                 pub_url = pub_result.get('published_url', '')
                                 st.session_state["gc_review_mode"] = False
-                                st.success("🎉 PUBLISHED!")
-                                st.markdown(f"### 🔗 [{pub_url}]({pub_url})")
+                                st.success("🎉 PUBLISHED SUCCESSFULLY TO GILL HEART CLINIC WEBSITE!")
+                                st.markdown(f"### 🔗 Live Blog Link: [{pub_url}]({pub_url})")
                                 st.balloons()
                             else:
-                                st.error(f"Publish failed: {pub_result.get('push_error','')[:200]}")
+                                err = pub_result.get('message', pub_result.get('push_error', 'Token error'))
+                                st.error(f"❌ Push failed: {err}")
+                                st.info("💡 Set your `GITHUB_TOKEN` environment variable or Streamlit Secret to enable 1-click publishing.")
                         except Exception as e:
                             st.error(f"Error: {str(e)[:300]}")
             

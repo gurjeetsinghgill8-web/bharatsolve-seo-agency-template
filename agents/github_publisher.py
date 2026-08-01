@@ -242,8 +242,9 @@ Write a complete blog article (1000 words). Include:
 RETURN ONLY VALID JSON. No markdown, no explanation:
 {{"title":"...","meta_title":"...","meta_description":"...","keywords":"...","content":"<h2>Title</h2><p>Full article HTML here...</p><h2>FAQ</h2>...","faq":[{{"question":"...","answer":"..."}}]}}"""
 
+    lang_instruction = "English only" if "english" in str(language).lower() else ("Hindi only" if "hindi" in str(language).lower() and "hinglish" not in str(language).lower() else "Hinglish (Hindi+English mix)")
     messages = [
-        {"role": "system", "content": "You are a medical blog writer. Write in Hinglish (Hindi+English mix). Return ONLY valid JSON. The 'content' field must contain complete HTML article body."},
+        {"role": "system", "content": f"You are a medical blog writer. Write strictly in {lang_instruction}. Return ONLY valid JSON. The 'content' field must contain complete HTML article body."},
         {"role": "user", "content": prompt}
     ]
     

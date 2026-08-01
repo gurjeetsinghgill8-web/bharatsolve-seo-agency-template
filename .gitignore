@@ -28,3 +28,7 @@ Thumbs.db
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Temp files
+*.pdf
+nul

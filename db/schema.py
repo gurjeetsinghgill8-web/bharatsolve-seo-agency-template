@@ -303,9 +303,43 @@ def init_db():
         )
     """)
 
-    conn.commit()
+    # ── Seed Default Admin Users ──
+    try:
+        import hashlib
+        def _h(p): return hashlib.sha256(p.encode()).hexdigest()
+        
+        # Check if GG user exists
+        user_gg = cursor.execute("SELECT id FROM users WHERE username = ?", ("GG",)).fetchone()
+        if not user_gg:
+            cursor.execute(
+                "INSERT INTO users (username, password_hash, full_name, email, is_admin, subscription_tier) VALUES (?, ?, ?, ?, ?, ?)",
+                ("GG", _h("12"), "Dr. Gurjeet Singh Gill", "gurjeetsinghgill8@gmail.com", 1, "agency")
+            )
+            print("Permanent user 'GG' created (password: 12)")
+
+        # Check if drgill user exists
+        user_check = cursor.execute("SELECT id FROM users WHERE username = ?", ("drgill",)).fetchone()
+        if not user_check:
+            cursor.execute(
+                "INSERT INTO users (username, password_hash, full_name, email, is_admin, subscription_tier) VALUES (?, ?, ?, ?, ?, ?)",
+                ("drgill", _h("gill123"), "Dr. Gurjeet Singh Gill", "gurjeetsinghgill8@gmail.com", 1, "agency")
+            )
+            print("Default user 'drgill' created (password: gill123)")
+
+        user_admin = cursor.execute("SELECT id FROM users WHERE username = ?", ("admin",)).fetchone()
+        if not user_admin:
+            cursor.execute(
+                "INSERT INTO users (username, password_hash, full_name, email, is_admin, subscription_tier) VALUES (?, ?, ?, ?, ?, ?)",
+                ("admin", _h("gill123"), "Dr. Gill Admin", "gurjeetsinghgill8@gmail.com", 1, "agency")
+            )
+            print("Default user 'admin' created (password: gill123)")
+        
+        conn.commit()
+    except Exception as e:
+        print(f"User seeding warning: {e}")
+
     conn.close()
-    print(f"✅ Database initialized at {DB_PATH}")
+    print(f"Database initialized at {DB_PATH}")
 
 if __name__ == "__main__":
     init_db()
