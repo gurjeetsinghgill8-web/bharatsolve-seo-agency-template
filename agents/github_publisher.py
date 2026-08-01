@@ -127,15 +127,26 @@ BLOG_HTML_TEMPLATE = """<!DOCTYPE html>
 # ═══════════════════════════════════════════════════════════════════════
 
 def _get_github_token() -> str:
-    """Get GitHub token from environment or Streamlit secrets."""
+    """Get GitHub token from Streamlit secrets or environment, ignoring dummy tokens."""
+    try:
+        import streamlit as st
+        token = st.secrets.get("GITHUB_TOKEN", "")
+        if token and "dummy" not in token.lower() and token != "YOUR_GITHUB_TOKEN":
+            return token
+    except:
+        pass
+
     token = os.getenv("GITHUB_TOKEN", "")
-    if not token:
-        try:
-            import streamlit as st
-            token = st.secrets.get("GITHUB_TOKEN", "")
-        except:
-            pass
-    return token
+    if token and "dummy" not in token.lower() and token != "YOUR_GITHUB_TOKEN":
+        return token
+
+    try:
+        import streamlit as st
+        return st.secrets.get("GITHUB_TOKEN", "")
+    except:
+        pass
+
+    return ""
 
 
 def _github_api(endpoint: str, method: str = "GET", data: dict = None) -> dict:
