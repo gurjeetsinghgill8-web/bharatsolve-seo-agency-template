@@ -1458,22 +1458,46 @@ def render_local_search_engine(user_id=None, project_id=1):
                     staged_item["title"] = edited_t
                     staged_item["content"] = edited_c
                     
+                    # Standalone HTML Web Preview Generator
+                    from utils.html_preview_generator import create_standalone_html_preview
+                    preview_file_path = create_standalone_html_preview(edited_t, edited_c, CLINIC['doctor'])
+                    
+                    st.markdown(f"""
+                    <div style="background:#f0f9ff; border:1px solid #00b4d8; border-radius:10px; padding:12px; margin:10px 0; display:flex; justify-space-between; align-items:center;">
+                        <span style="font-weight:bold; color:#0077b6;">🌐 Professional Web Reading Preview Ready!</span>
+                        <small style="color:#666;">(Clean full-screen reading on mobile/laptop)</small>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
                     col_act1, col_act2, col_act3, col_act4 = st.columns(4)
                     with col_act1:
-                        if st.button(f"📄 Download PDF", key=f"pdf_item_{i}"):
-                            from utils.pdf_generator import create_blog_pdf
-                            pdf_path = create_blog_pdf(edited_t, edited_c, CLINIC['doctor'])
-                            with open(pdf_path, "rb") as f:
-                                st.download_button(f"💾 Save PDF File", f, file_name=f"Day_{i+1}_Heart_Guide.pdf", mime="application/pdf", key=f"dl_pdf_item_{i}")
+                        with open(preview_file_path, "r", encoding="utf-8") as html_f:
+                            st.download_button(
+                                label="🌐 Save Web HTML File",
+                                data=html_f.read(),
+                                file_name=f"Day_{i+1}_Article_Preview.html",
+                                mime="text/html",
+                                use_container_width=True,
+                                key=f"dl_html_item_{i}"
+                            )
                     
                     with col_act2:
+                        try:
+                            from utils.pdf_generator import create_blog_pdf
+                            pdf_path = create_blog_pdf(edited_t, edited_c, CLINIC['doctor'])
+                            with open(pdf_path, "rb") as pf:
+                                st.download_button("📄 Save PDF File", pf.read(), file_name=f"Day_{i+1}_Heart_Guide.pdf", mime="application/pdf", use_container_width=True, key=f"dl_pdf_item_{i}")
+                        except Exception as pdf_e:
+                            st.warning("PDF note")
+                    
+                    with col_act3:
                         from utils.share_links import get_whatsapp_share_url
                         wa_txt = f"*🏥 {edited_t}*\n\n{clean_text_for_pdf_snippet(edited_c)[:300]}...\n\nReviewed by: {CLINIC['doctor']} ({CLINIC['phone']})"
                         wa_u = get_whatsapp_share_url(wa_txt)
-                        st.markdown(f'''<a href="{wa_u}" target="_blank" style="text-decoration:none;"><div style="background:#25D366;color:white;font-weight:bold;text-align:center;padding:0.4rem;border-radius:8px;font-size:0.85rem;">📱 Share WhatsApp</div></a>''', unsafe_allow_html=True)
+                        st.markdown(f'''<a href="{wa_u}" target="_blank" style="text-decoration:none;"><div style="background:#25D366;color:white;font-weight:bold;text-align:center;padding:0.5rem;border-radius:8px;font-size:0.85rem;">📱 Share WhatsApp</div></a>''', unsafe_allow_html=True)
                     
-                    with col_act3:
-                        if st.button(f"🚀 Approve & Publish", key=f"pub_item_{i}", type="primary", disabled=is_pub):
+                    with col_act4:
+                        if st.button(f"🚀 Approve & Publish", key=f"pub_item_{i}", type="primary", disabled=is_pub, use_container_width=True):
                             with st.spinner(f"Publishing Day {i+1} article to website..."):
                                 from agents.github_publisher import publish_reviewed_draft_to_github
                                 pub_res = publish_reviewed_draft_to_github(
@@ -1491,11 +1515,6 @@ def render_local_search_engine(user_id=None, project_id=1):
                                     st.rerun()
                                 else:
                                     st.error(f"Push failed: {pub_res.get('message','')}")
-                    
-                    with col_act4:
-                        if st.button(f"🗑️ Clear Draft", key=f"clear_item_{i}"):
-                            st.session_state["gc_staged_weekly_drafts"].pop(i, None)
-                            st.rerun()
 
         st.markdown("---")
         if st.button("📊 View Full 50+ Search Plan", key="view_full_plan", use_container_width=True):

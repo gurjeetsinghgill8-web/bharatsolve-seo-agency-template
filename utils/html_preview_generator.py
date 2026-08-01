@@ -1,0 +1,162 @@
+"""
+BHARATSOLVE SEO AGENCY — HTML Preview Generator
+Generates clean, mobile-responsive, standalone HTML web pages for Dr. Gill's medical articles.
+"""
+import os
+import re
+
+def create_standalone_html_preview(title: str, content: str, doctor_name: str = "Dr. Gurjeet Singh Gill", output_path: str = None) -> str:
+    """
+    Creates a standalone, beautifully styled HTML document for reading & sharing.
+    Returns path or URL to the created HTML file.
+    """
+    clean_title = title.replace('"', '&quot;')
+    
+    html_template = f"""<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{clean_title} | Gill Heart Clinic</title>
+    <style>
+        :root {{
+            --primary: #0077b6;
+            --primary-dark: #005f92;
+            --accent: #00b4d8;
+            --bg: #f4f9fc;
+            --card-bg: #ffffff;
+            --text: #2b2d42;
+            --light-text: #6c757d;
+        }}
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.8;
+            margin: 0;
+            padding: 20px 10px;
+        }}
+        .article-container {{
+            max-width: 860px;
+            margin: 20px auto;
+            background: var(--card-bg);
+            padding: 40px 30px;
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(0, 119, 182, 0.1);
+            border: 1px solid #d4edff;
+        }}
+        .clinic-header {{
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }}
+        .clinic-brand {{
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--primary);
+        }}
+        .doctor-badge {{
+            background: #e8f4fd;
+            color: var(--primary-dark);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            border: 1px solid #00b4d8;
+        }}
+        h1 {{
+            color: var(--primary-dark);
+            font-size: 2rem;
+            line-height: 1.35;
+            margin-top: 0;
+        }}
+        h2 {{
+            color: var(--primary);
+            font-size: 1.4rem;
+            margin-top: 1.8rem;
+            border-left: 4px solid var(--accent);
+            padding-left: 12px;
+        }}
+        p {{
+            font-size: 1.05rem;
+            margin-bottom: 1.2rem;
+        }}
+        ul, ol {{
+            font-size: 1.05rem;
+            padding-left: 24px;
+            margin-bottom: 1.2rem;
+        }}
+        li {{
+            margin-bottom: 8px;
+        }}
+        .disclaimer-box {{
+            background: #fff9db;
+            border: 1px solid #fcc419;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-top: 40px;
+            font-size: 0.92rem;
+            color: #856404;
+        }}
+        .footer-action {{
+            margin-top: 30px;
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }}
+        .btn-call {{
+            background: #28a745;
+            color: white;
+            padding: 12px 28px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(40,167,69,0.3);
+        }}
+        @media (max-width: 600px) {{
+            .article-container {{ padding: 20px 16px; }}
+            h1 {{ font-size: 1.5rem; }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="article-container">
+        <div class="clinic-header">
+            <div class="clinic-brand">🏥 Gill Heart Clinic</div>
+            <div class="doctor-badge">🩺 {doctor_name}</div>
+        </div>
+        
+        <h1>{title}</h1>
+        
+        <div class="article-body">
+            {content}
+        </div>
+        
+        <div class="disclaimer-box">
+            <strong>⚠️ Medical Disclaimer & Guidance:</strong><br>
+            This health guide is published for patient awareness by <strong>{doctor_name}</strong> (Cardiac Physician, Mohiuddinpur, Meerut). Always consult directly for personalized cardiac evaluation.
+        </div>
+        
+        <div class="footer-action">
+            <a href="tel:+919258879884" class="btn-call">📞 Book OPD Appointment: +91-9258879884</a>
+        </div>
+    </div>
+</body>
+</html>"""
+
+    if not output_path:
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        static_dir = os.path.join(base_dir, "static", "previews")
+        os.makedirs(static_dir, exist_ok=True)
+        safe_slug = re.sub(r'[^a-zA-Z0-9_]', '_', title[:30]) + ".html"
+        output_path = os.path.join(static_dir, safe_slug)
+        
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(html_template)
+        
+    return output_path
