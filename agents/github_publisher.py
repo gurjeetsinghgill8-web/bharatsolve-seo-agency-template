@@ -648,33 +648,14 @@ def deep_clean_github_noncompliant_blogs() -> dict:
 def delete_all_github_blogs() -> dict:
     """
     Deletes EVERY SINGLE blog HTML file from GitHub repository `gurjeetsinghgill8-web/gill-heart-clinic`
-    and resets master catalog and homepage cleanly.
+    across both gh-pages and master branches and resets master catalog cleanly.
     """
     repo = DEFAULT_CONFIG["github_repo"]
-    branch = DEFAULT_CONFIG["github_branch"]
-    
-    files_list = _github_api(f"/repos/{repo}/contents/blogs?ref={branch}")
-    if not isinstance(files_list, list):
-        return {"error": f"Could not list blogs folder: {files_list}"}
+    branches = ["gh-pages", "master"]
     
     deleted_files = []
     errors = []
     
-    for f in files_list:
-        fname = f.get("name", "")
-        sha = f.get("sha", "")
-        if fname.endswith(".html") and fname != "index.html":
-            del_res = _github_api(
-                f"/repos/{repo}/contents/blogs/{fname}",
-                method="DELETE",
-                data={"message": f"🔥 Delete blog: {fname} [Requested by Dr. Gill]", "sha": sha, "branch": branch}
-            )
-            if "error" not in del_res:
-                deleted_files.append(fname)
-            else:
-                errors.append(f"{fname}: {del_res.get('error')}")
-                
-    # Push clean fresh master catalog
     clean_catalog_html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -700,20 +681,25 @@ def delete_all_github_blogs() -> dict:
 </body>
 </html>"""
     
-    _push_file_to_repo("blogs/index.html", clean_catalog_html, "✨ Reset clean master blogs/index.html catalog [BHARATSOLVE AI]")
-    
-    # Update homepage index.html
-    try:
-        res_hp = _github_api(f"/repos/{repo}/contents/index.html?ref={branch}")
-        if isinstance(res_hp, dict) and "content" not in res_hp:
-            raw_hp = base64.b64decode(res_hp["content"]).decode("utf-8", errors="ignore")
-            if "<!-- START DYNAMIC AI BLOGS SECTION -->" in raw_hp and "<!-- END DYNAMIC AI BLOGS SECTION -->" in raw_hp:
-                pattern = r"<!-- START DYNAMIC AI BLOGS SECTION -->.*?<!-- END DYNAMIC AI BLOGS SECTION -->"
-                clean_hp = re.sub(pattern, "", raw_hp, flags=re.DOTALL)
-                _push_file_to_repo("index.html", clean_hp, "✨ Reset homepage index.html articles section [BHARATSOLVE AI]")
-    except Exception as e:
-        print(f"Homepage reset note: {e}")
-        
+    for branch in branches:
+        files_list = _github_api(f"/repos/{repo}/contents/blogs?ref={branch}")
+        if isinstance(files_list, list):
+            for f in files_list:
+                fname = f.get("name", "")
+                sha = f.get("sha", "")
+                if fname.endswith(".html") and fname != "index.html":
+                    del_res = _github_api(
+                        f"/repos/{repo}/contents/blogs/{fname}",
+                        method="DELETE",
+                        data={"message": f"🔥 Delete blog: {fname} [Requested by Dr. Gill]", "sha": sha, "branch": branch}
+                    )
+                    if "error" not in del_res:
+                        deleted_files.append(f"{branch}/{fname}")
+                    else:
+                        errors.append(f"{branch}/{fname}: {del_res.get('error')}")
+                        
+        _push_file_to_repo("blogs/index.html", clean_catalog_html, "✨ Reset clean master blogs/index.html catalog [BHARATSOLVE AI]")
+
     return {
         "status": "success",
         "deleted_count": len(deleted_files),
