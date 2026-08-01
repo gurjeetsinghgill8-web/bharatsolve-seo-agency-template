@@ -52,13 +52,20 @@ TARGET LANGUAGE: {target_lang_instruction}
 Content Type: {content_type}
 Primary Keyword: {keyword}
 
-CRITICAL MANDATE FOR HINDI: If target language is HINDI, write the title, headings, and entire article strictly in DEVANAGARI HINDI SCRIPT (देवनागरी लिपि में लिखें). Do NOT write in Roman script or Hinglish.
+CRITICAL MANDATE (DUAL-LANGUAGE REQUIREMENT): ALWAYS INCLUDE BOTH DEVANAGARI HINDI AND ENGLISH SECTIONS IN THE ARTICLE CONTENT!
+Structure the article HTML as:
+1. <h2>🇮🇳 मुख्य जानकारी (Devanagari Hindi Section)</h2>
+   Complete article in pure Devanagari Hindi script (देवनागरी लिपि में विस्तृत जानकारी).
+2. <h2>🇬🇧 Complete Medical Guide (English Section)</h2>
+   Complete article in professional medical English.
+
+Dr. Gurjeet Singh Gill is a CARDIAC PHYSICIAN (NEVER cardiologist).
 
 Generate complete SEO content including:
-1. Catchy title (with keyword in requested language)
+1. Catchy bilingual title (Hindi + English)
 2. Meta title (55-60 chars)
 3. Meta description (150-160 chars)
-4. Full article with H1, H2, H3 structure
+4. Full dual-language article body HTML (both Hindi and English sections)
 5. FAQ schema JSON-LD
 6. Word count: 800-1500 words
 
@@ -67,7 +74,7 @@ Return JSON format:
   "title": "...",
   "meta_title": "...",
   "meta_description": "...",
-  "content": "<h2>Title</h2><p>Full article in requested language with HTML tags...</p>",
+  "content": "<h2>🇮🇳 मुख्य जानकारी</h2><p>Hindi paragraph...</p><h2>🇬🇧 Complete Medical Guide</h2><p>English paragraph...</p>",
   "schema_json": {{"@context": "https://schema.org", "@type": "FAQPage"}},
   "word_count": number
 }}

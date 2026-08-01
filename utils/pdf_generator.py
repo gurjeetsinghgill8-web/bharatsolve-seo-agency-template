@@ -9,10 +9,55 @@ import re
 import html
 from fpdf import FPDF
 
-def sanitize_unicode_for_pdf(text: str) -> str:
-    """Replace common unicode characters with latin-1 ASCII equivalents."""
+DEV_WORD_MAP = {
+    'डॉक्टर': 'Doctor', 'हृदय': 'Heart', 'लक्षण': 'Symptoms', 'उपचार': 'Treatment',
+    'सलाह': 'Advice', 'मेरठ': 'Meerut', 'गिल': 'Gill', 'क्लीनिक': 'Clinic', 'क्लिनिक': 'Clinic',
+    'दर्द': 'Pain', 'सीने': 'Chest', 'संकेत': 'Warning Signs', 'चेतावनी': 'Warning',
+    'कारण': 'Causes', 'बचाव': 'Prevention', 'जांच': 'Tests', 'आहार': 'Diet',
+    'जीवनशैली': 'Lifestyle', 'रोग': 'Disease', 'हमला': 'Heart Attack', 'उच्च': 'High',
+    'रक्तचाप': 'Blood Pressure', 'सर्वश्रेष्ठ': 'Best', 'विकल्प': 'Option', 'जानकारी': 'Information',
+    'समस्या': 'Problem', 'परामर्श': 'Consultation', 'नियमित': 'Regular', 'स्वस्थ': 'Healthy',
+    'निष्कर्ष': 'Conclusion', 'कुंजी': 'Key', 'तथ्य': 'Facts', 'के': 'ke', 'का': 'ka',
+    'की': 'ki', 'में': 'mein', 'और': 'aur', 'या': 'ya', 'है': 'hai', 'हैं': 'hain',
+    'से': 'se', 'को': 'ko', 'पर': 'par', 'तो': 'toh', 'भी': 'bhi', 'लिए': 'liye',
+    'आप': 'aap', 'अगर': 'agar', 'तुरंत': 'turant', 'पास': 'paas', 'मेरी': 'meri', 'चाहते': 'chahte',
+    'योग्य': 'Qualified', 'अस्पताल': 'Hospital', 'जांचें': 'Tests'
+}
+
+DEV_CHAR_MAP = {
+    'अ': 'a', 'आ': 'aa', 'इ': 'i', 'ई': 'ee', 'उ': 'u', 'ऊ': 'oo', 'ऋ': 'ri', 'ए': 'e', 'ऐ': 'ai', 'ओ': 'o', 'औ': 'au', 'अं': 'an', 'अः': 'ah',
+    'क': 'k', 'ख': 'kh', 'ग': 'g', 'घ': 'gh', 'ङ': 'ng', 'च': 'ch', 'छ': 'chh', 'ज': 'j', 'झ': 'jh', 'ञ': 'n',
+    'ट': 't', 'ठ': 'th', 'ड': 'd', 'ढ': 'dh', 'ण': 'n', 'त': 't', 'थ': 'th', 'द': 'd', 'ध': 'dh', 'न': 'n',
+    'प': 'p', 'फ': 'f', 'ब': 'b', 'भ': 'bh', 'म': 'm', 'य': 'y', 'र': 'r', 'ल': 'l', 'व': 'v', 'श': 'sh', 'ष': 'sh', 'स': 's', 'ह': 'h',
+    'ा': 'aa', 'ि': 'i', 'ी': 'ee', 'ु': 'u', 'ू': 'oo', 'ृ': 'ri', 'े': 'e', 'ै': 'ai', 'ो': 'o', 'ौ': 'au', '्': '', 'ं': 'n', 'ः': 'h', '़': '', 'ॉ': 'o', 'ॅ': 'e'
+}
+
+def transliterate_devanagari(text: str) -> str:
+    """Convert Devanagari Hindi text to clean readable Romanized text so PDF never shows ????."""
     if not text:
         return ""
+    # Word level replacement
+    for dev, rom in DEV_WORD_MAP.items():
+        text = text.replace(dev, rom)
+    # Character level replacement for remaining Devanagari chars
+    res = []
+    for ch in text:
+        if ch in DEV_CHAR_MAP:
+            res.append(DEV_CHAR_MAP[ch])
+        elif ord(ch) >= 0x0900 and ord(ch) <= 0x097F:
+            continue  # strip unmapped devanagari diacritics
+        else:
+            res.append(ch)
+    return "".join(res)
+
+def sanitize_unicode_for_pdf(text: str) -> str:
+    """Replace unicode characters and transliterate Devanagari to latin-1 ASCII equivalents."""
+    if not text:
+        return ""
+    # Transliterate Devanagari first
+    if any(0x0900 <= ord(c) <= 0x097F for c in text):
+        text = transliterate_devanagari(text)
+
     replacements = {
         '—': '-', '–': '-', '“': '"', '”': '"', '‘': "'", '’': "'",
         '•': '*', '…': '...', '™': '(TM)', '©': '(C)', '®': '(R)',
