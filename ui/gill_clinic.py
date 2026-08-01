@@ -131,9 +131,13 @@ BLOG_CATEGORIES = [
 # COMPETITOR NAMES — Update these with REAL doctor names you know!
 # ═══════════════════════════════════════════════════════════════════════
 MY_COMPETITORS = [
+    "Dr. Sanjeev Kumar Bansal — Non-Invasive Clinical Cardiologist, Shastri Nagar, Meerut",
+    "Dr. Hari Mohan Choudhary — Cardiology & Echo Specialist, Meerut",
+    "Dr. Mamtesh Gupta — Non-Invasive Cardiac Specialist, Meerut",
+    "Dr. Vineet Bansal — OPD Cardiology & Medicine Specialist, Meerut",
+    "Dr. Rajeev Agarwal — Senior Cardiology Practitioner, Meerut",
     "Dr. Amit Sharma — Cardiologist, Meerut",
     "Dr. Sachit Goel — Cardiologist, Meerut",
-    "Dr. Mamtesh Gupta — Cardiologist, Meerut",
     "Dr. Deepak (Deek) — Cardiologist, Meerut",
     "Dr. ________ — Cardiologist, Meerut",
     "Dr. ________ — Cardiologist, Meerut",
