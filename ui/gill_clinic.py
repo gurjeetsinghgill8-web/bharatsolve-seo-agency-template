@@ -983,18 +983,45 @@ def render_review_section():
             </div>
             """, unsafe_allow_html=True)
         
-        # Custom reply
+        # Live Review Instant AI Generator
         st.markdown("---")
-        st.markdown("#### ✍️ Manual Reply")
-        review_select = st.selectbox("Select review to reply", 
-                                     [r['reviewer'] for r in reviews], key="reply_select")
-        custom_reply = st.text_area("Your reply", placeholder="Write your response in Hindi or English...", 
-                                   key="custom_reply", height=80)
+        st.markdown("#### ⚡ Generate AI Reply for Live Google Reviews")
+        st.markdown("Paste any review from your Google Profile to instantly generate a professional AI reply:")
         
-        if st.button("📤 Send Reply", key="send_reply_btn", use_container_width=True) and custom_reply:
-            st.success(f"✅ Reply sent to {review_select}'s review!")
-            log_agent_action("review_agent", f"Manual reply to {review_select}")
-        
+        col_r1, col_r2 = st.columns([1, 2])
+        with col_r1:
+            rev_p_name = st.text_input("Patient Name", value="", placeholder="e.g. Ramesh Sharma", key="live_rev_p_name")
+            rev_rating = st.selectbox("Rating", [5, 4, 3, 2, 1], index=0, key="live_rev_rating")
+        with col_r2:
+            rev_p_text = st.text_area("Patient Review Text", value="", placeholder="Paste review text from Google Maps here...", height=80, key="live_rev_text")
+            
+        if st.button("🤖 Auto-Generate Professional AI Reply", key="gen_live_rev_reply_btn", type="primary", use_container_width=True):
+            if not rev_p_text:
+                st.warning("Please paste patient review text above!")
+            else:
+                from agents.review_agent import generate_review_reply
+                with st.spinner("AI writing personalized medical reply..."):
+                    reply_res = generate_review_reply(
+                        reviewer_name=rev_p_name or "Patient",
+                        rating=rev_rating,
+                        review_text=rev_p_text
+                    )
+                    ai_reply_text = reply_res.get("reply", f"Thank you {rev_p_name or 'Patient'} ji for your valuable feedback! Dr. Gurjeet Singh Gill & Gill Heart Clinic team are dedicated to your heart health. 🙏")
+                    
+                    st.session_state["last_generated_ai_reply"] = ai_reply_text
+                    st.success("🎉 Professional AI Reply Generated!")
+                    
+        if "last_generated_ai_reply" in st.session_state:
+            st.markdown(f"""
+            <div style="background:#e8f4fd; border:1px solid #00b4d8; border-radius:10px; padding:12px; margin:10px 0;">
+                <p style="margin:0; color:#0077b6; font-weight:bold;">🤖 Generated AI Reply:</p>
+                <p style="margin:6px 0 0 0; color:#333; font-size:0.95rem;">{st.session_state['last_generated_ai_reply']}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.code(st.session_state['last_generated_ai_reply'], language="text")
+            st.markdown(f'''<a href="https://business.google.com/" target="_blank" style="text-decoration:none;"><div style="background:#4285F4;color:white;font-weight:bold;text-align:center;padding:0.6rem;border-radius:8px;font-size:0.9rem;">📱 Open Google Business Profile to Post Reply →</div></a>''', unsafe_allow_html=True)
+            
         st.markdown('</div>', unsafe_allow_html=True)
 
 
