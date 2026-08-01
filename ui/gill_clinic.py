@@ -800,47 +800,27 @@ def render_blog_section(user_id, project_id=0):
                 with col_del2:
                     if st.button("🗑️ DELETE ALL PUBLISHED BLOGS", key="delete_all_blogs", 
                                 use_container_width=True, type="secondary"):
-                        with st.spinner("Deleting all blogs from GitHub..."):
-                            from agents.github_publisher import _github_api
-                            repo = "gurjeetsinghgill8-web/gill-heart-clinic"
-                            branch = "gh-pages"
-                        
-                        # Get all files in blogs/ folder
-                        files_list = _github_api(f"/repos/{repo}/contents/blogs?ref={branch}")
-                        deleted = 0
-                        errors = 0
-                        
-                        if isinstance(files_list, list):
-                            for f in files_list:
-                                fname = f.get("name", "")
-                                sha = f.get("sha", "")
-                                if sha and fname.endswith('.html'):
-                                    try:
-                                        result = _github_api(
-                                            f"/repos/{repo}/contents/blogs/{fname}",
-                                            method="DELETE",
-                                            data={"message": f"Delete: {fname} [Cleanup]", 
-                                                  "sha": sha, "branch": branch}
-                                        )
-                                        if "error" not in result:
-                                            deleted += 1
-                                        else:
-                                            errors += 1
-                                    except:
-                                        errors += 1
-                        
-                        # Clear DB
-                        try:
-                            from db.schema import get_connection
-                            conn = get_connection()
-                            conn.execute("UPDATE content_pieces SET status='deleted', published_url='' WHERE project_id=?", (project_id,))
-                            conn.commit()
-                            conn.close()
-                        except:
-                            pass
-                        
-                        st.success(f"🗑️ {deleted} blogs deleted! {errors} errors.")
-                        st.rerun()
+                        with st.spinner("Deleting all blogs from GitHub repository..."):
+                            from agents.github_publisher import delete_all_github_blogs
+                            res = delete_all_github_blogs()
+                            
+                            # Clear local SQLite database content_pieces table
+                            try:
+                                import sqlite3
+                                db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "seo_agency.db")
+                                conn = sqlite3.connect(db_path)
+                                conn.cursor().execute("DELETE FROM content_pieces")
+                                conn.commit()
+                                conn.close()
+                            except Exception as db_e:
+                                print(f"DB clear note: {db_e}")
+                                
+                            if res.get("status") == "success":
+                                st.success(f"🔥 Deleted all {res.get('deleted_count', 0)} blogs! GitHub & local database cleared.")
+                                st.balloons()
+                                st.rerun()
+                            else:
+                                st.error(f"Delete failed: {res.get('error')}")
                 
                 st.markdown(f"**{len(published)} blogs** — or use 🗑️ for individual delete:")
                 for piece in published[:20]:

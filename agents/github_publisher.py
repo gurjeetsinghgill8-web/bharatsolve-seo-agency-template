@@ -618,11 +618,6 @@ def deep_clean_github_noncompliant_blogs() -> dict:
                     method="DELETE",
                     data={"message": f"Delete non-compliant blog: {fname} [NMC Clean-up]", "sha": sha, "branch": branch}
                 )
-                if "error" not in del_res:
-                    deleted_files.append(fname)
-                else:
-                    errors.append(f"{fname}: {del_res.get('error')}")
-                    
     # Rebuild master index catalog and homepage
     try:
         update_master_blog_index()
@@ -630,6 +625,83 @@ def deep_clean_github_noncompliant_blogs() -> dict:
         publish_ai_geo_blueprint()
     except Exception as e:
         print(f"Rebuild note: {e}")
+        
+    return {
+        "status": "success",
+        "deleted_count": len(deleted_files),
+        "deleted_files": deleted_files,
+        "errors": errors
+    }
+
+
+def delete_all_github_blogs() -> dict:
+    """
+    Deletes EVERY SINGLE blog HTML file from GitHub repository `gurjeetsinghgill8-web/gill-heart-clinic`
+    and resets master catalog and homepage cleanly.
+    """
+    repo = DEFAULT_CONFIG["github_repo"]
+    branch = DEFAULT_CONFIG["github_branch"]
+    
+    files_list = _github_api(f"/repos/{repo}/contents/blogs?ref={branch}")
+    if not isinstance(files_list, list):
+        return {"error": f"Could not list blogs folder: {files_list}"}
+    
+    deleted_files = []
+    errors = []
+    
+    for f in files_list:
+        fname = f.get("name", "")
+        sha = f.get("sha", "")
+        if fname.endswith(".html") and fname != "index.html":
+            del_res = _github_api(
+                f"/repos/{repo}/contents/blogs/{fname}",
+                method="DELETE",
+                data={"message": f"🔥 Delete blog: {fname} [Requested by Dr. Gill]", "sha": sha, "branch": branch}
+            )
+            if "error" not in del_res:
+                deleted_files.append(fname)
+            else:
+                errors.append(f"{fname}: {del_res.get('error')}")
+                
+    # Push clean fresh master catalog
+    clean_catalog_html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Health Articles & Blogs | Dr. Gurjeet Singh Gill</title>
+    <style>
+        body {{ font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif; background:#f4f9fc; color:#333; line-height:1.6; margin:0; padding:20px; }}
+        .container {{ max-width:900px; margin:0 auto; background:white; padding:30px; border-radius:16px; box-shadow:0 4px 20px rgba(0,119,182,0.1); text-align:center; }}
+        h1 {{ color:#0077b6; border-bottom:2px solid #00b4d8; padding-bottom:10px; }}
+        .back-link {{ color:#0077b6; text-decoration:none; font-weight:bold; display:inline-block; margin-bottom:15px; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{DEFAULT_CONFIG['website_url']}" class="back-link">← Back to Gill Heart Clinic Website</a>
+        <h1>🫀 Heart Health Articles & Patient Guides</h1>
+        <p>Expert medical guidance written by <strong>Dr. Gurjeet Singh Gill</strong> (Cardiac Physician, Mohiuddinpur, Meerut).</p>
+        <div style="background:#f8fdff; border:1px dashed #00b4d8; border-radius:12px; padding:30px; margin:30px 0;">
+            <p style="color:#666; font-size:1.1rem; margin:0;">🌱 No published articles. New doctor-approved medical articles will be published here!</p>
+        </div>
+    </div>
+</body>
+</html>"""
+    
+    _push_file_to_repo("blogs/index.html", clean_catalog_html, "✨ Reset clean master blogs/index.html catalog [BHARATSOLVE AI]")
+    
+    # Update homepage index.html
+    try:
+        res_hp = _github_api(f"/repos/{repo}/contents/index.html?ref={branch}")
+        if isinstance(res_hp, dict) and "content" not in res_hp:
+            raw_hp = base64.b64decode(res_hp["content"]).decode("utf-8", errors="ignore")
+            if "<!-- START DYNAMIC AI BLOGS SECTION -->" in raw_hp and "<!-- END DYNAMIC AI BLOGS SECTION -->" in raw_hp:
+                pattern = r"<!-- START DYNAMIC AI BLOGS SECTION -->.*?<!-- END DYNAMIC AI BLOGS SECTION -->"
+                clean_hp = re.sub(pattern, "", raw_hp, flags=re.DOTALL)
+                _push_file_to_repo("index.html", clean_hp, "✨ Reset homepage index.html articles section [BHARATSOLVE AI]")
+    except Exception as e:
+        print(f"Homepage reset note: {e}")
         
     return {
         "status": "success",
