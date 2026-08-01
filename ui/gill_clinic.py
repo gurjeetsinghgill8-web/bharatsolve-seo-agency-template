@@ -785,13 +785,25 @@ def render_blog_section(user_id, project_id=0):
             published = [p for p in pieces if p.get('status') == 'published' or p.get('published_url')]
             
             if published:
-                # DELETE ALL button
-                if st.button("🗑️ DELETE ALL PUBLISHED BLOGS", key="delete_all_blogs", 
-                            use_container_width=True, type="secondary"):
-                    with st.spinner("Deleting all blogs from GitHub..."):
-                        from agents.github_publisher import _github_api
-                        repo = "gurjeetsinghgill8-web/gill-heart-clinic"
-                        branch = "gh-pages"
+                col_del1, col_del2 = st.columns(2)
+                with col_del1:
+                    if st.button("🧹 DEEP CLEAN NON-COMPLIANT BLOGS", key="deep_clean_blogs_btn", use_container_width=True, type="primary"):
+                        with st.spinner("Deleting non-compliant & test blogs from GitHub..."):
+                            from agents.github_publisher import deep_clean_github_noncompliant_blogs
+                            res = deep_clean_github_noncompliant_blogs()
+                            if res.get("status") == "success":
+                                st.success(f"🧹 Cleaned {res.get('deleted_count', 0)} non-compliant blogs! Catalog updated.")
+                                st.rerun()
+                            else:
+                                st.error(f"Clean failed: {res.get('error')}")
+
+                with col_del2:
+                    if st.button("🗑️ DELETE ALL PUBLISHED BLOGS", key="delete_all_blogs", 
+                                use_container_width=True, type="secondary"):
+                        with st.spinner("Deleting all blogs from GitHub..."):
+                            from agents.github_publisher import _github_api
+                            repo = "gurjeetsinghgill8-web/gill-heart-clinic"
+                            branch = "gh-pages"
                         
                         # Get all files in blogs/ folder
                         files_list = _github_api(f"/repos/{repo}/contents/blogs?ref={branch}")

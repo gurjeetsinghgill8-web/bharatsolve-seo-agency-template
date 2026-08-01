@@ -589,6 +589,55 @@ def publish_blog_to_github(topic: str, target_location: str = "Meerut",
     return result
 
 
+def deep_clean_github_noncompliant_blogs() -> dict:
+    """
+    Deep clean & delete non-compliant or test blog files from GitHub repository.
+    Deletes any blogs containing 'best', 'cardiologist', 'blog-1', etc.,
+    and rebuilds master blogs catalog and homepage index.html cleanly.
+    """
+    repo = DEFAULT_CONFIG["github_repo"]
+    branch = DEFAULT_CONFIG["github_branch"]
+    
+    files_list = _github_api(f"/repos/{repo}/contents/blogs?ref={branch}")
+    if not isinstance(files_list, list):
+        return {"error": f"Could not list blogs folder: {files_list}"}
+    
+    deleted_files = []
+    errors = []
+    
+    forbidden_terms = ["best", "cardiologist", "sarvshreshth", "blog-1", "blog-2", "blog-3", "blog-4", "blog-5", "blog-6", "blog-7", "blog-8", "blog-9", "blog-0"]
+    
+    for f in files_list:
+        fname = f.get("name", "")
+        sha = f.get("sha", "")
+        if fname.endswith(".html") and fname != "index.html":
+            fname_lower = fname.lower()
+            if any(term in fname_lower for term in forbidden_terms):
+                del_res = _github_api(
+                    f"/repos/{repo}/contents/blogs/{fname}",
+                    method="DELETE",
+                    data={"message": f"Delete non-compliant blog: {fname} [NMC Clean-up]", "sha": sha, "branch": branch}
+                )
+                if "error" not in del_res:
+                    deleted_files.append(fname)
+                else:
+                    errors.append(f"{fname}: {del_res.get('error')}")
+                    
+    # Rebuild master index catalog and homepage
+    try:
+        update_master_blog_index()
+        update_homepage_articles()
+    except Exception as e:
+        print(f"Rebuild note: {e}")
+        
+    return {
+        "status": "success",
+        "deleted_count": len(deleted_files),
+        "deleted_files": deleted_files,
+        "errors": errors
+    }
+
+
 def update_master_blog_index() -> dict:
     """
     Scans blogs/ folder on GitHub, fetches all HTML blog files,
