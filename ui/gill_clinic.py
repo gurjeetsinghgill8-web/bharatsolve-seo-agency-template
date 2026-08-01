@@ -6,6 +6,7 @@ Meerut & Delhi NCR | Cardiology SEO Automation
 import streamlit as st
 import json
 import os
+import re
 from datetime import datetime, timedelta
 from db.operations import (
     get_dashboard_stats, get_clients, get_projects,
@@ -101,13 +102,13 @@ CLINIC = {
 TARGET_LOCATIONS = ["Meerut", "Delhi NCR", "Mohiuddinpur", "Modinagar", "Hapur"]
 
 TARGET_KEYWORDS = [
-    "Cardiologist Meerut", "Heart Doctor Delhi NCR", "BP Specialist Meerut",
+    "Cardiac Physician Meerut", "Heart Doctor Delhi NCR", "BP Specialist Meerut",
     "Chest Pain Doctor Near Me", "Heart Clinic Mohiuddinpur",
-    "ECG Test Meerut", "2D Echo Test Meerut", "TMT Test Meerut",
+    "ECG Test Consultation Meerut", "2D Echo Advice Meerut", "TMT Test Guidance Meerut",
     "Diabetes Heart Doctor", "Cholesterol Treatment Meerut",
     "Best Heart Doctor Meerut", "Cardiac Care Delhi NCR",
     "Heart Failure Specialist", "Heart Attack Prevention Meerut",
-    "Cardiologist near Yashoda Hospital", "Heart Checkup Meerut",
+    "Cardiac Physician near Yashoda Hospital", "Heart Checkup Meerut",
 ]
 
 BLOG_CATEGORIES = [

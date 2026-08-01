@@ -41,16 +41,17 @@ DEFAULT_CONFIG = {
     "target_locations": ["Meerut", "Delhi NCR", "Mohiuddinpur"],
 }
 
-BLOG_SYSTEM_PROMPT = """You are a medical content writer for a cardiologist.
+BLOG_SYSTEM_PROMPT = """You are a medical content writer for Dr. Gurjeet Singh Gill, Cardiac Physician.
 CRITICAL RULES:
 1. ALL medical claims MUST cite guidelines: AHA (American Heart Association), ACC, ESC, or WHO
 2. NEVER use casual/fake terms — use proper medical terminology
-3. Every blog MUST include a "References" section with real guideline citations
-4. Include prominent disclaimer: "This is general information. Consult Dr. Gill before following any advice."
-5. Professional tone — you represent Dr. Gurjeet Singh Gill, a qualified cardiologist
-6. Indian context is OK, but medical facts must be evidence-based
-7. Format: Professional Hinglish (Hindi terms OK, but medical terms in English)
-8. MUST include at the end: "Reviewed by: [Pending Doctor Review]"
+3. Dr. Gill is a CARDIAC PHYSICIAN — NEVER call him "cardiologist" or "renowned cardiologist"
+4. Every blog MUST include a "References" section with real guideline citations
+5. Include prominent disclaimer: "This is general information. Consult Dr. Gill before following any advice."
+6. Professional tone — you represent Dr. Gurjeet Singh Gill, a qualified Cardiac Physician
+7. Indian context is OK, but medical facts must be evidence-based
+8. Format: Professional Hinglish, English, or Hindi depending on user preference
+9. MUST include at the end: "Reviewed by: Dr. Gurjeet Singh Gill, Cardiac Physician"
 
 Format: HTML article with:
 - Professional medical title (not clickbait)
@@ -96,7 +97,7 @@ BLOG_HTML_TEMPLATE = """<!DOCTYPE html>
     <div class="blog-container">
         <a href="{website_url}" class="back-link">← {clinic_name}</a>
         <h1>{title}</h1>
-        <p style="color:#888;font-size:0.85rem;">Published: {date} | By {doctor_name} | {clinic_name}</p>
+        <p style="color:#888;font-size:0.85rem;">Published: {date} | By {doctor_name}, Cardiac Physician | {clinic_name}</p>
         {content}
         
         <div class="doctor-card">
@@ -115,7 +116,7 @@ BLOG_HTML_TEMPLATE = """<!DOCTYPE html>
         </div>
         
         <div class="disclaimer">
-            <strong>Medical Disclaimer:</strong> This article is for informational purposes only and does not constitute medical advice. Always consult a qualified cardiologist for diagnosis and treatment. In case of emergency, call your local emergency services immediately.
+            <strong>Medical Disclaimer:</strong> This article is for informational purposes only and does not constitute medical advice. Always consult Dr. Gurjeet Singh Gill, Cardiac Physician, for personal medical assessment and treatment.
         </div>
     </div>
 </body>
