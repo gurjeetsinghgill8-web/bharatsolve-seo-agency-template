@@ -800,48 +800,49 @@ def render_blog_section(user_id, project_id=0):
         </div>
         """, unsafe_allow_html=True)
         
+        # Always show Delete & Clean buttons for GitHub repository
+        col_del1, col_del2 = st.columns(2)
+        with col_del1:
+            if st.button("🧹 DEEP CLEAN NON-COMPLIANT BLOGS", key="deep_clean_blogs_btn", use_container_width=True, type="primary"):
+                with st.spinner("Deleting non-compliant & test blogs from GitHub..."):
+                    from agents.github_publisher import deep_clean_github_noncompliant_blogs
+                    res = deep_clean_github_noncompliant_blogs()
+                    if res.get("status") == "success":
+                        st.success(f"🧹 Cleaned {res.get('deleted_count', 0)} non-compliant blogs! Catalog updated.")
+                        st.rerun()
+                    else:
+                        st.error(f"Clean failed: {res.get('error')}")
+
+        with col_del2:
+            if st.button("🗑️ DELETE ALL PUBLISHED BLOGS FROM GITHUB", key="delete_all_blogs", 
+                        use_container_width=True, type="secondary"):
+                with st.spinner("Deleting all blogs from GitHub repository..."):
+                    from agents.github_publisher import delete_all_github_blogs
+                    res = delete_all_github_blogs()
+                    
+                    # Clear local SQLite database content_pieces table
+                    try:
+                        import sqlite3
+                        db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "seo_agency.db")
+                        conn = sqlite3.connect(db_path)
+                        conn.cursor().execute("DELETE FROM content_pieces")
+                        conn.commit()
+                        conn.close()
+                    except Exception as db_e:
+                        print(f"DB clear note: {db_e}")
+                        
+                    if res.get("status") == "success":
+                        st.success(f"🔥 Deleted all {res.get('deleted_count', 0)} blogs! GitHub & local database cleared.")
+                        st.balloons()
+                        st.rerun()
+                    else:
+                        st.error(f"Delete failed: {res.get('error')}")
+                
         try:
             pieces = get_content_pieces(project_id=project_id, limit=50) if project_id else []
             published = [p for p in pieces if p.get('status') == 'published' or p.get('published_url')]
             
             if published:
-                col_del1, col_del2 = st.columns(2)
-                with col_del1:
-                    if st.button("🧹 DEEP CLEAN NON-COMPLIANT BLOGS", key="deep_clean_blogs_btn", use_container_width=True, type="primary"):
-                        with st.spinner("Deleting non-compliant & test blogs from GitHub..."):
-                            from agents.github_publisher import deep_clean_github_noncompliant_blogs
-                            res = deep_clean_github_noncompliant_blogs()
-                            if res.get("status") == "success":
-                                st.success(f"🧹 Cleaned {res.get('deleted_count', 0)} non-compliant blogs! Catalog updated.")
-                                st.rerun()
-                            else:
-                                st.error(f"Clean failed: {res.get('error')}")
-
-                with col_del2:
-                    if st.button("🗑️ DELETE ALL PUBLISHED BLOGS", key="delete_all_blogs", 
-                                use_container_width=True, type="secondary"):
-                        with st.spinner("Deleting all blogs from GitHub repository..."):
-                            from agents.github_publisher import delete_all_github_blogs
-                            res = delete_all_github_blogs()
-                            
-                            # Clear local SQLite database content_pieces table
-                            try:
-                                import sqlite3
-                                db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "seo_agency.db")
-                                conn = sqlite3.connect(db_path)
-                                conn.cursor().execute("DELETE FROM content_pieces")
-                                conn.commit()
-                                conn.close()
-                            except Exception as db_e:
-                                print(f"DB clear note: {db_e}")
-                                
-                            if res.get("status") == "success":
-                                st.success(f"🔥 Deleted all {res.get('deleted_count', 0)} blogs! GitHub & local database cleared.")
-                                st.balloons()
-                                st.rerun()
-                            else:
-                                st.error(f"Delete failed: {res.get('error')}")
-                
                 st.markdown(f"**{len(published)} blogs** — or use 🗑️ for individual delete:")
                 for piece in published[:20]:
                     title = piece.get('title', 'Untitled')[:60]
@@ -860,7 +861,6 @@ def render_blog_section(user_id, project_id=0):
                                 repo = "gurjeetsinghgill8-web/gill-heart-clinic"
                                 branch = "gh-pages"
                                 
-                                # Get file SHA first
                                 file_path = f"blogs/{slug}.html" if slug else f"blogs/{title[:40]}.html"
                                 existing = _github_api(f"/repos/{repo}/contents/{file_path}?ref={branch}")
                                 
@@ -874,7 +874,6 @@ def render_blog_section(user_id, project_id=0):
                                     )
                                     if "error" not in del_result:
                                         st.success(f"🗑️ Deleted: {title[:40]}")
-                                        # Also update DB
                                         try:
                                             from db.schema import get_connection
                                             conn = get_connection()
@@ -900,10 +899,8 @@ def render_blog_section(user_id, project_id=0):
                             except Exception as e:
                                 st.error(f"Error: {str(e)[:200]}")
                     st.markdown("<hr style='margin:2px 0; opacity:0.3;'>", unsafe_allow_html=True)
-            else:
-                st.info("No blogs published yet.")
-        except:
-            st.info("Generate and approve a blog first.")
+        except Exception as ex:
+            pass
         
         st.markdown('</div>', unsafe_allow_html=True)
 
