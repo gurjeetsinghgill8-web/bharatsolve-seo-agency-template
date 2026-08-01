@@ -1356,14 +1356,23 @@ def render_local_search_engine(user_id=None, project_id=1):
             staged_item = staged_dict.get(i)
             is_pub = staged_item.get("published", False) if staged_item else False
             pub_url = staged_item.get("published_url", "") if staged_item else ""
-            
             status_label = "✅ Published Live" if is_pub else ("📄 Staged Draft Ready" if staged_item else "🔴 Pending Generation")
             
-            with st.expander(f"Day {i+1}: {intent_emoji.get(q['intent'],'📌')} {q['query']} — Status: {status_label}", expanded=False):
+            # Auto-build live URL if published
+            if is_pub and not pub_url:
+                slug_tmp = re.sub(r'[^a-z0-9]+', '-', q['query'].lower()).strip('-')[:60]
+                pub_url = f"https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/blogs/{slug_tmp}.html"
+
+            with st.expander(f"Day {i+1}: {intent_emoji.get(q['intent'],'📌')} {q['query']} — Status: {status_label}", expanded=is_pub or (staged_item is not None)):
                 st.markdown(f"**Target Query**: `{q['query']}` | **Intent**: `{q['intent']}` | **Conversion**: `{q['conversion']}`")
                 
-                if pub_url:
-                    st.markdown(f"🔗 **Live Website URL**: [{pub_url}]({pub_url})")
+                if is_pub or pub_url:
+                    st.markdown(f"""
+                    <div style="background:#d4edda; border:2px solid #28a745; border-radius:10px; padding:12px 16px; margin:10px 0; box-shadow:0 2px 8px rgba(40,167,69,0.15);">
+                        <p style="margin:0; color:#155724; font-weight:bold; font-size:1rem;">🎉 Day {i+1} IS LIVE ON YOUR WEBSITE!</p>
+                        <p style="margin:6px 0 0 0; font-size:0.95rem;">🔗 <a href="{pub_url}" target="_blank" style="color:#155724; font-weight:bold; text-decoration:underline;">Click Here to Open Live Article: {pub_url}</a></p>
+                    </div>
+                    """, unsafe_allow_html=True)
                 
                 if not staged_item:
                     st.info(f"Click '⚙️ Step 1: Generate All 7 Weekly Drafts' above or generate this single item below:")
