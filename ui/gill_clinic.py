@@ -467,10 +467,10 @@ def render_clinic_header():
                     📞 {CLINIC['phone']} &nbsp;|&nbsp; 
                     🕐 {CLINIC['hours']}
                 </p>
-                <p class="details" style="margin-top: 0.3rem;">
-                    🌐 <a href="{CLINIC['website']}" target="_blank" style="color: #00b4d8;">Live Website</a> &nbsp;|&nbsp;
-                    🗺️ <a href="{CLINIC['google_maps']}" target="_blank" style="color: #00b4d8;">Google Maps</a> &nbsp;|&nbsp;
-                    🏥 Associated: {', '.join(CLINIC['associated_hospitals'])}
+                <p class="details" style="margin-top: 0.5rem; font-size: 0.95rem;">
+                    🌐 <a href="{CLINIC['website']}" target="_blank" style="color: #00b4d8; font-weight: bold; text-decoration: underline;">Clinic Live Website</a> &nbsp;|&nbsp;
+                    📚 <a href="https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/blogs/index.html" target="_blank" style="color: #f1c40f; font-weight: bold; text-decoration: underline;">Master Blog Catalog</a> &nbsp;|&nbsp;
+                    🗺️ <a href="{CLINIC['google_maps']}" target="_blank" style="color: #00b4d8;">Google Maps</a>
                 </p>
             </div>
             <div style="text-align: right;">
