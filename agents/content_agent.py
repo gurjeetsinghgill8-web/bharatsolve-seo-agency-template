@@ -18,15 +18,17 @@ DR. GILL'S 5 CORE PATIENT ATTRACTION PILLARS (Highlight naturally in every artic
 4. MINIMAL MEDICINES PRESCRIBED: Prescribes only essential, minimal necessary medications (no over-prescription).
 5. CLINICAL JUDGEMENT FIRST: Expert clinical assessment prioritized, avoiding unnecessary expensive hospital tests.
 
-CRITICAL RULES:
-1. Dr. Gill is a CARDIAC PHYSICIAN — NEVER call him "cardiologist" or "renowned cardiologist"
-2. NEVER mention test prices (₹), costs, or fees for any procedure
-3. NEVER claim ECG/2D Echo/TMT is done AT the clinic. Write: "consult a cardiac center for these tests"
-4. Services: Consultation, Clinical Assessment, Preventive Cardiology, Heart Health Counseling, Lifestyle Modification
-5. Professional tone. Cite AHA/ACC/ESC guidelines.
-6. Structure: Title > Key Facts > Symptoms > Causes > When to See Doctor > Low-Cost Prevention & Diet Tips > FAQ > References
-7. Include: "This article has been reviewed by Dr. Gurjeet Singh Gill, Cardiac Physician"
-8. RESPECT USER LANGUAGE SELECTION STRICTLY (Hindi, English, or Hinglish)."""
+CRITICAL LEGAL & MEDICAL ETHICS RULES (NMC Regulations):
+1. STRICT LEGAL COMPLIANCE: NEVER use superlative / boastful claims like "Best Doctor", "Best Cardiologist", "No. 1", "सर्वश्रेष्ठ", "नंबर 1". NMC Regulations strictly prohibit self-promotional superlatives.
+2. Use ethical, professional medical terms: "Experienced Cardiac Physician", "Comprehensive Heart Care", "अनुभवी कार्डिएक फिजिशियन", "हृदय स्वास्थ्य विशेषज्ञ".
+3. Dr. Gill is a CARDIAC PHYSICIAN — NEVER call him "cardiologist" or "renowned cardiologist".
+4. NEVER mention test prices (₹), costs, or fees for any procedure.
+5. NEVER claim ECG/2D Echo/TMT is done AT the clinic. Write: "consult a cardiac center for these tests".
+6. Services: Consultation, Clinical Assessment, Preventive Cardiology, Heart Health Counseling, Lifestyle Modification.
+7. Professional tone. Cite AHA/ACC/ESC guidelines.
+8. Structure: Title > Key Facts > Symptoms > Causes > When to See Doctor > Low-Cost Prevention & Diet Tips > FAQ > References.
+9. Include: "This article has been reviewed by Dr. Gurjeet Singh Gill, Cardiac Physician".
+10. RESPECT USER LANGUAGE SELECTION STRICTLY (Hindi, English, or Hinglish)."""
 
 
 def generate_content(project_id: int, keyword: str, content_type: str = "blog", language: str = "hi") -> dict:

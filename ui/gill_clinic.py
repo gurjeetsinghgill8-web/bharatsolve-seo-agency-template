@@ -106,7 +106,7 @@ TARGET_KEYWORDS = [
     "Chest Pain Doctor Near Me", "Heart Clinic Mohiuddinpur",
     "ECG Test Consultation Meerut", "2D Echo Advice Meerut", "TMT Test Guidance Meerut",
     "Diabetes Heart Doctor", "Cholesterol Treatment Meerut",
-    "Best Heart Doctor Meerut", "Cardiac Care Delhi NCR",
+    "Heart Care Physician Meerut", "Cardiac Care Delhi NCR",
     "Heart Failure Specialist", "Heart Attack Prevention Meerut",
     "Cardiac Physician near Yashoda Hospital", "Heart Checkup Meerut",
 ]

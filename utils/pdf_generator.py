@@ -21,7 +21,7 @@ DEV_WORD_MAP = {
     'की': 'ki', 'में': 'mein', 'और': 'aur', 'या': 'ya', 'है': 'hai', 'हैं': 'hain',
     'से': 'se', 'को': 'ko', 'पर': 'par', 'तो': 'toh', 'भी': 'bhi', 'लिए': 'liye',
     'आप': 'aap', 'अगर': 'agar', 'तुरंत': 'turant', 'पास': 'paas', 'मेरी': 'meri', 'चाहते': 'chahte',
-    'योग्य': 'Qualified', 'अस्पताल': 'Hospital', 'जांचें': 'Tests'
+    'योग्य': 'Qualified', 'अस्पताल': 'Hospital', 'जांचें': 'Tests', 'सर्वश्रेष्ठ': 'Experienced'
 }
 
 DEV_CHAR_MAP = {

@@ -22,7 +22,7 @@ LOCAL_SEARCH_QUERIES = {
     "direct_doctor": [
         {"query": "heart doctor near me", "intent": "book_appointment", "volume": "high", "conversion": "very_high"},
         {"query": "Cardiac Physician in Meerut", "intent": "book_appointment", "volume": "high", "conversion": "very_high"},
-        {"query": "best heart doctor Meerut", "intent": "book_appointment", "volume": "high", "conversion": "very_high"},
+        {"query": "experienced heart doctor Meerut", "intent": "book_appointment", "volume": "high", "conversion": "very_high"},
         {"query": "heart specialist near Mohiuddinpur", "intent": "book_appointment", "volume": "medium", "conversion": "high"},
         {"query": "heart doctor near me open now", "intent": "emergency", "volume": "medium", "conversion": "very_high"},
         {"query": "Dr. Gurjeet Singh Gill Cardiac Physician", "intent": "brand_search", "volume": "medium", "conversion": "very_high"},
