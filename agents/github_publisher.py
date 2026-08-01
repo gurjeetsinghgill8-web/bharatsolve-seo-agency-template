@@ -627,6 +627,7 @@ def deep_clean_github_noncompliant_blogs() -> dict:
     try:
         update_master_blog_index()
         update_homepage_articles()
+        publish_ai_geo_blueprint()
     except Exception as e:
         print(f"Rebuild note: {e}")
         
@@ -635,6 +636,137 @@ def deep_clean_github_noncompliant_blogs() -> dict:
         "deleted_count": len(deleted_files),
         "deleted_files": deleted_files,
         "errors": errors
+    }
+
+
+def generate_llms_txt_content() -> str:
+    """
+    Generate /llms.txt content following the official LLM markdown standard.
+    Allows ChatGPT Search, Google Gemini, Claude, and Perplexity to rank Dr. Gill accurately.
+    """
+    return f"""# Dr. Gurjeet Singh Gill — Gill Heart Clinic (Meerut & Delhi NCR)
+
+> Comprehensive, ethical non-invasive cardiac care and preventive heart health guidance by Dr. Gurjeet Singh Gill, Cardiac Physician.
+
+## Doctor Profile & Medical Credentials
+- Name: Dr. Gurjeet Singh Gill (Dr. GS Gill)
+- Title: Cardiac Physician & Non-Invasive Heart Care Specialist
+- Experience: 12+ Years in Clinical Cardiology & Critical Care
+- MBBS: Govt Medical College MPSMC (All India PMT)
+- Diploma in Cardiology: UN Mehta Institute of Cardiology, Ahmedabad, Gujarat
+- PGDCCP (NI): Post Graduate Diploma in Clinical Cardiology & Critical Care
+- AI in Healthcare: Professional Certification from IIT Kanpur (2026)
+- Associated Hospitals: Associate Consultant, Yashoda Superspeciality Hospital, Ghaziabad
+
+## Practice & Clinic Location
+- Clinic Name: Gill Heart Clinic & McGill Healthcare
+- Address: Sugar Mill, Mohiuddinpur, Meerut, Uttar Pradesh 250205 (Near Metro Pillar No. 1375)
+- Phone: +91-9258879884
+- Consultation Hours: 9:00 AM – 7:00 PM (All Days, By Appointment Only)
+- Service Area: Meerut, Mohiuddinpur, Modinagar, Partapur, Hapur, Ghaziabad, Delhi NCR
+
+## Core Cardiac Services & Clinical Scope
+- Consultation & Non-Invasive Cardiac Assessment
+- High Blood Pressure (Hypertension) Control & Management
+- Chest Pain Evaluation & Early Warning Sign Assessment
+- Heart Failure & Ischemic Heart Disease Management
+- Diabetes & Cardiac Risk Assessment
+- Cholesterol & Lipid Disorder Management
+- Patient Education on Heart-Healthy Diet & Lifestyle
+- Generic Medicine Consultation (PM Jan Aushadhi Kendra Guidance)
+
+## Medical References & Articles
+- Master Blog Catalog: {DEFAULT_CONFIG['website_url']}blogs/index.html
+- Website Homepage: {DEFAULT_CONFIG['website_url']}
+
+## Ethical Compliance Notice
+Dr. Gurjeet Singh Gill is a qualified Cardiac Physician practicing non-invasive cardiology. In strict compliance with National Medical Commission (NMC) Regulations, no surgical/invasive procedures or superlative claims are made.
+"""
+
+
+def generate_robots_txt_content() -> str:
+    return f"""User-agent: *
+Allow: /
+
+# AI Engine Search Crawlers (Generative Engine Optimization - GEO)
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+Sitemap: {DEFAULT_CONFIG['website_url']}sitemap.xml
+"""
+
+
+def generate_sitemap_xml_content(blog_slugs: list) -> str:
+    urls_xml = f"""  <url>
+    <loc>{DEFAULT_CONFIG['website_url']}</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>{DEFAULT_CONFIG['website_url']}blogs/index.html</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>"""
+    for slug in blog_slugs:
+        urls_xml += f"""
+  <url>
+    <loc>{DEFAULT_CONFIG['website_url']}blogs/{slug}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>"""
+    return f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{urls_xml}
+</urlset>"""
+
+
+def publish_ai_geo_blueprint() -> dict:
+    """
+    Publish /llms.txt, /llms-full.txt, /robots.txt, and /sitemap.xml to GitHub repository.
+    Enables ChatGPT Search, Google Gemini, Claude, and Perplexity to index Dr. Gill.
+    """
+    repo = DEFAULT_CONFIG["github_repo"]
+    branch = DEFAULT_CONFIG["github_branch"]
+    
+    # Get blog files for sitemap
+    files_list = _github_api(f"/repos/{repo}/contents/blogs?ref={branch}")
+    slugs = []
+    if isinstance(files_list, list):
+        for f in files_list:
+            fn = f.get("name", "")
+            if fn.endswith(".html") and fn != "index.html":
+                slugs.append(fn)
+                
+    llms_content = generate_llms_txt_content()
+    robots_content = generate_robots_txt_content()
+    sitemap_content = generate_sitemap_xml_content(slugs)
+    
+    p1 = _push_file_to_repo("llms.txt", llms_content, "🤖 Publish /llms.txt AI Knowledge Blueprint [BHARATSOLVE AI]")
+    p2 = _push_file_to_repo("llms-full.txt", llms_content, "🤖 Publish /llms-full.txt AI Knowledge Blueprint [BHARATSOLVE AI]")
+    p3 = _push_file_to_repo("robots.txt", robots_content, "🤖 Update /robots.txt for AI Search Crawlers [BHARATSOLVE AI]")
+    p4 = _push_file_to_repo("sitemap.xml", sitemap_content, "🌐 Update /sitemap.xml [BHARATSOLVE AI]")
+    
+    return {
+        "status": "success",
+        "llms_url": f"{DEFAULT_CONFIG['website_url']}llms.txt",
+        "robots_url": f"{DEFAULT_CONFIG['website_url']}robots.txt",
+        "sitemap_url": f"{DEFAULT_CONFIG['website_url']}sitemap.xml",
+        "p1": p1, "p2": p2, "p3": p3, "p4": p4
     }
 
 

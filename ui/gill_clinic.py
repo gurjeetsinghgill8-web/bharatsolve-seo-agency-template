@@ -1617,6 +1617,48 @@ def render_autopilot_section(user_id=None):
         st.markdown('</div>', unsafe_allow_html=True)
 
 
+def render_ai_geo_section(user_id=None, project_id=0):
+    with st.container():
+        st.markdown('<div class="gill-section">', unsafe_allow_html=True)
+        st.markdown("### 🤖 Generative Engine Optimization (GEO) & AI Search Ranking")
+        st.markdown("Rank Dr. Gurjeet Singh Gill & Gill Heart Clinic at the top when patients search on **ChatGPT Search, Google Gemini, Claude, and Perplexity AI**!")
+        
+        col_geo1, col_geo2 = st.columns(2)
+        with col_geo1:
+            st.markdown("""
+            <div style="background:#eef9ff; border:1px solid #00b4d8; border-radius:12px; padding:1rem; margin-bottom:1rem;">
+                <h5 style="color:#0077b6; margin:0 0 0.5rem;">📡 AI Search Engines Being Targeted:</h5>
+                <ul style="margin:0; padding-left:1.2rem; font-size:0.9rem; color:#333;">
+                    <li><strong>ChatGPT Search / GPTBot</strong>: Indexing <code>/llms.txt</code> & <code>MedicalBusiness</code> Schema</li>
+                    <li><strong>Google Gemini / Google-Extended</strong>: Indexing <code>Physician</code> JSON-LD microdata</li>
+                    <li><strong>Anthropic Claude / ClaudeBot</strong>: Indexing structured medical credentials & articles</li>
+                    <li><strong>Perplexity AI / PerplexityBot</strong>: Citation of clinical guidelines & clinic location</li>
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
+            
+        with col_geo2:
+            st.markdown("""
+            <div style="background:#f4f9fc; border:1px solid #b3e5ff; border-radius:12px; padding:1rem; margin-bottom:1rem;">
+                <h5 style="color:#0077b6; margin:0 0 0.5rem;">📄 Live AI Knowledge Blueprints:</h5>
+                <p style="margin:0.2rem 0; font-size:0.88rem;">🔗 <strong>/llms.txt</strong>: <a href="https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/llms.txt" target="_blank">llms.txt</a></p>
+                <p style="margin:0.2rem 0; font-size:0.88rem;">🔗 <strong>/robots.txt</strong>: <a href="https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/robots.txt" target="_blank">robots.txt (AI Bots Unblocked)</a></p>
+                <p style="margin:0.2rem 0; font-size:0.88rem;">🔗 <strong>/sitemap.xml</strong>: <a href="https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/sitemap.xml" target="_blank">sitemap.xml</a></p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+        if st.button("🚀 Publish / Update AI Knowledge Blueprints (llms.txt & AI Bots)", key="pub_geo_blueprints_btn", type="primary", use_container_width=True):
+            with st.spinner("Publishing /llms.txt, /robots.txt & /sitemap.xml to GitHub..."):
+                from agents.github_publisher import publish_ai_geo_blueprint
+                geo_res = publish_ai_geo_blueprint()
+                if geo_res.get("status") == "success":
+                    st.success("🎉 AI Search Blueprints (/llms.txt, robots.txt, sitemap.xml) Published Live to Website!")
+                    st.balloons()
+                else:
+                    st.error("Failed to publish AI Blueprints")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # MAIN: Show Gill Clinic Command Center
 # ═══════════════════════════════════════════════════════════════════════
@@ -1672,6 +1714,10 @@ def show_gill_clinic():
     # ── Local Search Auto-Engine ──
     st.markdown("<br>", unsafe_allow_html=True)
     render_local_search_engine(user_id, project_id)
+    
+    # ── Generative Engine Optimization (GEO) & AI Search Section ──
+    st.markdown("<br>", unsafe_allow_html=True)
+    render_ai_geo_section(user_id, project_id)
     
     # ── Auto-Pilot Panel ──
     st.markdown("<br>", unsafe_allow_html=True)
