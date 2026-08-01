@@ -200,7 +200,7 @@ def call_llm(messages, provider=None, model=None, temperature=0.7, use_fallback=
             if not use_fallback:
                 raise e
             error_msg = str(e)
-            print(f"⚠️ {provider} failed: {error_msg[:100]}... Trying fallback...")
+            print(f"Provider {provider} failed: {error_msg[:100]}... Trying fallback...")
     
     # Fallback chain
     for fallback in FALLBACK_CHAIN:
@@ -211,10 +211,10 @@ def call_llm(messages, provider=None, model=None, temperature=0.7, use_fallback=
         if fb_provider in PROVIDERS:
             fn = PROVIDERS[fb_provider]
             try:
-                print(f"🔄 Fallback to {fb_provider}/{fb_model}")
+                print(f"Fallback to {fb_provider}/{fb_model}")
                 return fn(messages, model=fb_model, temperature=temperature)
             except Exception as e:
-                print(f"⚠️ {fb_provider} also failed: {str(e)[:100]}")
+                print(f"Fallback provider {fb_provider} also failed: {str(e)[:100]}")
                 continue
     
     # Ultimate fallback — return detailed error
