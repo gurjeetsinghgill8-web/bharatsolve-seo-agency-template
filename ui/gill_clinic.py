@@ -916,13 +916,27 @@ def render_review_section():
         st.markdown('<div class="gill-section">', unsafe_allow_html=True)
         st.markdown("### 💬 Google Review Manager")
         
-        # Auto-reply toggle
-        auto_reply = st.toggle("🤖 Auto-Reply to New Reviews (AI Hinglish)", 
-                               value=True, key="auto_reply_toggle",
-                               help="AI automatically replies to new Google reviews in natural Hinglish")
+        from agents.review_agent import _get_gbp_token
+        gbp_token = _get_gbp_token()
         
-        if auto_reply:
-            st.success("✅ Auto-reply ACTIVE — AI will respond to new reviews within minutes")
+        # Auto-reply toggle
+        auto_reply = st.toggle("🤖 Direct Google API Auto-Reply (Hands-Free)", 
+                               value=bool(gbp_token), key="auto_reply_toggle",
+                               help="Automatically post AI replies directly to Google Business Profile via Google API")
+        
+        if auto_reply and gbp_token:
+            st.success("✅ Direct Google Business API Connected — Hands-Free Auto-Reply Active!")
+        elif auto_reply and not gbp_token:
+            st.warning("⚠️ Direct Google API Token Pending Connection in Secrets")
+            st.markdown("""
+            <div style="background:#fff3cd; border:1px solid #ffeeba; border-radius:10px; padding:12px 14px; margin:8px 0; color:#856404;">
+                <p style="margin:0; font-weight:bold;">💡 How to Reply to Your 2 Live Google Reviews Now:</p>
+                <p style="margin:4px 0 0 0; font-size:0.9rem;">
+                    Since Google Cloud API OAuth requires your Google account login key, use the <strong>⚡ Generate AI Reply for Live Google Reviews</strong> tool below!  
+                    Paste the review text, click <strong>Auto-Generate AI Reply</strong>, and click <strong>Open Google Business Profile</strong> to post in 1 click!
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
         
         # Refresh reviews
         if st.button("🔄 Refresh Reviews", key="refresh_reviews", use_container_width=True):
