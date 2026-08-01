@@ -1268,11 +1268,70 @@ def render_local_search_engine():
         with col3:
             st.metric("👥 Patient Conversion Potential", "15-30/month", "If ranked top 3")
         
-        # Weekly content plan
+        # Weekly content plan & 7-Day Staging Drawer
         st.markdown("---")
-        st.markdown("#### 📅 This Week's Auto-Content Plan")
-        
+        st.markdown("#### 📅 7-Day Weekly Content Batch Planner & Review Drawer")
+        st.info("💡 **Dr. Gill**: Generate all 7 weekly drafts in advance, read and edit each article line-by-line below, download PDF, share via WhatsApp, and publish 1-by-1 whenever you approve!")
+
         weekly_queries = get_weekly_target_queries()
+        
+        # Batch generation & publish buttons
+        col_gen, col_pub_all = st.columns(2)
+        with col_gen:
+            if st.button("⚙️ Step 1: Generate All 7 Weekly Drafts (Stage for Review)", key="stage_weekly_batch", type="primary", use_container_width=True):
+                with st.spinner("🤖 AI generating 7-day draft batch for Dr. Gill's review..."):
+                    staged_dict = st.session_state.get("gc_staged_weekly_drafts", {})
+                    for i, q in enumerate(weekly_queries[:7]):
+                        try:
+                            res = generate_content(
+                                project_id=project_id,
+                                keyword=q['query'],
+                                content_type="blog",
+                                language="hi"
+                            )
+                            staged_dict[i] = {
+                                "query": q['query'],
+                                "title": res.get("title", q['query']),
+                                "content": res.get("content", ""),
+                                "published": False,
+                                "published_url": ""
+                            }
+                        except Exception as e:
+                            st.error(f"Error on Day {i+1}: {e}")
+                    st.session_state["gc_staged_weekly_drafts"] = staged_dict
+                    st.success("🎉 All 7 Weekly Drafts Generated & Staged Below! Review each item line-by-line before publishing.")
+                    st.rerun()
+                    
+        with col_pub_all:
+            if st.button("🚀 Approve & Publish All 7 Drafts to Website", key="publish_all_weekly_batch", use_container_width=True):
+                staged_dict = st.session_state.get("gc_staged_weekly_drafts", {})
+                if not staged_dict:
+                    st.warning("⚠️ Please generate 7 weekly drafts first!")
+                else:
+                    with st.spinner("Publishing all 7 approved drafts to website..."):
+                        from agents.github_publisher import publish_reviewed_draft_to_github
+                        pub_count = 0
+                        for i in range(len(weekly_queries[:7])):
+                            item = staged_dict.get(i)
+                            if item and not item.get("published"):
+                                p_res = publish_reviewed_draft_to_github(
+                                    title=item["title"],
+                                    content=item["content"],
+                                    target_location="Meerut",
+                                    language="hi"
+                                )
+                                if p_res.get("status") == "published":
+                                    item["published"] = True
+                                    item["published_url"] = p_res.get("published_url", "")
+                                    pub_count += 1
+                        st.session_state["gc_staged_weekly_drafts"] = staged_dict
+                        st.balloons()
+                        st.success(f"🎉 {pub_count} weekly articles published live to your website catalog!")
+                        st.rerun()
+
+        # Render 7 Staged Draft Cards / Expanders
+        st.markdown("##### 📝 7-Day Content Review Table (Click to Read, Edit & Approve):")
+        staged_dict = st.session_state.get("gc_staged_weekly_drafts", {})
         
         for i, q in enumerate(weekly_queries[:7]):
             intent_emoji = {
@@ -1280,63 +1339,106 @@ def render_local_search_engine():
                 "price_check": "💰", "book_test": "🩺", "brand_search": "🏥",
                 "walk_in": "🚶", "book_service": "🏠", "event": "📢"
             }
-            conv_badge = {"very_high": "🔴", "high": "🟠", "medium": "🟡", "low": "🟢"}
             
-            st.markdown(f"""
-            <div style="display:flex;align-items:center;padding:0.4rem 0;border-bottom:1px solid #e0f0ff;font-size:0.9rem;">
-                <span style="width:30px;text-align:center;">{i+1}</span>
-                <span style="width:30px;">{intent_emoji.get(q['intent'],'📌')}</span>
-                <span style="flex:2;">{q['query'][:55]}</span>
-                <span style="color:#888;width:80px;text-align:center;">{q['volume']}</span>
-                <span>{conv_badge.get(q['conversion'],'')}</span>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        st.markdown("---")
-        
-        col_a, col_b = st.columns(2)
-        with col_a:
-            if st.button("🚀 Publish This Week's Content", key="publish_weekly_plan", 
-                        use_container_width=True, type="primary"):
-                with st.spinner(f"Generating & Publishing {len(weekly_queries[:7])} targeted pages..."):
-                    from agents.github_publisher import publish_blog_to_github
-                    published = 0
-                    for i, q in enumerate(weekly_queries[:7]):
-                        try:
-                            result = publish_blog_to_github(
-                                topic=q['query'],
-                                target_location="Meerut",
-                                language="hinglish",
-                                auto_publish=True
+            staged_item = staged_dict.get(i)
+            is_pub = staged_item.get("published", False) if staged_item else False
+            pub_url = staged_item.get("published_url", "") if staged_item else ""
+            
+            status_label = "✅ Published Live" if is_pub else ("📄 Staged Draft Ready" if staged_item else "🔴 Pending Generation")
+            
+            with st.expander(f"Day {i+1}: {intent_emoji.get(q['intent'],'📌')} {q['query']} — Status: {status_label}", expanded=False):
+                st.markdown(f"**Target Query**: `{q['query']}` | **Intent**: `{q['intent']}` | **Conversion**: `{q['conversion']}`")
+                
+                if pub_url:
+                    st.markdown(f"🔗 **Live Website URL**: [{pub_url}]({pub_url})")
+                
+                if not staged_item:
+                    st.info(f"Click '⚙️ Step 1: Generate All 7 Weekly Drafts' above or generate this single item below:")
+                    if st.button(f"⚡ Generate Day {i+1} Draft Now", key=f"gen_single_item_{i}"):
+                        with st.spinner(f"Generating draft for Day {i+1}..."):
+                            res = generate_content(
+                                project_id=project_id,
+                                keyword=q['query'],
+                                content_type="blog",
+                                language="hi"
                             )
-                            if result.get("status") == "published":
-                                published += 1
-                                st.success(f"✅ [{i+1}/7] {q['query'][:40]} → LIVE")
-                            else:
-                                st.warning(f"⚠️ [{i+1}/7] {q['query'][:40]}")
-                        except Exception as e:
-                            st.error(f"❌ [{i+1}/7] {str(e)[:60]}")
-                    st.balloons()
-                    st.success(f"🎉 {published}/7 pages published! Meerut patients will now find your clinic.")
-        
-        with col_b:
-            if st.button("📊 View Full 50+ Search Plan", key="view_full_plan", use_container_width=True):
-                plan = generate_content_plan()
-                st.markdown(f"""
-                ### 📊 Complete Search Intent Plan
-                
-                **Critical (Book Now!)**: {len(plan['priority_1_critical'])} queries  
-                **High Priority**: {len(plan['priority_2_high'])} queries  
-                **Medium Priority**: {len(plan['priority_3_medium'])} queries  
-                **Nurture**: {len(plan['priority_4_nurture'])} queries  
-                
-                **Est. Patient Conversions/month**: {plan['estimated_patients']}+
-                
-                ---
-                ### 🔴 CRITICAL — Publish First:
-                """)
-                for entry in plan['priority_1_critical'][:7]:
-                    st.markdown(f"- **{entry['query']}** → {entry['recommended_action'][:60]}")
+                            if "gc_staged_weekly_drafts" not in st.session_state:
+                                st.session_state["gc_staged_weekly_drafts"] = {}
+                            st.session_state["gc_staged_weekly_drafts"][i] = {
+                                "query": q['query'],
+                                "title": res.get("title", q['query']),
+                                "content": res.get("content", ""),
+                                "published": False,
+                                "published_url": ""
+                            }
+                            st.success(f"✅ Day {i+1} draft generated!")
+                            st.rerun()
+                else:
+                    # Item preview and edit
+                    edited_t = st.text_input(f"Edit Title (Day {i+1})", value=staged_item["title"], key=f"item_title_{i}")
+                    edited_c = st.text_area(f"Read & Edit Article Body (Day {i+1})", value=staged_item["content"], height=300, key=f"item_content_{i}")
+                    
+                    # Update session state text edits
+                    staged_item["title"] = edited_t
+                    staged_item["content"] = edited_c
+                    
+                    col_act1, col_act2, col_act3, col_act4 = st.columns(4)
+                    with col_act1:
+                        if st.button(f"📄 Download PDF", key=f"pdf_item_{i}"):
+                            from utils.pdf_generator import create_blog_pdf
+                            pdf_path = create_blog_pdf(edited_t, edited_c, CLINIC['doctor'])
+                            with open(pdf_path, "rb") as f:
+                                st.download_button(f"💾 Save PDF File", f, file_name=f"Day_{i+1}_Heart_Guide.pdf", mime="application/pdf", key=f"dl_pdf_item_{i}")
+                    
+                    with col_act2:
+                        from utils.share_links import get_whatsapp_share_url
+                        wa_txt = f"*🏥 {edited_t}*\n\n{clean_text_for_pdf_snippet(edited_c)[:300]}...\n\nReviewed by: {CLINIC['doctor']} ({CLINIC['phone']})"
+                        wa_u = get_whatsapp_share_url(wa_txt)
+                        st.markdown(f'''<a href="{wa_u}" target="_blank" style="text-decoration:none;"><div style="background:#25D366;color:white;font-weight:bold;text-align:center;padding:0.4rem;border-radius:8px;font-size:0.85rem;">📱 Share WhatsApp</div></a>''', unsafe_allow_html=True)
+                    
+                    with col_act3:
+                        if st.button(f"🚀 Approve & Publish", key=f"pub_item_{i}", type="primary", disabled=is_pub):
+                            with st.spinner(f"Publishing Day {i+1} article to website..."):
+                                from agents.github_publisher import publish_reviewed_draft_to_github
+                                pub_res = publish_reviewed_draft_to_github(
+                                    title=edited_t,
+                                    content=edited_c,
+                                    target_location="Meerut",
+                                    language="hi"
+                                )
+                                if pub_res.get("status") == "published":
+                                    staged_item["published"] = True
+                                    staged_item["published_url"] = pub_res.get("published_url", "")
+                                    st.session_state["gc_staged_weekly_drafts"][i] = staged_item
+                                    st.success(f"🎉 Day {i+1} Published Live!")
+                                    st.balloons()
+                                    st.rerun()
+                                else:
+                                    st.error(f"Push failed: {pub_res.get('message','')}")
+                    
+                    with col_act4:
+                        if st.button(f"🗑️ Clear Draft", key=f"clear_item_{i}"):
+                            st.session_state["gc_staged_weekly_drafts"].pop(i, None)
+                            st.rerun()
+
+        st.markdown("---")
+        if st.button("📊 View Full 50+ Search Plan", key="view_full_plan", use_container_width=True):
+            plan = generate_content_plan()
+            st.markdown(f"""
+            ### 📊 Complete Search Intent Plan
+            
+            **Critical (Book Now!)**: {len(plan['priority_1_critical'])} queries  
+            **High Priority**: {len(plan['priority_2_high'])} queries  
+            **Medium Priority**: {len(plan['priority_3_medium'])} queries  
+            **Nurture**: {len(plan['priority_4_nurture'])} queries  
+            
+            **Est. Patient Conversions/month**: {plan['estimated_patients']}+
+            
+            ---
+            ### 🔴 CRITICAL — Publish First:
+            """)
+            for entry in plan['priority_1_critical'][:7]:
+                st.markdown(f"- **{entry['query']}** → {entry['recommended_action'][:60]}")
         
         st.markdown('</div>', unsafe_allow_html=True)
 
