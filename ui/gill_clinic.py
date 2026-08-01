@@ -1327,19 +1327,52 @@ def render_local_search_engine(user_id=None, project_id=1):
         with col3:
             st.metric("👥 Patient Conversion Potential", "15-30/month", "If ranked top 3")
         
-        # Weekly content plan & 7-Day Staging Drawer
+        # Weekly content plan & 1-by-1 Interactive Review Drawer
         st.markdown("---")
-        st.markdown("#### 📅 7-Day Weekly Content Batch Planner & Review Drawer")
-        st.info("💡 **Dr. Gill**: Generate all 7 weekly drafts in advance, read and edit each article line-by-line below, download PDF, share via WhatsApp, and publish 1-by-1 whenever you approve!")
+        st.markdown("#### 📅 7-Day Weekly Content Planner & 1-by-1 Review Drawer")
+        st.info("💡 **Dr. Gill**: Generate articles **1-by-1** below! Click 'Generate Day X Draft Now', read/edit line-by-line, download PDF, share via WhatsApp, and publish whenever you approve!")
 
         weekly_queries = get_weekly_target_queries()
+        staged_dict = st.session_state.get("gc_staged_weekly_drafts", {})
         
-        # Batch generation & publish buttons
+        # Find next ungenerated day index
+        next_day_idx = 0
+        for i in range(7):
+            if i not in staged_dict or not staged_dict[i].get("content"):
+                next_day_idx = i
+                break
+                
         col_gen, col_pub_all = st.columns(2)
         with col_gen:
-            if st.button("⚙️ Step 1: Generate All 7 Weekly Drafts (Stage for Review)", key="stage_weekly_batch", type="primary", use_container_width=True):
-                with st.spinner("🤖 AI generating 7-day draft batch for Dr. Gill's review..."):
-                    staged_dict = st.session_state.get("gc_staged_weekly_drafts", {})
+            next_q = weekly_queries[next_day_idx]['query']
+            if st.button(f"✨ Generate Day {next_day_idx+1} Draft ('{next_q[:20]}...')", key="gen_next_single_draft", type="primary", use_container_width=True):
+                with st.spinner(f"🤖 AI generating Day {next_day_idx+1} article for '{next_q}'..."):
+                    try:
+                        res = generate_content(
+                            project_id=project_id,
+                            keyword=next_q,
+                            content_type="blog",
+                            language="hi"
+                        )
+                        title = res.get("title", f"{next_q} — Dr. Gurjeet Singh Gill, Cardiac Physician")
+                        content = res.get("content") or f"<h2>{next_q}</h2><p>Dr. Gurjeet Singh Gill, Cardiac Physician (Mohiuddinpur, Meerut) dwara mukhya chikitsa salah...</p>"
+                        
+                        staged_dict[next_day_idx] = {
+                            "query": next_q,
+                            "title": title,
+                            "content": content,
+                            "published": False,
+                            "published_url": ""
+                        }
+                        st.session_state["gc_staged_weekly_drafts"] = staged_dict
+                        st.success(f"🎉 Day {next_day_idx+1} Draft Ready for Review Below!")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Error on Day {next_day_idx+1}: {e}")
+                        
+        with col_pub_all:
+            if st.button("⚙️ Batch Option: Generate All 7 Drafts at Once", key="stage_weekly_batch", use_container_width=True):
+                with st.spinner("🤖 AI generating 7-day draft batch..."):
                     for i, q in enumerate(weekly_queries[:7]):
                         try:
                             res = generate_content(
@@ -1349,8 +1382,7 @@ def render_local_search_engine(user_id=None, project_id=1):
                                 language="hi"
                             )
                             title = res.get("title", f"{q['query']} — Dr. Gurjeet Singh Gill, Cardiac Physician")
-                            content = res.get("content") or f"<h2>{q['query']}</h2><p>Dr. Gurjeet Singh Gill, Cardiac Physician (Mohiuddinpur, Meerut) dwara mukhya chikitsa salah...</p>"
-                            
+                            content = res.get("content") or f"<h2>{q['query']}</h2><p>Dr. Gurjeet Singh Gill dwara mukhya chikitsa salah...</p>"
                             staged_dict[i] = {
                                 "query": q['query'],
                                 "title": title,
@@ -1359,44 +1391,10 @@ def render_local_search_engine(user_id=None, project_id=1):
                                 "published_url": ""
                             }
                         except Exception as e:
-                            st.warning(f"Note on Day {i+1}: {e}")
-                            staged_dict[i] = {
-                                "query": q['query'],
-                                "title": f"{q['query']} — Dr. Gurjeet Singh Gill, Cardiac Physician",
-                                "content": f"<h2>{q['query']}</h2><p>Dr. Gurjeet Singh Gill (MBBS, Diploma Cardiology UN Mehta, PGDCCP) — Cardiac Physician in Meerut & Delhi NCR. Consult at Gill Heart Clinic, Mohiuddinpur, Meerut. Contact: +91-9258879884.</p>",
-                                "published": False,
-                                "published_url": ""
-                            }
+                            print(f"Batch item error: {e}")
                     st.session_state["gc_staged_weekly_drafts"] = staged_dict
-                    st.success("🎉 All 7 Weekly Drafts Generated & Staged Below! Review each item line-by-line before publishing.")
+                    st.success("🎉 All 7 Drafts Staged Below!")
                     st.rerun()
-                    
-        with col_pub_all:
-            if st.button("🚀 Approve & Publish All 7 Drafts to Website", key="publish_all_weekly_batch", use_container_width=True):
-                staged_dict = st.session_state.get("gc_staged_weekly_drafts", {})
-                if not staged_dict:
-                    st.warning("⚠️ Please generate 7 weekly drafts first!")
-                else:
-                    with st.spinner("Publishing all 7 approved drafts to website..."):
-                        from agents.github_publisher import publish_reviewed_draft_to_github
-                        pub_count = 0
-                        for i in range(len(weekly_queries[:7])):
-                            item = staged_dict.get(i)
-                            if item and not item.get("published"):
-                                p_res = publish_reviewed_draft_to_github(
-                                    title=item["title"],
-                                    content=item["content"],
-                                    target_location="Meerut",
-                                    language="hi"
-                                )
-                                if p_res.get("status") == "published":
-                                    item["published"] = True
-                                    item["published_url"] = p_res.get("published_url", "")
-                                    pub_count += 1
-                        st.session_state["gc_staged_weekly_drafts"] = staged_dict
-                        st.balloons()
-                        st.success(f"🎉 {pub_count} weekly articles published live to your website catalog!")
-                        st.rerun()
 
         # Render 7 Staged Draft Cards / Expanders
         st.markdown("##### 📝 7-Day Content Review Table (Click to Read, Edit & Approve):")
