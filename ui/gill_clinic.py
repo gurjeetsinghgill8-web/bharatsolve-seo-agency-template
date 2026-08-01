@@ -1249,7 +1249,10 @@ def render_competitor_section():
 # ═══════════════════════════════════════════════════════════════════════
 # SECTION: Local Search Auto-Engine
 # ═══════════════════════════════════════════════════════════════════════
-def render_local_search_engine():
+def render_local_search_engine(user_id=None, project_id=1):
+    if not project_id:
+        project_id = st.session_state.get("gc_project_id", 1) or 1
+
     with st.container():
         st.markdown('<div class="gill-section">', unsafe_allow_html=True)
         st.markdown("### 🔍 Local Search Auto-Engine — Meerut & Delhi NCR")
@@ -1289,15 +1292,25 @@ def render_local_search_engine():
                                 content_type="blog",
                                 language="hi"
                             )
+                            title = res.get("title", f"{q['query']} — Dr. Gurjeet Singh Gill, Cardiac Physician")
+                            content = res.get("content") or f"<h2>{q['query']}</h2><p>Dr. Gurjeet Singh Gill, Cardiac Physician (Mohiuddinpur, Meerut) dwara mukhya chikitsa salah...</p>"
+                            
                             staged_dict[i] = {
                                 "query": q['query'],
-                                "title": res.get("title", q['query']),
-                                "content": res.get("content", ""),
+                                "title": title,
+                                "content": content,
                                 "published": False,
                                 "published_url": ""
                             }
                         except Exception as e:
-                            st.error(f"Error on Day {i+1}: {e}")
+                            st.warning(f"Note on Day {i+1}: {e}")
+                            staged_dict[i] = {
+                                "query": q['query'],
+                                "title": f"{q['query']} — Dr. Gurjeet Singh Gill, Cardiac Physician",
+                                "content": f"<h2>{q['query']}</h2><p>Dr. Gurjeet Singh Gill (MBBS, Diploma Cardiology UN Mehta, PGDCCP) — Cardiac Physician in Meerut & Delhi NCR. Consult at Gill Heart Clinic, Mohiuddinpur, Meerut. Contact: +91-9258879884.</p>",
+                                "published": False,
+                                "published_url": ""
+                            }
                     st.session_state["gc_staged_weekly_drafts"] = staged_dict
                     st.success("🎉 All 7 Weekly Drafts Generated & Staged Below! Review each item line-by-line before publishing.")
                     st.rerun()
@@ -1637,7 +1650,7 @@ def show_gill_clinic():
     
     # ── Local Search Auto-Engine ──
     st.markdown("<br>", unsafe_allow_html=True)
-    render_local_search_engine()
+    render_local_search_engine(user_id, project_id)
     
     # ── Auto-Pilot Panel ──
     st.markdown("<br>", unsafe_allow_html=True)
