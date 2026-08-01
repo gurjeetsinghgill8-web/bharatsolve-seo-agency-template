@@ -423,8 +423,72 @@ def publish_blog_to_github(topic: str, target_location: str = "Meerut",
             log_agent_action("github_publisher", 
                            f"Published: {blog_data['title'][:50]} → {result['published_url']}",
                            response_time_ms=0)
+            
+            # Automatically update master blogs catalog page
+            try:
+                update_master_blog_index()
+            except Exception as catalog_err:
+                print(f"Catalog update warning: {catalog_err}")
     
     return result
+
+
+def update_master_blog_index() -> dict:
+    """
+    Scans blogs/ folder on GitHub, fetches all HTML blog files,
+    and generates a master blogs/index.html catalog page listing all articles.
+    """
+    repo = DEFAULT_CONFIG["github_repo"]
+    branch = DEFAULT_CONFIG["github_branch"]
+    
+    files_list = _github_api(f"/repos/{repo}/contents/blogs?ref={branch}")
+    if not isinstance(files_list, list):
+        return {"error": "Could not list blogs folder"}
+    
+    articles = []
+    for f in files_list:
+        fname = f.get("name", "")
+        if fname.endswith(".html") and fname != "index.html":
+            clean_title = fname.replace(".html", "").replace("-", " ").title()
+            url = f"{DEFAULT_CONFIG['website_url']}blogs/{fname}"
+            articles.append({"title": clean_title, "url": url, "filename": fname})
+    
+    cards_html = ""
+    for a in articles:
+        cards_html += f"""
+        <div style="background:#fff; border:1px solid #d4edff; border-radius:12px; padding:1.2rem; margin:1rem 0; box-shadow:0 2px 8px rgba(0,119,182,0.08);">
+            <h3 style="color:#0077b6; margin:0 0 0.5rem;"><a href="{a['url']}" style="color:#0077b6; text-decoration:none;">{a['title']}</a></h3>
+            <p style="color:#666; font-size:0.9rem; margin:0.3rem 0;">Expert heart health guide by Dr. Gurjeet Singh Gill, Cardiac Physician.</p>
+            <a href="{a['url']}" style="display:inline-block; background:#0077b6; color:white; padding:0.4rem 1rem; border-radius:8px; text-decoration:none; font-weight:bold; font-size:0.85rem; margin-top:0.5rem;">Read Article →</a>
+        </div>
+        """
+    
+    index_html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Health Articles & Blogs | Dr. Gurjeet Singh Gill</title>
+    <style>
+        body {{ font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif; background:#f4f9fc; color:#333; line-height:1.6; margin:0; padding:20px; }}
+        .container {{ max-width:900px; margin:0 auto; background:white; padding:30px; border-radius:16px; box-shadow:0 4px 20px rgba(0,119,182,0.1); }}
+        h1 {{ color:#0077b6; border-bottom:2px solid #00b4d8; padding-bottom:10px; }}
+        .back-link {{ color:#0077b6; text-decoration:none; font-weight:bold; display:inline-block; margin-bottom:15px; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{DEFAULT_CONFIG['website_url']}" class="back-link">← Back to Gill Heart Clinic Website</a>
+        <h1>🫀 Heart Health Articles & Patient Guides</h1>
+        <p>Expert medical guidance written by <strong>Dr. Gurjeet Singh Gill</strong> (Cardiac Physician, Mohiuddinpur, Meerut).</p>
+        <div class="articles-grid">
+            {cards_html}
+        </div>
+    </div>
+</body>
+</html>"""
+    
+    return _push_file_to_repo("blogs/index.html", index_html, "Update master blogs/index.html catalog [BHARATSOLVE AI]")
 
 
 def publish_batch_blogs(topics: list = None) -> list:

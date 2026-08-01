@@ -769,7 +769,16 @@ def render_blog_section(user_id, project_id=0):
         
         # ── Blog Manager: View & Delete Published Blogs ──
         st.markdown("---")
-        st.markdown("#### 📚 Manage Published Blogs")
+        st.markdown("#### 📚 Manage Published Blogs & Master Catalog")
+        
+        master_catalog_url = "https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/blogs/index.html"
+        st.markdown(f"""
+        <div style="background: rgba(0,180,216,0.12); border: 1px solid #00b4d8; border-radius: 12px; padding: 12px 16px; margin: 10px 0 15px 0;">
+            <p style="margin: 0; color: #0077b6; font-weight: bold; font-size: 0.95rem;">🌐 Master Heart Health Blog Catalog on Your Website:</p>
+            <p style="margin: 4px 0 0 0; font-size: 0.9rem;"><a href="{master_catalog_url}" target="_blank" style="color: #0077b6; font-weight: bold;">🔗 {master_catalog_url}</a></p>
+            <p style="margin: 4px 0 0 0; color: #666; font-size: 0.8rem;">All AI-generated & doctor-approved articles are automatically listed here on your main domain for maximum Google SEO ranking!</p>
+        </div>
+        """, unsafe_allow_html=True)
         
         try:
             pieces = get_content_pieces(project_id=project_id, limit=50) if project_id else []
