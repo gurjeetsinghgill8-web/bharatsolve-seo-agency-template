@@ -94,7 +94,7 @@ content, published_url, created_at
    - Was causing HTML validation error; nav `#gallery` now correctly points to photo gallery
 6. **15+ Years Experience Consistency**: Updated all experience references across site bio, schema, and badges from 12+ to 15+ years
 7. **English FAQ Accordion & Knowledge Hub**: Added interactive UI accordion + Cardiology Knowledge Hub cluster wheel linking diagnostic services, calculators, and booking
-8. **Local Signal Landmarks**: Enriched address & footer text with NH-58 Corridor, Near Meerut South RRTS Station, Partapur Flyover, Sugar Mill Mohiuddinpur (Metro Pillar 1375)
+8. **Regional Catchment Territory Expansion**: Enriched `areaServed` schemas, meta tags, footer text, and signals to explicitly cover **Ghaziabad, Delhi NCR, Meerut, Modinagar, Govindpuri, Hapur, Baghpat, Muradnagar, Sardhana, Kankerkhera, Khatauli & NH-58 Express Corridor**.
 
 ### Existing Schemas (before fixes)
 - MedicalClinic (name, address, geo, hours, founder)
