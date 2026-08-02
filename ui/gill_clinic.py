@@ -1837,11 +1837,11 @@ def show_gill_clinic():
     render_clinic_header()
     render_live_links_directory()
     
-    # ── ⚡ QUICK JUMP NAVIGATION (No Scrolling Needed!) ──
+    # ── ⚡ QUICK JUMP NAVIGATION (v3.0 — No Scrolling Needed!) ──
     st.markdown("""
-    <div style="background: linear-gradient(135deg, #0077b6, #00b4d8); border-radius: 8px; 
-                padding: 4px 8px; margin: 6px 0; text-align: center;">
-        <span style="color: white; font-weight: bold; font-size: 0.8rem;">⚡ QUICK JUMP — Skip Scrolling!</span>
+    <div style="background: linear-gradient(135deg, #0077b6, #00b4d8); border-radius: 10px; 
+                padding: 6px 12px; margin: 8px 0; text-align: center;">
+        <span style="color: white; font-weight: bold; font-size: 0.85rem;">⚡ QUICK JUMP v3.0 — Skip Scrolling! Select Any Section Below ↓</span>
     </div>
     """, unsafe_allow_html=True)
     
