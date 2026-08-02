@@ -83,8 +83,8 @@ content, published_url, created_at
 - **GitHub Repo**: gurjeetsinghgill8-web/gill-heart-clinic
 
 ### Fixes Applied (2026-08-02)
-1. **H1 optimized**: `"Dr. Gurjeet Singh Gill (Dr. GS Gill)"` → `"Best Heart Doctor in Meerut — Dr. Gurjeet Singh Gill | Gill Heart Clinic"`
-   - Added location + keyword targeting for local cardiac searches
+1. **H1 optimized (100% NMC Ethics Compliant)**: `"Dr. Gurjeet Singh Gill (Dr. GS Gill)"` → `"Heart Doctor & Cardio-Physician in Meerut — Dr. Gurjeet Singh Gill | Gill Heart Clinic"`
+   - Strictly compliant with NMC Registered Medical Practitioner Regulations (avoids prohibited self-superlatives like "Best/No. 1") while maintaining peak local SEO keyword targeting for "Heart Doctor Meerut".
 2. **Physician Schema added**: Individual doctor schema with credentials (MBBS, Diploma Cardiology, PGDCCP, AI IIT Kanpur), address, memberOf MedicalClinic
    - Enables Google Knowledge Panel for Dr. Gill as a verified medical entity
 3. **FAQPage Schema expanded (10 FAQs)**: Added 5 English FAQs (diabetic checkup frequency, silent heart disease, ECG timing, ECG vs Echo, acidity vs heart attack) + 5 location/cost FAQs
