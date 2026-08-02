@@ -77,6 +77,42 @@ content, published_url, created_at
 | `get_competitor_data()` | gill_clinic.py:384 | Load 62 competitors from agent |
 | `save_content()` | operations.py:154 | Insert into content_pieces |
 
+## Website SEO Fixes (Aug 2026)
+- **Website source**: `C:\Users\pc\Desktop\gurjas ai\Dr G S GILL WEBSITE\index.html` (5,864 lines, single-page site)
+- **Live**: https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/
+- **GitHub Repo**: gurjeetsinghgill8-web/gill-heart-clinic
+
+### Fixes Applied (2026-08-02)
+1. **H1 optimized**: `"Dr. Gurjeet Singh Gill (Dr. GS Gill)"` → `"Best Heart Doctor in Meerut — Dr. Gurjeet Singh Gill | Gill Heart Clinic"`
+   - Added location + keyword targeting for local cardiac searches
+2. **Physician Schema added**: Individual doctor schema with credentials (MBBS, Diploma Cardiology, PGDCCP, AI IIT Kanpur), address, memberOf MedicalClinic
+   - Enables Google Knowledge Panel for Dr. Gill as a verified medical entity
+3. **FAQPage Schema expanded (10 FAQs)**: Added 5 English FAQs (diabetic checkup frequency, silent heart disease, ECG timing, ECG vs Echo, acidity vs heart attack) + 5 location/cost FAQs
+   - Enables rich results with expandable Q&A in Google search (potential 20-50% CTR increase)
+4. **Breadcrumb Schema added**: Basic breadcrumb list for page hierarchy
+5. **Duplicate HTML ID fixed**: First gallery section `id="gallery"` → `id="facilities"` (second photo gallery keeps `id="gallery"`)
+   - Was causing HTML validation error; nav `#gallery` now correctly points to photo gallery
+6. **15+ Years Experience Consistency**: Updated all experience references across site bio, schema, and badges from 12+ to 15+ years
+7. **English FAQ Accordion & Knowledge Hub**: Added interactive UI accordion + Cardiology Knowledge Hub cluster wheel linking diagnostic services, calculators, and booking
+8. **Local Signal Landmarks**: Enriched address & footer text with NH-58 Corridor, Near Meerut South RRTS Station, Partapur Flyover, Sugar Mill Mohiuddinpur (Metro Pillar 1375)
+
+### Existing Schemas (before fixes)
+- MedicalClinic (name, address, geo, hours, founder)
+- JobPosting × 3 (MBBS, BMS, BHMS doctors)
+
+### Not Changed (already strong)
+- Title tag, meta description, OG tags, canonical URL
+- MedicalClinic schema, JobPosting schemas
+- All blog content, services, about, testimonials, health tools, contact/map sections
+
+## Website Source Map
+| File | Purpose |
+|------|---------|
+| `index.html` | Main single-page clinic website (deployed) |
+| `standalone.html` | Simpler alternate version |
+| `index-dev.html` | Development copy |
+| `manual.html` | Manual/guide page |
+
 ## Deployment
 - Streamlit Cloud auto-deploys on `git push origin master`
 - Requires `GEMINI_API_KEY` in Streamlit Secrets
