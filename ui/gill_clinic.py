@@ -811,20 +811,19 @@ def render_blog_section(user_id, project_id=0):
                     st.success("Draft deleted")
                     st.rerun()
         
-        # ── Blog Manager: View & Delete Published Blogs ──
+        # ── Blog Manager: View, Edit & Delete Published Blogs ──
         st.markdown("---")
-        st.markdown("#### 📚 Manage Published Blogs & Master Catalog")
+        st.markdown("#### 📚 Manage Published Blogs — Newest First, Numbered & Dated")
         
         master_catalog_url = "https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/blogs/index.html"
         st.markdown(f"""
         <div style="background: rgba(0,180,216,0.12); border: 1px solid #00b4d8; border-radius: 12px; padding: 12px 16px; margin: 10px 0 15px 0;">
-            <p style="margin: 0; color: #0077b6; font-weight: bold; font-size: 0.95rem;">🌐 Master Heart Health Blog Catalog on Your Website:</p>
+            <p style="margin: 0; color: #0077b6; font-weight: bold; font-size: 0.95rem;">🌐 Master Blog Catalog on Your Website:</p>
             <p style="margin: 4px 0 0 0; font-size: 0.9rem;"><a href="{master_catalog_url}" target="_blank" style="color: #0077b6; font-weight: bold;">🔗 {master_catalog_url}</a></p>
-            <p style="margin: 4px 0 0 0; color: #666; font-size: 0.8rem;">All AI-generated & doctor-approved articles are automatically listed here on your main domain for maximum Google SEO ranking!</p>
         </div>
         """, unsafe_allow_html=True)
         
-        # Always show Delete & Clean buttons for GitHub repository
+        # Clean & Delete All buttons
         col_del1, col_del2 = st.columns(2)
         with col_del1:
             if st.button("🧹 DEEP CLEAN NON-COMPLIANT BLOGS", key="deep_clean_blogs_btn", use_container_width=True, type="primary"):
@@ -832,19 +831,15 @@ def render_blog_section(user_id, project_id=0):
                     from agents.github_publisher import deep_clean_github_noncompliant_blogs
                     res = deep_clean_github_noncompliant_blogs()
                     if res.get("status") == "success":
-                        st.success(f"🧹 Cleaned {res.get('deleted_count', 0)} non-compliant blogs! Catalog updated.")
+                        st.success(f"🧹 Cleaned {res.get('deleted_count', 0)} non-compliant blogs!")
                         st.rerun()
                     else:
                         st.error(f"Clean failed: {res.get('error')}")
-
         with col_del2:
-            if st.button("🗑️ DELETE ALL PUBLISHED BLOGS FROM GITHUB", key="delete_all_blogs", 
-                        use_container_width=True, type="secondary"):
-                with st.spinner("Deleting all blogs from GitHub repository..."):
+            if st.button("🗑️ DELETE ALL BLOGS FROM GITHUB", key="delete_all_blogs", use_container_width=True, type="secondary"):
+                with st.spinner("Deleting all blogs..."):
                     from agents.github_publisher import delete_all_github_blogs
                     res = delete_all_github_blogs()
-                    
-                    # Clear local SQLite database content_pieces table
                     try:
                         import sqlite3
                         db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "seo_agency.db")
@@ -852,79 +847,129 @@ def render_blog_section(user_id, project_id=0):
                         conn.cursor().execute("DELETE FROM content_pieces")
                         conn.commit()
                         conn.close()
-                    except Exception as db_e:
-                        print(f"DB clear note: {db_e}")
-                        
+                    except:
+                        pass
                     if res.get("status") == "success":
-                        st.success(f"🔥 Deleted all {res.get('deleted_count', 0)} blogs! GitHub & local database cleared.")
-                        st.balloons()
+                        st.success(f"🔥 Deleted all {res.get('deleted_count', 0)} blogs!")
                         st.rerun()
                     else:
                         st.error(f"Delete failed: {res.get('error')}")
-                
+        
+        # ── Blog List: Numbered, Dated, Sorted Newest First ──
         try:
             pieces = get_content_pieces(project_id=project_id, limit=50) if project_id else []
+            # Filter: show published AND drafts (so user can see all)
             published = [p for p in pieces if p.get('status') == 'published' or p.get('published_url')]
+            drafts = [p for p in pieces if p.get('status') != 'published' and not p.get('published_url') and p.get('status') != 'deleted']
             
-            if published:
-                st.markdown(f"**{len(published)} blogs** — or use 🗑️ for individual delete:")
-                for piece in published[:20]:
-                    title = piece.get('title', 'Untitled')[:60]
+            if published or drafts:
+                # Combine: published first (newest), then drafts
+                all_blogs = published + drafts
+                
+                st.markdown(f"**📰 {len(all_blogs)} Total Blogs** ({len(published)} Published, {len(drafts)} Drafts) — Newest First:")
+                
+                for idx, piece in enumerate(all_blogs[:25]):
+                    blog_num = idx + 1
+                    title = piece.get('title', 'Untitled')[:80]
                     url = piece.get('published_url', '')
-                    slug = url.split('/')[-1].replace('.html', '') if url else ''
+                    created = piece.get('created_at', '')
+                    word_count = piece.get('word_count', 0) or 0
+                    is_pub = bool(url)
+                    target_kw = piece.get('target_keyword', '')
+                    content_body = piece.get('content', '')
                     
-                    col_a, col_b = st.columns([5, 1])
-                    with col_a:
-                        st.markdown(f"📰 {title}")
-                        if url:
-                            st.markdown(f"<small style='color:#888;'>🔗 {url[:80]}</small>", unsafe_allow_html=True)
-                    with col_b:
-                        if st.button("🗑️", key=f"del_{piece['id']}", help=f"Delete: {title}"):
+                    # Format date nicely
+                    try:
+                        if created:
+                            dt = created[:10]  # YYYY-MM-DD
+                        else:
+                            dt = '—'
+                    except:
+                        dt = '—'
+                    
+                    # Status badge
+                    if is_pub:
+                        status_badge = '<span style="background:#28a745;color:white;padding:2px 8px;border-radius:8px;font-size:0.7rem;">✅ LIVE</span>'
+                    else:
+                        status_badge = '<span style="background:#ffc107;color:#333;padding:2px 8px;border-radius:8px;font-size:0.7rem;">📝 DRAFT</span>'
+                    
+                    # Card
+                    st.markdown(f"""
+                    <div style="background:rgba(255,255,255,0.8); border:1px solid {'#28a745' if is_pub else '#ffc107'}; 
+                                border-radius:10px; padding:0.8rem 1rem; margin:6px 0; 
+                                box-shadow:0 2px 6px rgba(0,0,0,0.04);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                            <div>
+                                <strong style="color:#0077b6; font-size:0.9rem;">#{blog_num}</strong>
+                                {status_badge}
+                                <span style="color:#333; font-weight:500;">{title}</span>
+                            </div>
+                            <div style="color:#888; font-size:0.75rem;">
+                                📅 {dt} · 📝 {word_count} words
+                            </div>
+                        </div>
+                        <div style="margin-top:4px; font-size:0.75rem; color:#888;">
+                            🎯 Keyword: <code>{target_kw[:60]}</code>
+                            {f'· 🔗 <a href="{url}" target="_blank" style="color:#0077b6;">{url[:70]}...</a>' if url else ''}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Action buttons row
+                    col_e, col_del, col_sp = st.columns([1, 1, 3])
+                    with col_e:
+                        if st.button(f"✏️ Edit", key=f"edit_blog_{piece['id']}", use_container_width=True):
+                            # Load this blog into the editor for re-editing
+                            st.session_state["gc_blog_title"] = title
+                            st.session_state["gc_blog_content"] = content_body if content_body else f"<h2>{title}</h2>"
+                            st.session_state["gc_last_blog"] = {
+                                "title": title,
+                                "content": content_body,
+                                "meta_title": piece.get("meta_title", ""),
+                                "meta_description": piece.get("meta_description", ""),
+                            }
+                            st.session_state["gc_review_mode"] = True
+                            st.success(f"📝 Loaded '#{blog_num} {title[:50]}' into editor above — scroll up to edit!")
+                            st.rerun()
+                    with col_del:
+                        if st.button(f"🗑️ Del", key=f"del_blog_{piece['id']}", use_container_width=True):
+                            # Delete from GitHub + DB
+                            slug = url.split('/')[-1].replace('.html', '') if url else ''
+                            if not slug:
+                                slug = re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-')[:60]
                             try:
                                 from agents.github_publisher import _github_api
                                 repo = "gurjeetsinghgill8-web/gill-heart-clinic"
                                 branch = "gh-pages"
-                                
-                                file_path = f"blogs/{slug}.html" if slug else f"blogs/{title[:40]}.html"
+                                file_path = f"blogs/{slug}.html"
                                 existing = _github_api(f"/repos/{repo}/contents/{file_path}?ref={branch}")
-                                
                                 if "sha" in existing:
-                                    sha = existing["sha"]
-                                    del_result = _github_api(
-                                        f"/repos/{repo}/contents/{file_path}",
-                                        method="DELETE",
-                                        data={"message": f"Delete: {title[:50]} [Doctor Request]", 
-                                              "sha": sha, "branch": branch}
-                                    )
-                                    if "error" not in del_result:
-                                        st.success(f"🗑️ Deleted: {title[:40]}")
-                                        try:
-                                            from db.schema import get_connection
-                                            conn = get_connection()
-                                            conn.execute("UPDATE content_pieces SET status='deleted', published_url='' WHERE id=?", (piece['id'],))
-                                            conn.commit()
-                                            conn.close()
-                                        except:
-                                            pass
-                                        st.rerun()
-                                    else:
-                                        st.error(f"Delete failed: {del_result.get('error','')[:150]}")
-                                else:
-                                    st.warning("File not found on GitHub — removing from DB only")
-                                    try:
-                                        from db.schema import get_connection
-                                        conn = get_connection()
-                                        conn.execute("UPDATE content_pieces SET status='deleted', published_url='' WHERE id=?", (piece['id'],))
-                                        conn.commit()
-                                        conn.close()
-                                        st.rerun()
-                                    except:
-                                        pass
+                                    _github_api(f"/repos/{repo}/contents/{file_path}", method="DELETE",
+                                               data={"message": f"Delete: {title[:50]}", "sha": existing["sha"], "branch": branch})
+                                # Mark deleted in DB
+                                from db.schema import get_connection
+                                conn = get_connection()
+                                conn.execute("UPDATE content_pieces SET status='deleted', published_url='' WHERE id=?", (piece['id'],))
+                                conn.commit()
+                                conn.close()
+                                st.success(f"🗑️ Deleted #{blog_num}")
+                                st.rerun()
                             except Exception as e:
-                                st.error(f"Error: {str(e)[:200]}")
-                    st.markdown("<hr style='margin:2px 0; opacity:0.3;'>", unsafe_allow_html=True)
-        except Exception as ex:
-            pass
+                                # Still mark deleted in DB even if GitHub fails
+                                try:
+                                    from db.schema import get_connection
+                                    conn = get_connection()
+                                    conn.execute("UPDATE content_pieces SET status='deleted', published_url='' WHERE id=?", (piece['id'],))
+                                    conn.commit()
+                                    conn.close()
+                                except:
+                                    pass
+                                st.warning(f"DB cleaned (GitHub: {str(e)[:100]})")
+                                st.rerun()
+            else:
+                st.info("📝 No blogs yet. Generate your first blog above!")
+        except Exception as e:
+            st.warning(f"Blog list load note: {e}")
         
         st.markdown('</div>', unsafe_allow_html=True)
 
