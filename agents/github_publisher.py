@@ -308,10 +308,13 @@ RETURN ONLY VALID JSON. No markdown, no explanation:
 {{"title":"...","meta_title":"...","meta_description":"...","keywords":"...","content":"<h2>Title</h2><p>Full article HTML here...</p><h2>FAQ</h2>...","faq":[{{"question":"...","answer":"..."}}]}}"""
 
     lang_str = str(language).lower().strip()
-    if "english" in lang_str or lang_str == "en":
-        lang_instruction = "PURE ENGLISH ONLY (Professional medical English text)"
+    # IMPORTANT: Check "hinglish" FIRST before "english" — "english" is a substring of "hinglish"!
+    if "hinglish" in lang_str:
+        lang_instruction = "HINGLISH (Natural Hindi using Roman English script)"
     elif "हिंदी" in lang_str or "hindi" in lang_str or lang_str == "hi":
         lang_instruction = "PURE DEVANAGARI HINDI SCRIPT ONLY (शुद्ध देवनागरी लिपि में लिखें - जैसे: 'सीने में दर्द के लक्षण', 'हृदय स्वास्थ्य' - NOT Roman Hinglish). DO NOT USE CASUAL WORDS LIKE 'Bhai' OR 'Yaar'."
+    elif "english" in lang_str or lang_str == "en":
+        lang_instruction = "PURE ENGLISH ONLY (Professional medical English text)"
     else:
         lang_instruction = "HINGLISH (Natural Hindi using Roman English script)"
         

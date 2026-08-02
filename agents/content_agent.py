@@ -75,11 +75,14 @@ def generate_content(project_id: int, keyword: str, content_type: str = "blog", 
     project = get_project(project_id)
     
     # Map language string (handles both Devanagari "हिंदी" and English "Hindi")
+    # IMPORTANT: Check "hinglish" FIRST before "english" — "english" is a substring of "hinglish"!
     lang_str = str(language).lower().strip()
-    if "english" in lang_str or lang_str == "en":
-        target_lang_instruction = "PURE ENGLISH (Professional medical English text)."
+    if "hinglish" in lang_str:
+        target_lang_instruction = "HINGLISH (Easy-to-understand Hindi using Roman English script)."
     elif "हिंदी" in lang_str or "hindi" in lang_str or lang_str == "hi":
         target_lang_instruction = "PURE HINDI IN DEVANAGARI SCRIPT (शुद्ध देवनागरी हिंदी लिपि में लिखें - जैसे: 'सीने में दर्द के लक्षण', 'हृदय स्वास्थ्य' - NOT Roman script). DO NOT USE CASUAL WORDS LIKE 'Bhai' OR 'Yaar'."
+    elif "english" in lang_str or lang_str == "en":
+        target_lang_instruction = "PURE ENGLISH (Professional medical English text)."
     else:
         target_lang_instruction = "HINGLISH (Easy-to-understand Hindi using Roman English script)."
     
@@ -90,14 +93,12 @@ TARGET LANGUAGE: {target_lang_instruction}
 Content Type: {content_type}
 Primary Keyword: {keyword}
 
-═══ CRITICAL MANDATES ═══
-
-1. DUAL-LANGUAGE REQUIREMENT: ALWAYS INCLUDE BOTH DEVANAGARI HINDI AND ENGLISH SECTIONS IN THE ARTICLE CONTENT!
-Structure the article HTML as:
-   <h2>🇮🇳 मुख्य जानकारी (Devanagari Hindi Section)</h2>
-   Complete article in pure Devanagari Hindi script (देवनागरी लिपि में विस्तृत जानकारी).
-   <h2>🇬🇧 Complete Medical Guide (English Section)</h2>
-   Complete article in professional medical English.
+	═══ CRITICAL MANDATES ═══
+	
+	1. PRIMARY LANGUAGE: WRITE THE ENTIRE ARTICLE IN THE TARGET LANGUAGE SPECIFIED ABOVE.
+	   - If TARGET LANGUAGE is PURE ENGLISH: Write the complete article in professional medical English ONLY. Do NOT include Hindi sections.
+	   - If TARGET LANGUAGE is PURE HINDI: Write the complete article in Devanagari Hindi script ONLY. Do NOT include Roman/English sections.
+	   - If TARGET LANGUAGE is HINGLISH: Write the complete article in Hinglish (Romanized Hindi using English letters).
 
 2. QUESTION-FIRST Q&A FORMAT (GEO — ChatGPT/Gemini/Perplexity Optimization):
    Structure EVERY section as: Patient Question → Dr. Gill's Answer.
@@ -124,23 +125,23 @@ Structure the article HTML as:
 
 Dr. Gurjeet Singh Gill is a CARDIAC PHYSICIAN (NEVER cardiologist).
 
-Generate complete GEO-optimized content including:
-1. Catchy bilingual title (Hindi + English) — make it question-based when possible, e.g., "Chest Pain: Heart Attack or Gas?"
-2. Meta title (55-60 chars) — include primary keyword + location
-3. Meta description (150-160 chars) — conversational, question-based, compelling
-4. Full dual-language Q&A-first article body HTML (both Hindi and English sections)
-5. FAQ schema JSON-LD with at least 5 real patient questions
-6. Word count: 1200-1800 words minimum (comprehensive, in-depth)
-
-Return JSON format:
-{{
-  "title": "...",
-  "meta_title": "...",
-  "meta_description": "...",
-  "content": "<h2>🇮🇳 मुख्य जानकारी</h2>...<h2>🇬🇧 Complete Medical Guide</h2>...<h2>🩺 Dr. Gill's Clinical Experience</h2>...",
-  "schema_json": {{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [...]}},
-  "word_count": number
-}}
+	Generate complete GEO-optimized content in the TARGET LANGUAGE including:
+	1. Catchy title in the target language — make it question-based when possible, e.g., "Chest Pain: Heart Attack or Gas?"
+	2. Meta title (55-60 chars) — include primary keyword + location
+	3. Meta description (150-160 chars) — conversational, question-based, compelling
+	4. Full Q&A-first article body HTML in the target language
+	5. FAQ schema JSON-LD with at least 5 real patient questions
+	6. Word count: 1200-1800 words minimum (comprehensive, in-depth)
+	
+	Return JSON format:
+	{{
+	  "title": "...",
+	  "meta_title": "...",
+	  "meta_description": "...",
+	  "content": "<h2>...</h2>...<h2>🩺 Dr. Gill's Clinical Experience</h2>...",
+	  "schema_json": {{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [...]}},
+	  "word_count": number
+	}}
 """
     
     messages = [

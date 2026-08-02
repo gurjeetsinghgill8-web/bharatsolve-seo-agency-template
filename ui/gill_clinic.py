@@ -382,40 +382,66 @@ def get_sample_rankings():
 # HELPER: Simulated competitor data
 # ═══════════════════════════════════════════════════════════════════════
 def get_competitor_data():
-    """Generate competitor metrics from MY_COMPETITORS list."""
+    """Generate competitor metrics from competitor_agent.py (62+ real cardiologists)."""
     import random, hashlib
-    comps = []
+    try:
+        from agents.competitor_agent import get_competitors as get_agent_competitors
+        raw_comps = get_agent_competitors()
+    except Exception:
+        raw_comps = []
     
-    # Parse competitor names (format: "Dr. Name — Specialty, Location")
-    for comp_str in MY_COMPETITORS:
-        parts = [p.strip() for p in comp_str.split("—")]
-        name = parts[0].strip() if parts else comp_str
-        info = parts[1].strip() if len(parts) > 1 else ""
+    comps = []
+    for c in raw_comps:
+        name = c.get("name", "")
+        location = c.get("location", "Meerut")
         
-        # Extract location from info
-        location = "Meerut"
-        for loc in ["Meerut Cantt", "Meerut", "Modinagar", "Hapur", "Ghaziabad", 
-                     "Delhi NCR", "Noida", "Gurgaon", "Muzaffarnagar", "Saharanpur", "Bijnor"]:
-            if loc.lower() in info.lower():
-                location = loc
-                break
+        # Use provided estimated data with slight variation for realism
+        base_reviews = c.get("estimated_reviews", 50)
+        base_rating = c.get("estimated_rating", 4.3)
         
-        # Consistent pseudo-random data based on name
+        # Consistent pseudo-random variation based on name
         seed = int(hashlib.md5(name.encode()).hexdigest()[:8], 16)
         rng = random.Random(seed)
-        
-        # Skip blank competitors
-        if "________" in name:
-            continue
         
         comps.append({
             "name": name,
             "location": location,
             "avg_rank": round(rng.uniform(2.0, 8.0), 1),
-            "reviews": rng.randint(15, 200),
-            "rating": round(rng.uniform(4.0, 4.9), 1),
+            "reviews": base_reviews,
+            "rating": round(base_rating + rng.uniform(-0.2, 0.2), 1),
             "keywords_overlap": rng.randint(3, 15),
+            "hospital": c.get("hospital", ""),
+            "specialty": c.get("specialty", ""),
         })
+    
+    # Fallback: if agent import fails, use local MY_COMPETITORS
+    if not comps:
+        for comp_str in MY_COMPETITORS:
+            parts = [p.strip() for p in comp_str.split("—")]
+            name = parts[0].strip() if parts else comp_str
+            info = parts[1].strip() if len(parts) > 1 else ""
+            
+            location = "Meerut"
+            for loc in ["Meerut Cantt", "Meerut", "Modinagar", "Hapur", "Ghaziabad", 
+                         "Delhi NCR", "Noida", "Gurgaon", "Muzaffarnagar", "Saharanpur", "Bijnor"]:
+                if loc.lower() in info.lower():
+                    location = loc
+                    break
+            
+            if "________" in name:
+                continue
+            
+            seed = int(hashlib.md5(name.encode()).hexdigest()[:8], 16)
+            rng = random.Random(seed)
+            
+            comps.append({
+                "name": name,
+                "location": location,
+                "avg_rank": round(rng.uniform(2.0, 8.0), 1),
+                "reviews": rng.randint(15, 200),
+                "rating": round(rng.uniform(4.0, 4.9), 1),
+                "keywords_overlap": rng.randint(3, 15),
+            })
     
     return comps
 
@@ -602,6 +628,26 @@ def render_blog_section(user_id, project_id=0):
             st.markdown('</div>', unsafe_allow_html=True)
             return
         
+        # 🔁 RESTORE LAST BLOG DRAFT FROM DB (survives Streamlit Cloud session resets)
+        if "gc_last_blog" not in st.session_state and not st.session_state.get("gc_review_mode"):
+            try:
+                recent_drafts = get_content_pieces(project_id=project_id, limit=5, content_type="blog")
+                for piece in recent_drafts:
+                    if piece.get("status") == "draft" and not piece.get("published_url"):
+                        st.session_state["gc_last_blog"] = {
+                            "title": piece.get("title", ""),
+                            "content": piece.get("content", ""),
+                            "meta_title": piece.get("meta_title", ""),
+                            "meta_description": piece.get("meta_description", ""),
+                        }
+                        st.session_state["gc_blog_title"] = piece.get("title", "")
+                        st.session_state["gc_blog_content"] = piece.get("content", "")
+                        st.session_state["gc_review_mode"] = True
+                        st.info(f"📝 Restored draft from last session: **{piece.get('title', 'Untitled')[:60]}**")
+                        break
+            except Exception:
+                pass
+        
         # ── API Key Diagnostic ──
         with st.expander("🔧 Test API Connection (agar blog generate nahi ho raha)", expanded=False):
             if st.button("🔍 Test Gemini API Key", key="test_api_btn"):
@@ -728,9 +774,25 @@ def render_blog_section(user_id, project_id=0):
             
             st.caption(f"📊 Word count: {len(edited_content.split())} words | Target Language: {lang}")
             
-            # 📄 PDF DOWNLOAD & 📱 WHATSAPP / TELEGRAM SHARE BUTTONS
-            col_share1, col_share2, col_share3 = st.columns([2, 1.5, 1.5])
+            # 📄 PDF DOWNLOAD, 🌐 HTML DOWNLOAD, 📱 WHATSAPP / TELEGRAM SHARE BUTTONS
+            col_share1, col_share2, col_share3, col_share4 = st.columns([1.5, 1.5, 1.2, 1.2])
             with col_share1:
+                try:
+                    from utils.html_preview_generator import create_standalone_html_preview
+                    html_preview_path = create_standalone_html_preview(edited_title, edited_content, CLINIC['doctor'])
+                    with open(html_preview_path, "r", encoding="utf-8") as hf:
+                        st.download_button(
+                            label="🌐 Save Web HTML File",
+                            data=hf.read(),
+                            file_name=f"{re.sub(r'[^a-zA-Z0-9_]', '_', edited_title[:25])}.html",
+                            mime="text/html",
+                            use_container_width=True,
+                            key="dl_html_blog"
+                        )
+                except Exception as html_err:
+                    st.caption(f"HTML note: {html_err}")
+            
+            with col_share2:
                 try:
                     from utils.pdf_generator import create_blog_pdf
                     pdf_file_path = create_blog_pdf(edited_title, edited_content, CLINIC['doctor'])
@@ -746,7 +808,7 @@ def render_blog_section(user_id, project_id=0):
                 except Exception as pdf_err:
                     st.warning(f"⚠️ PDF note: {pdf_err}")
             
-            with col_share2:
+            with col_share3:
                 from utils.share_links import get_whatsapp_share_url
                 wa_text = f"🏥 *{edited_title}*\n\n{clean_text_for_pdf_snippet(edited_content[:500])}...\n\nReviewed by: {CLINIC['doctor']} ({CLINIC['phone']})"
                 wa_url = get_whatsapp_share_url(wa_text)
@@ -759,7 +821,7 @@ def render_blog_section(user_id, project_id=0):
                 </a>
                 ''', unsafe_allow_html=True)
             
-            with col_share3:
+            with col_share4:
                 from utils.share_links import get_telegram_share_url
                 tg_url = get_telegram_share_url(wa_text)
                 st.markdown(f'''
@@ -1404,6 +1466,29 @@ def render_local_search_engine(user_id=None, project_id=1):
         weekly_queries = get_weekly_target_queries()
         staged_dict = st.session_state.get("gc_staged_weekly_drafts", {})
         
+        # 🔁 RELOAD FROM DB: Restore weekly drafts that survive Streamlit Cloud session resets
+        if not staged_dict or any(i not in staged_dict for i in range(7)):
+            try:
+                db_weekly = get_content_pieces(project_id=project_id, limit=50, content_type="weekly_planner")
+                for piece in db_weekly:
+                    kw = (piece.get("target_keyword") or "").lower().strip()
+                    # Match this DB piece to a day index by keyword
+                    for i, q in enumerate(weekly_queries[:7]):
+                        if kw and (kw in q['query'].lower() or q['query'].lower() in kw):
+                            if i not in staged_dict or not staged_dict[i].get("content"):
+                                staged_dict[i] = {
+                                    "query": q['query'],
+                                    "title": piece.get("title", q['query']),
+                                    "content": piece.get("content", ""),
+                                    "published": bool(piece.get("published_url") or piece.get("status") == "published"),
+                                    "published_url": piece.get("published_url", ""),
+                                    "db_id": piece.get("id"),
+                                }
+                            break
+                st.session_state["gc_staged_weekly_drafts"] = staged_dict
+            except Exception:
+                pass  # DB load is best-effort; session_state fallback still works
+        
         # Find next ungenerated day index
         next_day_idx = 0
         for i in range(7):
@@ -1434,6 +1519,14 @@ def render_local_search_engine(user_id=None, project_id=1):
                             "published_url": ""
                         }
                         st.session_state["gc_staged_weekly_drafts"] = staged_dict
+                        # 💾 PERSIST TO DB so draft survives Streamlit Cloud session resets
+                        try:
+                            from db.operations import save_content as db_save
+                            db_id = db_save(project_id, title, content, content_type="weekly_planner", target_keyword=next_q)
+                            staged_dict[next_day_idx]["db_id"] = db_id
+                            st.session_state["gc_staged_weekly_drafts"] = staged_dict
+                        except Exception:
+                            pass
                         st.success(f"🎉 Day {next_day_idx+1} Draft Ready for Review Below!")
                         st.rerun()
                     except Exception as e:
@@ -1461,6 +1554,17 @@ def render_local_search_engine(user_id=None, project_id=1):
                             }
                         except Exception as e:
                             print(f"Batch item error: {e}")
+                    st.session_state["gc_staged_weekly_drafts"] = staged_dict
+                    # 💾 PERSIST ALL 7 TO DB so drafts survive Streamlit Cloud session resets
+                    for i, q in enumerate(weekly_queries[:7]):
+                        if i in staged_dict and staged_dict[i].get("content"):
+                            try:
+                                from db.operations import save_content as db_save_batch
+                                db_id = db_save_batch(project_id, staged_dict[i]["title"], staged_dict[i]["content"], 
+                                                      content_type="weekly_planner", target_keyword=q['query'])
+                                staged_dict[i]["db_id"] = db_id
+                            except Exception:
+                                pass
                     st.session_state["gc_staged_weekly_drafts"] = staged_dict
                     st.success("🎉 All 7 Drafts Staged Below!")
                     st.rerun()
@@ -1570,6 +1674,14 @@ def render_local_search_engine(user_id=None, project_id=1):
                                 "published": False,
                                 "published_url": ""
                             }
+                            # 💾 PERSIST TO DB so draft survives Streamlit Cloud session resets
+                            try:
+                                from db.operations import save_content as db_save_single
+                                db_id = db_save_single(project_id, res.get("title", q['query']), res.get("content", ""),
+                                                       content_type="weekly_planner", target_keyword=q['query'])
+                                st.session_state["gc_staged_weekly_drafts"][i]["db_id"] = db_id
+                            except Exception:
+                                pass
                             st.success(f"✅ Day {i+1} draft generated!")
                             st.rerun()
                 else:
@@ -1633,6 +1745,18 @@ def render_local_search_engine(user_id=None, project_id=1):
                                     staged_item["published"] = True
                                     staged_item["published_url"] = pub_res.get("published_url", "")
                                     st.session_state["gc_staged_weekly_drafts"][i] = staged_item
+                                    # 💾 UPDATE DB: mark as published so it survives session resets
+                                    try:
+                                        db_id = staged_item.get("db_id")
+                                        if db_id:
+                                            from db.schema import get_connection
+                                            conn = get_connection()
+                                            conn.execute("UPDATE content_pieces SET status='published', published_url=? WHERE id=?", 
+                                                       (pub_res.get("published_url", ""), db_id))
+                                            conn.commit()
+                                            conn.close()
+                                    except Exception:
+                                        pass
                                     st.success(f"🎉 Day {i+1} Published Live!")
                                     st.balloons()
                                     st.rerun()
@@ -1640,7 +1764,9 @@ def render_local_search_engine(user_id=None, project_id=1):
                                     st.error(f"Push failed: {pub_res.get('message','')}")
 
         st.markdown("---")
-        if st.button("📊 View Full 50+ Search Plan", key="view_full_plan", use_container_width=True):
+        # 📊 PERSISTENT TOGGLE: Uses checkbox so plan stays visible (survives reruns)
+        show_full_plan = st.checkbox("📊 View Full 50+ Search Plan (Click to Show/Hide)", key="show_full_plan_checkbox")
+        if show_full_plan:
             plan = generate_content_plan()
             st.markdown(f"""
             ### 📊 Complete Search Intent Plan
@@ -1950,7 +2076,7 @@ def show_gill_clinic():
             if show_all or active_section == "competitor":
                 render_competitor_section()
             elif not show_all:
-                _section_placeholder("🔍 Competitor Intel", "competitor", "Analyze 62+ competing cardiologists in your area")
+                _section_placeholder("🔍 Competitor Intel", "competitor", "Analyze competing cardiologists in your area")
     
     # ── Local Search Auto-Engine ──
     if show_all or active_section == "planner":
