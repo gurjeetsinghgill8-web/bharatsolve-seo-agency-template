@@ -1735,6 +1735,19 @@ def render_local_search_engine(user_id=None, project_id=1):
                                     st.rerun()
                                 else:
                                     st.error(f"Push failed: {pub_res.get('message','')}")
+                        
+                        if st.button(f"🗑️ Delete Draft", key=f"del_draft_kb_{i}", use_container_width=True):
+                            db_id = staged_item.get("db_id")
+                            if db_id:
+                                try:
+                                    from db.operations import delete_content_piece
+                                    delete_content_piece(db_id)
+                                except Exception:
+                                    pass
+                            if "gc_staged_weekly_drafts" in st.session_state and i in st.session_state["gc_staged_weekly_drafts"]:
+                                del st.session_state["gc_staged_weekly_drafts"][i]
+                            st.success(f"🗑️ Draft for Day {i+1} deleted!")
+                            st.rerun()
 
         # 🟢 COLUMN 3: PUBLISHED LIVE
         with col_pub:
@@ -1752,6 +1765,32 @@ def render_local_search_engine(user_id=None, project_id=1):
                         </div>
                         """, unsafe_allow_html=True)
                         st.markdown(f"**Title**: {staged_item.get('title', q['query'])}")
+                        if st.button(f"🗑️ Delete Article from Web & DB", key=f"del_pub_kb_{i}", use_container_width=True):
+                            url_to_del = staged_item.get("published_url") or live_url
+                            if url_to_del:
+                                slug = url_to_del.split('/')[-1].replace('.html', '')
+                                try:
+                                    from agents.github_publisher import _github_api
+                                    repo = "gurjeetsinghgill8-web/gill-heart-clinic"
+                                    branch = "gh-pages"
+                                    file_path = f"blogs/{slug}.html"
+                                    existing = _github_api(f"/repos/{repo}/contents/{file_path}?ref={branch}")
+                                    if "sha" in existing:
+                                        _github_api(f"/repos/{repo}/contents/{file_path}", method="DELETE",
+                                                   data={"message": f"Delete: {q['query']}", "sha": existing["sha"], "branch": branch})
+                                except Exception:
+                                    pass
+                            db_id = staged_item.get("db_id")
+                            if db_id:
+                                try:
+                                    from db.operations import delete_content_piece
+                                    delete_content_piece(db_id)
+                                except Exception:
+                                    pass
+                            if "gc_staged_weekly_drafts" in st.session_state and i in st.session_state["gc_staged_weekly_drafts"]:
+                                del st.session_state["gc_staged_weekly_drafts"][i]
+                            st.success(f"🗑️ Article for Day {i+1} deleted!")
+                            st.rerun()
 
         st.markdown("---")
         # 📊 PERSISTENT TOGGLE: Uses checkbox so plan stays visible (survives reruns)

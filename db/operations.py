@@ -405,6 +405,15 @@ def get_single_content(content_id):
     return dict(row) if row else None
 
 
+def delete_content_piece(content_id):
+    """Permanently delete a content piece by ID from SQLite content_pieces table."""
+    conn = get_connection()
+    conn.execute("DELETE FROM content_pieces WHERE id = ?", (content_id,))
+    conn.commit()
+    conn.close()
+    return True
+
+
 def get_content_pieces(project_id=None, limit=20, content_type=None):
     """Get content pieces, optionally filtered by project and type."""
     conn = get_connection()
