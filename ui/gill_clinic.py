@@ -1498,7 +1498,7 @@ def render_local_search_engine(user_id=None, project_id=1):
             with st.expander(expander_label, expanded=is_published):
                 st.markdown(f"**Target Query**: `{q['query']}` | **Intent**: `{q['intent']}` | **Conversion**: `{q['conversion']}`")
                 
-                if is_pub or pub_url:
+                if is_published or pub_url:
                     st.markdown(f"""
                     <div style="background:#d4edda; border:2px solid #28a745; border-radius:10px; padding:12px 16px; margin:10px 0; box-shadow:0 2px 8px rgba(40,167,69,0.15);">
                         <p style="margin:0; color:#155724; font-weight:bold; font-size:1rem;">🎉 Day {i+1} IS LIVE ON YOUR WEBSITE!</p>
@@ -1575,7 +1575,7 @@ def render_local_search_engine(user_id=None, project_id=1):
                         st.markdown(f'''<a href="{wa_u}" target="_blank" style="text-decoration:none;"><div style="background:#25D366;color:white;font-weight:bold;text-align:center;padding:0.5rem;border-radius:8px;font-size:0.85rem;">📱 Share WhatsApp</div></a>''', unsafe_allow_html=True)
                     
                     with col_act4:
-                        if st.button(f"🚀 Approve & Publish", key=f"pub_item_{i}", type="primary", disabled=is_pub, use_container_width=True):
+                        if st.button(f"🚀 Approve & Publish", key=f"pub_item_{i}", type="primary", disabled=is_published, use_container_width=True):
                             with st.spinner(f"Publishing Day {i+1} article to website..."):
                                 from agents.github_publisher import publish_reviewed_draft_to_github
                                 pub_res = publish_reviewed_draft_to_github(
@@ -1837,59 +1837,32 @@ def show_gill_clinic():
     render_clinic_header()
     render_live_links_directory()
     
-    # ── ⚡ QUICK JUMP NAVIGATION (v3.0 — No Scrolling Needed!) ──
-    st.markdown("""
-    <div style="background: linear-gradient(135deg, #0077b6, #00b4d8); border-radius: 10px; 
-                padding: 6px 12px; margin: 8px 0; text-align: center;">
-        <span style="color: white; font-weight: bold; font-size: 0.85rem;">⚡ QUICK JUMP v3.0 — Skip Scrolling! Select Any Section Below ↓</span>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Initialize section selector
-    if "gc_active_section" not in st.session_state:
-        st.session_state["gc_active_section"] = "all"
-    
-    sections = [
-        "📊 All Sections (Full View)",
-        "📝 Blog Generator",
-        "⭐ Review Manager", 
-        "📈 Rank Tracker",
-        "🔍 Competitor Intel",
-        "📅 7-Day Content Planner",
-        "🤖 AI GEO & Visibility",
-        "🔄 Auto-Pilot Panel"
-    ]
-    
-    # Map display names to internal keys
-    section_map = {
-        "📊 All Sections (Full View)": "all",
+    # ── ⚡ QUICK JUMP NAVIGATION v3.1 (No Scrolling Needed!) ──
+    st.markdown("### ⚡ Quick Jump — Click Any Button Below to Jump Instantly!")
+    active_section = st.radio(
+        "Jump to section:",
+        ["📊 ALL SECTIONS", "📝 Blog Generator", "⭐ Review Manager", 
+         "📈 Rank Tracker", "🔍 Competitor Intel", "📅 7-Day Planner", 
+         "🤖 AI GEO & Visibility", "🔄 Auto-Pilot"],
+        horizontal=True,
+        key="gc_quick_jump",
+        label_visibility="collapsed"
+    )
+    # Map display to internal key
+    section_key_map = {
+        "📊 ALL SECTIONS": "all",
         "📝 Blog Generator": "blog",
         "⭐ Review Manager": "reviews",
         "📈 Rank Tracker": "ranks",
         "🔍 Competitor Intel": "competitor",
-        "📅 7-Day Content Planner": "planner",
+        "📅 7-Day Planner": "planner",
         "🤖 AI GEO & Visibility": "geo",
-        "🔄 Auto-Pilot Panel": "autopilot",
+        "🔄 Auto-Pilot": "autopilot",
     }
+    active_section = section_key_map.get(active_section, "all")
+    show_all = active_section == "all"
     
-    selected_label = st.selectbox(
-        "Jump to Section",
-        list(section_map.keys()),
-        index=list(section_map.keys()).index(
-            [k for k, v in section_map.items() if v == st.session_state["gc_active_section"]][0]
-        ) if st.session_state["gc_active_section"] != "all" else 0,
-        key="quick_jump_selector",
-        label_visibility="collapsed"
-    )
-    
-    active = section_map.get(selected_label, "all")
-    if active != st.session_state.get("gc_active_section"):
-        st.session_state["gc_active_section"] = active
-        st.rerun()
-    
-    active_section = st.session_state["gc_active_section"]
-    
-    # ── Stats Row ──
+    # ── Stats Row (always visible) ──
     render_stats_row(user_id)
     
     st.markdown("<br>", unsafe_allow_html=True)
