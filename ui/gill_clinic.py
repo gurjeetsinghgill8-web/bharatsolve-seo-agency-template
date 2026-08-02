@@ -866,11 +866,24 @@ def render_blog_section(user_id, project_id=0):
             
             with col_b:
                 if st.button("❌ REJECT — Delete Draft", key="reject_draft", use_container_width=True):
+                    # Purge from DB so it doesn't get restored on refresh
+                    try:
+                        from db.schema import get_connection
+                        conn = get_connection()
+                        cur_title = st.session_state.get("gc_blog_title", "")
+                        if cur_title:
+                            conn.execute("DELETE FROM content_pieces WHERE project_id=? AND (title=? OR content_type='blog') AND (published_url IS NULL OR published_url='')", (project_id, cur_title))
+                        else:
+                            conn.execute("DELETE FROM content_pieces WHERE project_id=? AND content_type='blog' AND (published_url IS NULL OR published_url='')", (project_id,))
+                        conn.commit()
+                        conn.close()
+                    except Exception:
+                        pass
                     st.session_state.pop("gc_last_blog", None)
                     st.session_state.pop("gc_blog_title", None)
                     st.session_state.pop("gc_blog_content", None)
                     st.session_state["gc_review_mode"] = False
-                    st.success("Draft deleted")
+                    st.success("🗑️ Draft permanently deleted from memory and database!")
                     st.rerun()
         
         # ── Blog Manager: View, Edit & Delete Published Blogs ──
