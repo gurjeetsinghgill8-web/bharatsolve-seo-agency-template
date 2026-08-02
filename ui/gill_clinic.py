@@ -1422,7 +1422,17 @@ def render_local_search_engine(user_id=None, project_id=1):
 
         # Render 7 Staged Draft Cards / Expanders
         st.markdown("##### 📝 7-Day Content Review Table (Click to Read, Edit & Approve):")
+        st.caption("🟢 Green = Published & Live | 🟡 Yellow = Draft Ready | 🔴 Red = Pending Generation")
         staged_dict = st.session_state.get("gc_staged_weekly_drafts", {})
+        
+        # Check DB for already-published articles matching each day's query
+        from db.operations import get_content_pieces as db_get_content_pieces
+        db_published = []
+        try:
+            all_db_content = db_get_content_pieces(project_id, limit=50)
+            db_published = [c for c in all_db_content if c.get("published_url") or c.get("status") == "published"]
+        except:
+            db_published = []
         
         for i, q in enumerate(weekly_queries[:7]):
             intent_emoji = {
@@ -1432,16 +1442,60 @@ def render_local_search_engine(user_id=None, project_id=1):
             }
             
             staged_item = staged_dict.get(i)
-            is_pub = staged_item.get("published", False) if staged_item else False
-            pub_url = staged_item.get("published_url", "") if staged_item else ""
-            status_label = "✅ Published Live" if is_pub else ("📄 Staged Draft Ready" if staged_item else "🔴 Pending Generation")
+            
+            # Check if this day's query was already published (check DB + session_state)
+            is_published = False
+            pub_url = ""
+            
+            # Check DB first
+            query_lower = q['query'].lower().strip()
+            for db_item in db_published:
+                db_title = (db_item.get("title") or "").lower()
+                db_keyword = (db_item.get("target_keyword") or "").lower()
+                if query_lower in db_title or query_lower in db_keyword:
+                    is_published = True
+                    pub_url = db_item.get("published_url", "")
+                    # Also update session_state so memory persists
+                    if not staged_item:
+                        staged_item = {
+                            "query": q['query'],
+                            "title": db_item.get("title", q['query']),
+                            "content": db_item.get("content", ""),
+                            "published": True,
+                            "published_url": pub_url
+                        }
+                        staged_dict[i] = staged_item
+                    else:
+                        staged_item["published"] = True
+                        staged_item["published_url"] = staged_item.get("published_url") or pub_url
+                    break
+            
+            # Fall back to session_state flag
+            if not is_published and staged_item:
+                is_published = staged_item.get("published", False)
+                pub_url = staged_item.get("published_url", "")
+            
+            # Determine status with colors
+            if is_published:
+                status_label = "🟢 PUBLISHED LIVE"
+                expander_label = f"✅ Day {i+1}: {intent_emoji.get(q['intent'],'📌')} {q['query']} — {status_label}"
+            elif staged_item and staged_item.get("content"):
+                status_label = "🟡 DRAFT READY"
+                expander_label = f"📝 Day {i+1}: {intent_emoji.get(q['intent'],'📌')} {q['query']} — {status_label}"
+            else:
+                status_label = "🔴 PENDING"
+                expander_label = f"Day {i+1}: {intent_emoji.get(q['intent'],'📌')} {q['query']} — {status_label}"
             
             # Auto-build live URL if published
-            if is_pub and not pub_url:
+            if is_published and not pub_url:
                 slug_tmp = re.sub(r'[^a-z0-9]+', '-', q['query'].lower()).strip('-')[:60]
                 pub_url = f"https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/blogs/{slug_tmp}.html"
 
-            with st.expander(f"Day {i+1}: {intent_emoji.get(q['intent'],'📌')} {q['query']} — Status: {status_label}", expanded=is_pub or (staged_item is not None)):
+            # Save updated dict back to session_state
+            if staged_dict != st.session_state.get("gc_staged_weekly_drafts", {}):
+                st.session_state["gc_staged_weekly_drafts"] = staged_dict
+
+            with st.expander(expander_label, expanded=is_published):
                 st.markdown(f"**Target Query**: `{q['query']}` | **Intent**: `{q['intent']}` | **Conversion**: `{q['conversion']}`")
                 
                 if is_pub or pub_url:
@@ -1747,6 +1801,21 @@ def render_ai_geo_section(user_id=None, project_id=0):
 # ═══════════════════════════════════════════════════════════════════════
 # MAIN: Show Gill Clinic Command Center
 # ═══════════════════════════════════════════════════════════════════════
+
+def _section_placeholder(title, section_key, description):
+    """Show a compact placeholder card for inactive sections with a jump button."""
+    st.markdown(f"""
+    <div style="background: rgba(255,255,255,0.7); border: 1px dashed #90e0ef; border-radius: 10px; 
+                padding: 1rem; text-align: center; margin: 0.5rem 0;">
+        <h4 style="color: #0077b6; margin: 0;">{title}</h4>
+        <p style="color: #888; font-size: 0.85rem; margin: 0.3rem 0;">{description}</p>
+    </div>
+    """, unsafe_allow_html=True)
+    if st.button(f"📂 Open {title}", key=f"jump_{section_key}", use_container_width=True):
+        st.session_state["gc_active_section"] = section_key
+        st.rerun()
+
+
 def show_gill_clinic():
     """Render the Gill Heart Clinic Command Center — main landing page."""
     
@@ -1768,6 +1837,58 @@ def show_gill_clinic():
     render_clinic_header()
     render_live_links_directory()
     
+    # ── ⚡ QUICK JUMP NAVIGATION (No Scrolling Needed!) ──
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, #0077b6, #00b4d8); border-radius: 8px; 
+                padding: 4px 8px; margin: 6px 0; text-align: center;">
+        <span style="color: white; font-weight: bold; font-size: 0.8rem;">⚡ QUICK JUMP — Skip Scrolling!</span>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Initialize section selector
+    if "gc_active_section" not in st.session_state:
+        st.session_state["gc_active_section"] = "all"
+    
+    sections = [
+        "📊 All Sections (Full View)",
+        "📝 Blog Generator",
+        "⭐ Review Manager", 
+        "📈 Rank Tracker",
+        "🔍 Competitor Intel",
+        "📅 7-Day Content Planner",
+        "🤖 AI GEO & Visibility",
+        "🔄 Auto-Pilot Panel"
+    ]
+    
+    # Map display names to internal keys
+    section_map = {
+        "📊 All Sections (Full View)": "all",
+        "📝 Blog Generator": "blog",
+        "⭐ Review Manager": "reviews",
+        "📈 Rank Tracker": "ranks",
+        "🔍 Competitor Intel": "competitor",
+        "📅 7-Day Content Planner": "planner",
+        "🤖 AI GEO & Visibility": "geo",
+        "🔄 Auto-Pilot Panel": "autopilot",
+    }
+    
+    selected_label = st.selectbox(
+        "Jump to Section",
+        list(section_map.keys()),
+        index=list(section_map.keys()).index(
+            [k for k, v in section_map.items() if v == st.session_state["gc_active_section"]][0]
+        ) if st.session_state["gc_active_section"] != "all" else 0,
+        key="quick_jump_selector",
+        label_visibility="collapsed"
+    )
+    
+    active = section_map.get(selected_label, "all")
+    if active != st.session_state.get("gc_active_section"):
+        st.session_state["gc_active_section"] = active
+        st.rerun()
+    
+    active_section = st.session_state["gc_active_section"]
+    
     # ── Stats Row ──
     render_stats_row(user_id)
     
@@ -1778,36 +1899,55 @@ def show_gill_clinic():
     
     st.markdown("<br>", unsafe_allow_html=True)
     
+    show_all = active_section == "all"
+    
     # ── Main Content: 2-column layout ──
-    col_left, col_right = st.columns([1, 1])
-    
-    with col_left:
-        render_blog_section(user_id, project_id)
-    
-    with col_right:
-        render_review_section()
+    if show_all or active_section in ("blog", "reviews"):
+        col_left, col_right = st.columns([1, 1])
+        
+        with col_left:
+            if show_all or active_section == "blog":
+                render_blog_section(user_id, project_id)
+            elif not show_all:
+                _section_placeholder("📝 Blog Generator", "blog", "Generate AI-powered heart health blogs in Hindi, English & Hinglish")
+        
+        with col_right:
+            if show_all or active_section == "reviews":
+                render_review_section()
+            elif not show_all:
+                _section_placeholder("⭐ Review Manager", "reviews", "Auto-reply to Google reviews & manage patient feedback")
     
     # ── Bottom Row: Rank Tracker + Competitor ──
-    st.markdown("<br>", unsafe_allow_html=True)
-    col_bottom_left, col_bottom_right = st.columns([1, 1])
-    
-    with col_bottom_left:
-        render_rank_section()
-    
-    with col_bottom_right:
-        render_competitor_section()
+    if show_all or active_section in ("ranks", "competitor"):
+        st.markdown("<br>", unsafe_allow_html=True)
+        col_bottom_left, col_bottom_right = st.columns([1, 1])
+        
+        with col_bottom_left:
+            if show_all or active_section == "ranks":
+                render_rank_section()
+            elif not show_all:
+                _section_placeholder("📈 Rank Tracker", "ranks", "Track keyword rankings across Delhi NCR & Meerut")
+        
+        with col_bottom_right:
+            if show_all or active_section == "competitor":
+                render_competitor_section()
+            elif not show_all:
+                _section_placeholder("🔍 Competitor Intel", "competitor", "Analyze 62+ competing cardiologists in your area")
     
     # ── Local Search Auto-Engine ──
-    st.markdown("<br>", unsafe_allow_html=True)
-    render_local_search_engine(user_id, project_id)
+    if show_all or active_section == "planner":
+        st.markdown("<br>", unsafe_allow_html=True)
+        render_local_search_engine(user_id, project_id)
     
     # ── Generative Engine Optimization (GEO) & AI Search Section ──
-    st.markdown("<br>", unsafe_allow_html=True)
-    render_ai_geo_section(user_id, project_id)
+    if show_all or active_section == "geo":
+        st.markdown("<br>", unsafe_allow_html=True)
+        render_ai_geo_section(user_id, project_id)
     
     # ── Auto-Pilot Panel ──
-    st.markdown("<br>", unsafe_allow_html=True)
-    render_autopilot_section(user_id)
+    if show_all or active_section == "autopilot":
+        st.markdown("<br>", unsafe_allow_html=True)
+        render_autopilot_section(user_id)
     
     # ── Footer ──
     st.markdown("---")
