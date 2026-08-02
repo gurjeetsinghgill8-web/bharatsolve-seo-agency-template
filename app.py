@@ -34,6 +34,7 @@ from ui.publisher import show_publisher_page
 from ui.google_business import show_google_business_page
 from ui.scheduler import show_scheduler_page
 from ui.backup import show_backup_page
+from ui.patient_community import show_patient_community
 
 # Import DB init
 from db.schema import init_db
@@ -291,6 +292,7 @@ def main():
             "📧 Email": "email",
             "🌐 Publish": "publisher",
             "🏪 Google Biz": "google_business",
+            "🫂 Community": "patient_community",
             "⏰ Scheduler": "scheduler",
             "💾 Backup": "backup",
             "📈 Reports": "reports",
@@ -372,6 +374,8 @@ def main():
         show_publisher_page()
     elif page == "google_business":
         show_google_business_page()
+    elif page == "patient_community":
+        show_patient_community()
     elif page == "scheduler":
         show_scheduler_page()
     elif page == "backup":

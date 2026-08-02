@@ -39,8 +39,33 @@ CRITICAL LEGAL & MEDICAL ETHICS RULES (NMC Regulations):
    - 🚨 Emergency Protocol & OPD Appointment Instructions
    - ❓ Frequently Asked Patient Questions (FAQs)
 9. Include: "This article has been reviewed by Dr. Gurjeet Singh Gill, Cardiac Physician".
-10. RESPECT USER LANGUAGE SELECTION STRICTLY (Hindi, English, or Hinglish)."""
+10. RESPECT USER LANGUAGE SELECTION STRICTLY (Hindi, English, or Hinglish).
 
+═══ GEO (GENERATIVE ENGINE OPTIMIZATION) ENHANCEMENTS ═══
+
+11. QUESTION-FIRST Q&A FORMAT (CRITICAL for ChatGPT/Gemini/Perplexity Ranking):
+   - EVERY section MUST start with a real patient question followed by Dr. Gill's answer.
+   - Format: <h3>❓ मरीज़ पूछते हैं / Patients Ask: "[real question]"</h3>
+             <p>🩺 Dr. Gill's Answer: [comprehensive, authoritative answer 150-250 words]</p>
+   - Example: "मरीज़ अक्सर पूछते हैं: सीने में हल्का दर्द हार्ट अटैक हो सकता है क्या? → Dr. Gill बताते हैं: हर सीने का दर्द हार्ट अटैक नहीं होता..."
+   - LLMs (ChatGPT, Gemini, Claude) PREFERENTIALLY cite Q&A-formatted content because it directly matches user query patterns.
+   - Make the questions sound like REAL patients talking — use conversational Hindi/English, not textbook language.
+
+12. NAMED EXPERT & LANDMARK RESEARCH CITATIONS (Builds AI Trust & Authority):
+   - Every article MUST cite at least 2-3 of:
+     (a) NAMED CARDIOLOGY EXPERTS: Dr. Eugene Braunwald (father of modern cardiology), Dr. Valentin Fuster (Mount Sinai), Dr. Deepak L. Bhatt (Harvard), Dr. Salim Yusuf (PHRI), Dr. Ashok Seth (Fortis Escorts Delhi).
+     (b) LANDMARK CLINICAL TRIALS: Framingham Heart Study (1948-present), SPRINT Trial (2015, NEJM), ISCHEMIA Trial (2020, NEJM), PARADIGM-HF (2014), IMPROVE-IT (2015), COURAGE Trial (2007).
+     (c) STANDARD MEDICAL TEXTBOOKS: Harrison's Principles of Internal Medicine (21st Ed.), Braunwald's Heart Disease (12th Ed.), Hurst's The Heart, ESC Clinical Practice Guidelines.
+   - Example: "As demonstrated in the landmark SPRINT Trial (2015, NEJM), intensive BP control (<120 mmHg) reduced cardiovascular events by 25%. Dr. Eugene Braunwald, in Braunwald's Heart Disease (12th Ed.), emphasizes..."
+
+13. DR. GILL'S PERSONAL CLINICAL EXPERIENCE SECTION (MOST IMPORTANT for GEO — AI Prioritizes Genuine Human Experience):
+   - Every article MUST include a dedicated section: <h2>🩺 Dr. Gill's Clinical Experience & Personal Patient Guidance</h2>
+   - Share practical, real-world clinical observations from Dr. Gill's 12+ years of practice and 50,000+ patients treated.
+   - Include anonymized patient scenarios: "Dr. Gill recalls a 45-year-old school teacher from Meerut who came with mild chest discomfort after climbing stairs. Her ECG was normal but..."
+   - Add personal clinical tips and observations that only come from real experience, not textbooks.
+   - This section is what ChatGPT and Google Gemini value MOST — authentic, first-hand human expertise that cannot be replicated by AI.
+   - Include: "Based on Dr. Gill's clinical experience at Gill Heart Clinic, Mohiuddinpur, Meerut..."
+"""
 
 def generate_content(project_id: int, keyword: str, content_type: str = "blog", language: str = "hi") -> dict:
     """
@@ -65,30 +90,55 @@ TARGET LANGUAGE: {target_lang_instruction}
 Content Type: {content_type}
 Primary Keyword: {keyword}
 
-CRITICAL MANDATE (DUAL-LANGUAGE REQUIREMENT): ALWAYS INCLUDE BOTH DEVANAGARI HINDI AND ENGLISH SECTIONS IN THE ARTICLE CONTENT!
+═══ CRITICAL MANDATES ═══
+
+1. DUAL-LANGUAGE REQUIREMENT: ALWAYS INCLUDE BOTH DEVANAGARI HINDI AND ENGLISH SECTIONS IN THE ARTICLE CONTENT!
 Structure the article HTML as:
-1. <h2>🇮🇳 मुख्य जानकारी (Devanagari Hindi Section)</h2>
+   <h2>🇮🇳 मुख्य जानकारी (Devanagari Hindi Section)</h2>
    Complete article in pure Devanagari Hindi script (देवनागरी लिपि में विस्तृत जानकारी).
-2. <h2>🇬🇧 Complete Medical Guide (English Section)</h2>
+   <h2>🇬🇧 Complete Medical Guide (English Section)</h2>
    Complete article in professional medical English.
+
+2. QUESTION-FIRST Q&A FORMAT (GEO — ChatGPT/Gemini/Perplexity Optimization):
+   Structure EVERY section as: Patient Question → Dr. Gill's Answer.
+   Format: <h3>❓ मरीज़ पूछते हैं / Patients Ask: "[real conversational question]"</h3>
+           <p>🩺 <strong>Dr. Gill's Answer:</strong> [comprehensive, authoritative 150-250 word answer]</p>
+   Make questions sound like REAL patients — use natural conversational language, not textbook style.
+
+3. CREDIBILITY REQUIREMENT — NAMED EXPERTS & LANDMARK TRIALS:
+   Cite at least 2-3 named experts (Dr. Eugene Braunwald, Dr. Valentin Fuster, Dr. Deepak L. Bhatt),
+   landmark trials (Framingham Heart Study, SPRINT Trial 2015, ISCHEMIA Trial 2020, PARADIGM-HF),
+   or standard textbooks (Harrison's Principles, Braunwald's Heart Disease, ESC Guidelines).
+
+4. PERSONAL CLINICAL EXPERIENCE SECTION:
+   MUST include a dedicated section: <h2>🩺 Dr. Gill's Clinical Experience & Personal Patient Guidance</h2>
+   Share anonymized patient scenarios from Dr. Gill's 12+ years at Gill Heart Clinic, Mohiuddinpur, Meerut.
+   Example: "Dr. Gill recalls a 45-year-old Meerut teacher who..."
+   Add personal tips that only come from real clinical experience — this is what AI search engines value most!
+
+5. CONTENT FORMAT VARIETY (choose the format that best fits this topic):
+   (a) Q&A Deep-Dive — Series of real patient questions with Dr. Gill's detailed answers (DEFAULT, recommended for AI ranking)
+   (b) Patient Story First — Start with an engaging anonymized patient story, then explain the medical science
+   (c) Myth Buster — List 5-7 common myths about this topic that Dr. Gill frequently corrects, debunk each
+   (d) Doctor-Patient Conversation — Write as a realistic clinic dialogue between Dr. Gill and a patient
 
 Dr. Gurjeet Singh Gill is a CARDIAC PHYSICIAN (NEVER cardiologist).
 
-Generate complete SEO content including:
-1. Catchy bilingual title (Hindi + English)
-2. Meta title (55-60 chars)
-3. Meta description (150-160 chars)
-4. Full dual-language article body HTML (both Hindi and English sections)
-5. FAQ schema JSON-LD
-6. Word count: 800-1500 words
+Generate complete GEO-optimized content including:
+1. Catchy bilingual title (Hindi + English) — make it question-based when possible, e.g., "Chest Pain: Heart Attack or Gas?"
+2. Meta title (55-60 chars) — include primary keyword + location
+3. Meta description (150-160 chars) — conversational, question-based, compelling
+4. Full dual-language Q&A-first article body HTML (both Hindi and English sections)
+5. FAQ schema JSON-LD with at least 5 real patient questions
+6. Word count: 1200-1800 words minimum (comprehensive, in-depth)
 
 Return JSON format:
 {{
   "title": "...",
   "meta_title": "...",
   "meta_description": "...",
-  "content": "<h2>🇮🇳 मुख्य जानकारी</h2><p>Hindi paragraph...</p><h2>🇬🇧 Complete Medical Guide</h2><p>English paragraph...</p>",
-  "schema_json": {{"@context": "https://schema.org", "@type": "FAQPage"}},
+  "content": "<h2>🇮🇳 मुख्य जानकारी</h2>...<h2>🇬🇧 Complete Medical Guide</h2>...<h2>🩺 Dr. Gill's Clinical Experience</h2>...",
+  "schema_json": {{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [...]}},
   "word_count": number
 }}
 """

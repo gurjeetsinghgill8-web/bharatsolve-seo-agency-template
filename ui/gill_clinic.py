@@ -641,6 +641,26 @@ def render_blog_section(user_id, project_id=0):
         lang = st.radio("Language", ["Hinglish (हिंग्लिश)", "English", "हिंदी"], 
                        horizontal=True, key="blog_lang")
         
+        # Content format for GEO optimization
+        st.markdown('<p style="color:#0077b6;font-size:0.85rem;margin-bottom:2px;"><strong>📐 Content Format</strong> <span style="background:#0077b6;color:white;padding:1px 6px;border-radius:8px;font-size:0.7rem;">GEO OPTIMIZED</span></p>', unsafe_allow_html=True)
+        content_format = st.radio(
+            "Format",
+            ["Q&A Deep-Dive (Recommended for ChatGPT/Gemini 🥇)", 
+             "Patient Story First",
+             "Myth Buster", 
+             "Expert Deep-Dive"],
+            horizontal=True,
+            key="blog_format",
+            label_visibility="collapsed"
+        )
+        # Map format to instruction for content agent
+        format_map = {
+            "Q&A Deep-Dive (Recommended for ChatGPT/Gemini 🥇)": "qa_deep_dive",
+            "Patient Story First": "patient_story",
+            "Myth Buster": "myth_buster",
+            "Expert Deep-Dive": "expert_deep_dive"
+        }
+        
         # ── 3-STEP WORKFLOW ──
         col1, col2 = st.columns([1, 1])
         

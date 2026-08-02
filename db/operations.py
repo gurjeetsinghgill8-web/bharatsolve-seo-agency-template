@@ -657,3 +657,114 @@ def get_review_stats(user_id):
     ).fetchone()['cnt']
     conn.close()
     return {"total_processed": total, "posted": posted, "pending": total - posted}
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# PATIENT COMMUNITY OPERATIONS (GEO Community Feature)
+# ═══════════════════════════════════════════════════════════════════════
+
+def create_community_post(user_id, author_name="Anonymous Patient", post_type="testimonial",
+                          title="", content=""):
+    """Create a new patient community post (testimonial, question, or health tip)."""
+    conn = get_connection()
+    conn.execute(
+        """INSERT INTO patient_community (user_id, author_name, post_type, title, content)
+           VALUES (?, ?, ?, ?, ?)""",
+        (user_id, author_name, post_type, title, content)
+    )
+    conn.commit()
+    new_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+    conn.close()
+    return new_id
+
+
+def get_community_posts(user_id, post_type=None, status="all"):
+    """Get community posts. post_type: testimonial/question/success_story/health_tip or None for all.
+       status: 'all', 'approved', 'pending'"""
+    conn = get_connection()
+    query = "SELECT * FROM patient_community WHERE user_id = ?"
+    params = [user_id]
+
+    if post_type:
+        query += " AND post_type = ?"
+        params.append(post_type)
+
+    if status == "approved":
+        query += " AND is_approved = 1"
+    elif status == "pending":
+        query += " AND is_approved = 0"
+
+    query += " ORDER BY created_at DESC"
+    rows = conn.execute(query, params).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def get_featured_community_posts(user_id, limit=5):
+    """Get featured (starred) community posts for public display."""
+    conn = get_connection()
+    rows = conn.execute(
+        """SELECT * FROM patient_community 
+           WHERE user_id = ? AND is_approved = 1 AND is_featured = 1
+           ORDER BY likes_count DESC, created_at DESC LIMIT ?""",
+        (user_id, limit)
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def approve_community_post(post_id, doctor_reply="", feature=False):
+    """Approve a pending community post with optional doctor reply and feature flag."""
+    conn = get_connection()
+    conn.execute(
+        """UPDATE patient_community 
+           SET is_approved = 1, doctor_reply = ?, is_featured = ?
+           WHERE id = ?""",
+        (doctor_reply, 1 if feature else 0, post_id)
+    )
+    conn.commit()
+    conn.close()
+
+
+def like_community_post(post_id):
+    """Increment likes count for a community post."""
+    conn = get_connection()
+    conn.execute(
+        "UPDATE patient_community SET likes_count = likes_count + 1 WHERE id = ?",
+        (post_id,)
+    )
+    conn.commit()
+    conn.close()
+
+
+def delete_community_post(post_id):
+    """Delete a community post."""
+    conn = get_connection()
+    conn.execute("DELETE FROM patient_community WHERE id = ?", (post_id,))
+    conn.commit()
+    conn.close()
+
+
+def get_community_stats(user_id):
+    """Get community statistics."""
+    conn = get_connection()
+    total = conn.execute(
+        "SELECT COUNT(*) as cnt FROM patient_community WHERE user_id = ?", (user_id,)
+    ).fetchone()['cnt']
+    approved = conn.execute(
+        "SELECT COUNT(*) as cnt FROM patient_community WHERE user_id = ? AND is_approved = 1", (user_id,)
+    ).fetchone()['cnt']
+    featured = conn.execute(
+        "SELECT COUNT(*) as cnt FROM patient_community WHERE user_id = ? AND is_featured = 1", (user_id,)
+    ).fetchone()['cnt']
+    total_likes = conn.execute(
+        "SELECT COALESCE(SUM(likes_count), 0) as total FROM patient_community WHERE user_id = ?", (user_id,)
+    ).fetchone()['total']
+    conn.close()
+    return {
+        "total_posts": total,
+        "approved": approved,
+        "pending": total - approved,
+        "featured": featured,
+        "total_engagement": total_likes,
+    }

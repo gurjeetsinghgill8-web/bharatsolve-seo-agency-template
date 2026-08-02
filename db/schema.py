@@ -303,6 +303,24 @@ def init_db():
         )
     """)
 
+    # ── Patient Community Posts (GEO Community Feature) ──
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS patient_community (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            author_name TEXT DEFAULT 'Anonymous Patient',
+            post_type TEXT DEFAULT 'testimonial',
+            title TEXT NOT NULL,
+            content TEXT NOT NULL,
+            doctor_reply TEXT DEFAULT '',
+            is_approved INTEGER DEFAULT 0,
+            is_featured INTEGER DEFAULT 0,
+            likes_count INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    """)
+
     # ── Seed Default Admin Users ──
     try:
         import hashlib

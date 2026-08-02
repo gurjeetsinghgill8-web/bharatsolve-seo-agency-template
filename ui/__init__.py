@@ -16,6 +16,7 @@ from .publisher import show_publisher_page
 from .google_business import show_google_business_page
 from .scheduler import show_scheduler_page
 from .backup import show_backup_page
+from .patient_community import show_patient_community
 
 __all__ = [
     'login_page', 'check_auth', 'logout',
@@ -29,4 +30,5 @@ __all__ = [
     'show_google_business_page',
     'show_scheduler_page',
     'show_backup_page',
+    'show_patient_community',
 ]

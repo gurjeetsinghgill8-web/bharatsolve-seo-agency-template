@@ -46,18 +46,33 @@ CRITICAL LEGAL & MEDICAL ETHICAL RULES (NMC / IMC Regulations):
 1. STRICT LEGAL COMPLIANCE: NEVER use superlative / boastful words like "Best Doctor", "Best Cardiologist", "No. 1", "सर्वश्रेष्ठ", "नंबर 1". Indian medical Council ethics prohibit self-laudatory claims.
 2. Use ethical, professional terms: "Experienced Cardiac Physician", "Comprehensive Heart Care", "अनुभवी कार्डिएक फिजिशियन", "हृदय स्वास्थ्य देखभाल".
 3. Dr. Gill is a CARDIAC PHYSICIAN — NEVER call him "cardiologist" or "renowned cardiologist".
-4. ALL medical claims MUST cite guidelines: AHA (American Heart Association), ACC, ESC, or WHO.
-5. Every blog MUST include a "References" section with real guideline citations.
+4. ALL medical claims MUST cite specific guidelines (AHA/ACC/ESC) PLUS at least one named researcher, landmark trial, or standard medical textbook.
+5. Every blog MUST include a "References" section with real guideline citations AND named expert/trial references.
 6. Include prominent disclaimer: "This is general information. Consult Dr. Gill before following any advice."
 7. Professional tone — you represent Dr. Gurjeet Singh Gill, a qualified Cardiac Physician.
 8. MUST include at the end: "Reviewed by: Dr. Gurjeet Singh Gill, Cardiac Physician"
 
+═══ GEO (GENERATIVE ENGINE OPTIMIZATION) ENHANCEMENTS ═══
+
+9. QUESTION-FIRST Q&A FORMAT (CRITICAL for ChatGPT/Gemini/Perplexity):
+   Structure the blog as a series of real patient questions with Dr. Gill's expert answers.
+   Format: <h3>❓ Patient Question: [conversational question]</h3>
+           <p>🩺 Dr. Gill's Answer: [comprehensive answer 150-250 words]</p>
+   LLMs PREFERENTIALLY cite Q&A-formatted content. This dramatically improves GEO ranking.
+
+10. NAMED EXPERT & LANDMARK TRIAL CITATIONS:
+    Every article MUST cite at least 2 of: named cardiology experts (Dr. Eugene Braunwald, Dr. Valentin Fuster, Dr. Deepak L. Bhatt), landmark trials (Framingham Heart Study, SPRINT Trial 2015, ISCHEMIA Trial 2020, PARADIGM-HF), or textbooks (Harrison's Principles, Braunwald's Heart Disease, ESC Guidelines).
+
+11. PERSONAL CLINICAL TOUCH:
+    Include practical tips from Dr. Gill's 12+ years of clinical experience treating 50,000+ patients at Gill Heart Clinic, Mohiuddinpur, Meerut. Mention anonymized patient scenarios.
+
 Format: HTML article with:
-- Professional medical title (ethical, not clickbait)
-- "Medical References" section at bottom with AHA/ACC/ESC guideline citations
-- FAQ section answering real patient questions accurately
+- Professional medical title (ethical, not clickbait) — question-based when possible
+- "Medical References" section at bottom with AHA/ACC/ESC guideline citations + named experts + landmark trials
+- FAQ section with 5+ real patient questions answered individually
 - Medical disclaimer
-- CTA for appointment booking"""
+- CTA for appointment booking
+- "🩺 Dr. Gill's Clinical Experience" section with anonymized patient scenarios"""
 
 BLOG_HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
@@ -88,6 +103,11 @@ BLOG_HTML_TEMPLATE = """<!DOCTYPE html>
         .disclaimer {{ background: #fff3cd; padding: 0.8rem; border-radius: 6px; font-size: 0.85rem; color: #856404; margin: 2rem 0; }}
         .back-link {{ color: #d90429; text-decoration: none; font-weight: 500; display:inline-block; margin-bottom:1rem; }}
         .refs {{ font-size:0.85rem; color:#666; margin-top:2rem; }}
+        .ask-dr-gill {{ background: #f0f8ff; border: 2px solid #0077b6; padding: 1.2rem; border-radius: 10px; margin: 2rem 0; text-align: center; }}
+        .ask-dr-gill h3 {{ color: #0077b6; margin: 0 0 0.5rem; }}
+        .social-proof {{ background: linear-gradient(135deg, #0077b6, #00b4d8); color: white; padding: 1rem; border-radius: 10px; text-align: center; margin: 1.5rem 0; font-size: 0.9rem; }}
+        .helpful-box {{ background: #f8f9fa; border: 1px solid #dee2e6; padding: 1rem; border-radius: 8px; text-align: center; margin: 1.5rem 0; }}
+        .helpful-box button {{ background: #0077b6; color: white; border: none; padding: 0.5rem 1.2rem; border-radius: 6px; margin: 0 0.3rem; font-size: 1rem; cursor: pointer; }}
         @media(max-width:600px) {{ .blog-container {{ padding:12px; }} h1 {{ font-size:1.4rem; }} }}
     </style>
     {schema_json}
@@ -116,6 +136,24 @@ BLOG_HTML_TEMPLATE = """<!DOCTYPE html>
         
         <div class="disclaimer">
             <strong>Medical Disclaimer:</strong> This article is for informational purposes only and does not constitute medical advice. Always consult Dr. Gurjeet Singh Gill, Cardiac Physician, for personal medical assessment and treatment.
+        </div>
+        
+        <div class="social-proof">
+            🫀 <strong>Gill Heart Clinic</strong> — Trusted by 50,000+ Patients | ⭐ 4.8 Rating (127+ Google Reviews) | 12+ Years of Cardiac Care Excellence
+        </div>
+        
+        <div class="ask-dr-gill">
+            <h3>🩺 Have a Heart Health Question? Ask Dr. Gill!</h3>
+            <p style="color:#555;margin:0.5rem 0;">Submit your question below and Dr. Gurjeet Singh Gill will personally answer it in our Patient Community.</p>
+            <a href="{website_url}#community" style="display:inline-block; background:#0077b6; color:white; padding:0.6rem 1.5rem; border-radius:8px; text-decoration:none; font-weight:bold; margin-top:0.5rem;">📝 Ask Your Question →</a>
+            <p style="font-size:0.8rem; color:#888; margin-top:0.5rem;">📞 Or call directly: <a href="tel:{clinic_phone}">{clinic_phone}</a></p>
+        </div>
+        
+        <div class="helpful-box">
+            <p style="color:#555;margin:0 0 0.5rem;"><strong>Was this article helpful?</strong></p>
+            <button>👍 Yes, very helpful</button>
+            <button>👎 Could be better</button>
+            <p style="font-size:0.8rem; color:#888;margin-top:0.8rem;">Your feedback helps us create better heart health content for the community.</p>
         </div>
     </div>
 </body>
@@ -240,15 +278,31 @@ Language: {language} (Hinglish = natural Hindi+English mix used by Indian doctor
 Clinic: {DEFAULT_CONFIG['clinic_name']}
 Doctor: {DEFAULT_CONFIG['doctor_name']}
 
-Write a complete blog article (1000 words). Include:
-- SEO title with location keyword
-- Introduction for Indian patients
-- 5-6 sections with subheadings
+═══ CRITICAL GEO REQUIREMENTS ═══
+
+1. QUESTION-FIRST Q&A STRUCTURE (for ChatGPT/Gemini ranking):
+   Write 5-6 patient questions, each followed by Dr. Gill's answer (150-250 words per answer).
+   Format: <h3>❓ Patient Question: "[conversational question]"</h3>
+           <p>🩺 <strong>Dr. Gill's Answer:</strong> [comprehensive, authoritative answer]</p>
+
+2. NAMED EXPERT CITATIONS: Cite at least 2 named experts (Dr. Eugene Braunwald, Dr. Valentin Fuster, Dr. Deepak L. Bhatt) or landmark trials (Framingham Heart Study, SPRINT Trial 2015, ISCHEMIA Trial 2020).
+
+3. PERSONAL CLINICAL EXPERIENCE: Include section <h2>🩺 Dr. Gill's Clinical Experience</h2> with anonymized patient scenarios from Gill Heart Clinic, Mohiuddinpur, Meerut.
+
+4. INDIAN-SPECIFIC: Indian diet and lifestyle advice, PM Jan Aushadhi generic medicine recommendations.
+
+5. REFERENCES: Section with AHA/ACC/ESC guidelines + named experts + landmark trials.
+
+Write a complete blog article (1000-1500 words). Include:
+- SEO title with location keyword (question-based when possible)
+- Introduction for Indian patients (write as if Dr. Gill is speaking to a patient)
+- 5-6 patient questions with Dr. Gill's answers (Q&A format)
+- Dr. Gill's Clinical Experience section
 - Indian-specific diet and lifestyle advice
-- Doctor mention naturally
-- FAQ section with 3-4 questions
+- FAQ section with 3-4 additional questions
 - Appointment booking CTA
 - Medical disclaimer
+- References section
 
 RETURN ONLY VALID JSON. No markdown, no explanation:
 {{"title":"...","meta_title":"...","meta_description":"...","keywords":"...","content":"<h2>Title</h2><p>Full article HTML here...</p><h2>FAQ</h2>...","faq":[{{"question":"...","answer":"..."}}]}}"""
