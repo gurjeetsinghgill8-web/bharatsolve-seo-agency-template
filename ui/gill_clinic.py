@@ -1584,33 +1584,36 @@ def render_local_search_engine(user_id=None, project_id=1):
                     st.success("🎉 All 7 Drafts Staged Below!")
                     st.rerun()
 
-        # Render 7 Staged Draft Cards / Expanders
-        st.markdown("##### 📝 7-Day Content Review Table (Click to Read, Edit & Approve):")
-        st.caption("🟢 Green = Published & Live | 🟡 Yellow = Draft Ready | 🔴 Red = Pending Generation")
+        # Render 3-Column Parallel Kanban Pipeline View (Priority UX Upgrade)
+        st.markdown("##### 📊 7-Day Content Kanban Pipeline (Categorized into 3 Parallel Stages):")
+        st.caption("Articles automatically shift between columns: 🔴 Pending Generation ➔ 🟡 Draft Ready for Review ➔ 🟢 Published Live")
+        
         staged_dict = st.session_state.get("gc_staged_weekly_drafts", {})
         
-        # Check DB for all draft & published articles matching each day's query
+        # Fetch DB content pieces for matching
         from db.operations import get_content_pieces as db_get_content_pieces
         all_db_pieces = []
         try:
             all_db_pieces = db_get_content_pieces(project_id, limit=100)
         except Exception:
             all_db_pieces = []
-        
+
+        pending_items = []    # list of (i, q)
+        draft_items = []      # list of (i, q, item_dict)
+        published_items = []  # list of (i, q, item_dict)
+
+        intent_emoji = {
+            "book_appointment": "📅", "emergency": "🚨", "information": "📖",
+            "price_check": "💰", "book_test": "🩺", "brand_search": "🏥",
+            "walk_in": "🚶", "book_service": "🏠", "event": "📢"
+        }
+
         for i, q in enumerate(weekly_queries[:7]):
-            intent_emoji = {
-                "book_appointment": "📅", "emergency": "🚨", "information": "📖",
-                "price_check": "💰", "book_test": "🩺", "brand_search": "🏥",
-                "walk_in": "🚶", "book_service": "🏠", "event": "📢"
-            }
-            
             staged_item = staged_dict.get(i)
-            
-            # Check if this day's query was already published (check DB + session_state)
             is_published = False
             pub_url = ""
-            
-            # Check DB first (both published & draft status)
+
+            # Check DB
             query_lower = q['query'].lower().strip()
             for db_item in all_db_pieces:
                 db_title = (db_item.get("title") or "").lower()
@@ -1619,12 +1622,10 @@ def render_local_search_engine(user_id=None, project_id=1):
                 item_pub_url = db_item.get("published_url") or ""
                 item_is_pub = bool(item_pub_url or db_item.get("status") == "published")
                 
-                # Check for match by keyword or title
-                if query_lower in db_title or query_lower in db_keyword or (db_title and any(word in db_title for word in query_lower.split() if len(word) > 3)):
+                if query_lower in db_title or query_lower in db_keyword or (db_title and any(w in db_title for w in query_lower.split() if len(w) > 3)):
                     if item_is_pub:
                         is_published = True
                         pub_url = item_pub_url
-                    
                     if not staged_item:
                         staged_item = {
                             "query": q['query'],
@@ -1642,141 +1643,89 @@ def render_local_search_engine(user_id=None, project_id=1):
                         if not staged_item.get("content"):
                             staged_item["content"] = item_content
                     break
-            
-            # Fall back to session_state flag
+
             if not is_published and staged_item:
                 is_published = staged_item.get("published", False)
                 pub_url = staged_item.get("published_url", "")
-            
-            # Determine status with colors
-            if is_published:
-                status_label = "🟢 PUBLISHED LIVE"
-                expander_label = f"✅ Day {i+1}: {intent_emoji.get(q['intent'],'📌')} {q['query']} — {status_label}"
-            elif staged_item and staged_item.get("content"):
-                status_label = "🟡 DRAFT READY"
-                expander_label = f"📝 Day {i+1}: {intent_emoji.get(q['intent'],'📌')} {q['query']} — {status_label}"
-            else:
-                status_label = "🔴 PENDING"
-                expander_label = f"Day {i+1}: {intent_emoji.get(q['intent'],'📌')} {q['query']} — {status_label}"
-            
-            # Auto-build live URL if published
+
             if is_published and not pub_url:
                 slug_tmp = re.sub(r'[^a-z0-9]+', '-', q['query'].lower()).strip('-')[:60]
                 pub_url = f"https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/blogs/{slug_tmp}.html"
 
-            # Save updated dict back to session_state
-            if staged_dict != st.session_state.get("gc_staged_weekly_drafts", {}):
-                st.session_state["gc_staged_weekly_drafts"] = staged_dict
+            # Categorize item into exact stage
+            if is_published or (staged_item and staged_item.get("published")):
+                p_dict = staged_item or {"query": q['query'], "title": q['query'], "content": "", "published_url": pub_url}
+                if not p_dict.get("published_url"):
+                    p_dict["published_url"] = pub_url
+                published_items.append((i, q, p_dict))
+            elif staged_item and staged_item.get("content"):
+                draft_items.append((i, q, staged_item))
+            else:
+                pending_items.append((i, q))
 
-            with st.expander(expander_label, expanded=is_published):
-                st.markdown(f"**Target Query**: `{q['query']}` | **Intent**: `{q['intent']}` | **Conversion**: `{q['conversion']}`")
-                
-                if is_published or pub_url:
-                    st.markdown(f"""
-                    <div style="background:#d4edda; border:2px solid #28a745; border-radius:10px; padding:12px 16px; margin:10px 0; box-shadow:0 2px 8px rgba(40,167,69,0.15);">
-                        <p style="margin:0; color:#155724; font-weight:bold; font-size:1rem;">🎉 Day {i+1} IS LIVE ON YOUR WEBSITE!</p>
-                        <p style="margin:6px 0 0 0; font-size:0.95rem;">🔗 <a href="{pub_url}" target="_blank" style="color:#155724; font-weight:bold; text-decoration:underline;">Click Here to Open Live Article: {pub_url}</a></p>
-                    </div>
-                    """, unsafe_allow_html=True)
-                
-                if not staged_item:
-                    st.info(f"Click '⚙️ Step 1: Generate All 7 Weekly Drafts' above or generate this single item below:")
-                    if st.button(f"⚡ Generate Day {i+1} Draft Now", key=f"gen_single_item_{i}"):
-                        with st.spinner(f"Generating draft for Day {i+1}..."):
-                            res = generate_content(
-                                project_id=project_id,
-                                keyword=q['query'],
-                                content_type="blog",
-                                language="hi"
-                            )
-                            if "gc_staged_weekly_drafts" not in st.session_state:
-                                st.session_state["gc_staged_weekly_drafts"] = {}
-                            st.session_state["gc_staged_weekly_drafts"][i] = {
-                                "query": q['query'],
-                                "title": res.get("title", q['query']),
-                                "content": res.get("content", ""),
-                                "published": False,
-                                "published_url": ""
-                            }
-                            # 💾 PERSIST TO DB so draft survives Streamlit Cloud session resets
-                            try:
-                                from db.operations import save_content as db_save_single
-                                db_id = db_save_single(project_id, res.get("title", q['query']), res.get("content", ""),
-                                                       content_type="weekly_planner", target_keyword=q['query'])
-                                st.session_state["gc_staged_weekly_drafts"][i]["db_id"] = db_id
-                            except Exception:
-                                pass
-                            st.success(f"✅ Day {i+1} draft generated!")
-                            st.rerun()
-                else:
-                    # Item preview and edit
-                    edited_t = st.text_input(f"Edit Title (Day {i+1})", value=staged_item["title"], key=f"item_title_{i}")
-                    edited_c = st.text_area(f"Read & Edit Article Body (Day {i+1})", value=staged_item["content"], height=300, key=f"item_content_{i}")
-                    
-                    # Update session state text edits
-                    staged_item["title"] = edited_t
-                    staged_item["content"] = edited_c
-                    
-                    # Standalone HTML Web Preview Generator
-                    from utils.html_preview_generator import create_standalone_html_preview
-                    preview_file_path = create_standalone_html_preview(edited_t, edited_c, CLINIC['doctor'])
-                    
-                    st.markdown(f"""
-                    <div style="background:#f0f9ff; border:1px solid #00b4d8; border-radius:10px; padding:12px; margin:10px 0; display:flex; justify-space-between; align-items:center;">
-                        <span style="font-weight:bold; color:#0077b6;">🌐 Professional Web Reading Preview Ready!</span>
-                        <small style="color:#666;">(Clean full-screen reading on mobile/laptop)</small>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    col_act1, col_act2, col_act3, col_act4 = st.columns(4)
-                    with col_act1:
+        if staged_dict != st.session_state.get("gc_staged_weekly_drafts", {}):
+            st.session_state["gc_staged_weekly_drafts"] = staged_dict
+
+        # Render 3 Parallel Columns
+        col_pend, col_drft, col_pub = st.columns(3)
+
+        # 🔴 COLUMN 1: PENDING GENERATION
+        with col_pend:
+            st.markdown(f"#### 🔴 Pending Generation ({len(pending_items)})")
+            if not pending_items:
+                st.success("🎉 All 7 weekly items have been generated!")
+            else:
+                for i, q in pending_items:
+                    with st.expander(f"Day {i+1}: {intent_emoji.get(q['intent'],'📌')} {q['query']}", expanded=False):
+                        st.caption(f"**Intent**: {q['intent']} | **Conversion**: {q['conversion']}")
+                        if st.button(f"⚡ Generate Day {i+1} Draft", key=f"gen_kanban_col_{i}", use_container_width=True):
+                            with st.spinner(f"AI generating Day {i+1} draft..."):
+                                res = generate_content(project_id=project_id, keyword=q['query'], content_type="blog", language="hi")
+                                title = res.get("title", q['query'])
+                                content = res.get("content", "")
+                                staged_dict[i] = {"query": q['query'], "title": title, "content": content, "published": False, "published_url": ""}
+                                try:
+                                    from db.operations import save_content as db_save_s
+                                    db_id = db_save_s(project_id, title, content, content_type="weekly_planner", target_keyword=q['query'])
+                                    staged_dict[i]["db_id"] = db_id
+                                except Exception:
+                                    pass
+                                st.session_state["gc_staged_weekly_drafts"] = staged_dict
+                                st.rerun()
+
+        # 🟡 COLUMN 2: DRAFTS READY FOR REVIEW
+        with col_drft:
+            st.markdown(f"#### 🟡 Draft Ready ({len(draft_items)})")
+            if not draft_items:
+                st.info("No drafts currently waiting for review.")
+            else:
+                for i, q, staged_item in draft_items:
+                    with st.expander(f"📝 Day {i+1}: {intent_emoji.get(q['intent'],'📌')} {q['query']}", expanded=False):
+                        st.markdown(f"**Target Query**: `{q['query']}`")
+                        edited_t = st.text_input(f"Edit Title (Day {i+1})", value=staged_item["title"], key=f"kb_title_{i}")
+                        edited_c = st.text_area(f"Read & Edit Article Body", value=staged_item["content"], height=220, key=f"kb_content_{i}")
+                        staged_item["title"] = edited_t
+                        staged_item["content"] = edited_c
+
+                        from utils.html_preview_generator import create_standalone_html_preview
+                        preview_file_path = create_standalone_html_preview(edited_t, edited_c, CLINIC['doctor'])
                         with open(preview_file_path, "r", encoding="utf-8") as html_f:
-                            st.download_button(
-                                label="🌐 Save Web HTML File",
-                                data=html_f.read(),
-                                file_name=f"Day_{i+1}_Article_Preview.html",
-                                mime="text/html",
-                                use_container_width=True,
-                                key=f"dl_html_item_{i}"
-                            )
-                    
-                    with col_act2:
-                        try:
-                            from utils.pdf_generator import create_blog_pdf
-                            pdf_path = create_blog_pdf(edited_t, edited_c, CLINIC['doctor'])
-                            with open(pdf_path, "rb") as pf:
-                                st.download_button("📄 Save PDF File", pf.read(), file_name=f"Day_{i+1}_Heart_Guide.pdf", mime="application/pdf", use_container_width=True, key=f"dl_pdf_item_{i}")
-                        except Exception as pdf_e:
-                            st.warning("PDF note")
-                    
-                    with col_act3:
-                        from utils.share_links import get_whatsapp_share_url
-                        wa_txt = f"*🏥 {edited_t}*\n\n{clean_text_for_pdf_snippet(edited_c)[:300]}...\n\nReviewed by: {CLINIC['doctor']} ({CLINIC['phone']})"
-                        wa_u = get_whatsapp_share_url(wa_txt)
-                        st.markdown(f'''<a href="{wa_u}" target="_blank" style="text-decoration:none;"><div style="background:#25D366;color:white;font-weight:bold;text-align:center;padding:0.5rem;border-radius:8px;font-size:0.85rem;">📱 Share WhatsApp</div></a>''', unsafe_allow_html=True)
-                    
-                    with col_act4:
-                        if st.button(f"🚀 Approve & Publish", key=f"pub_item_{i}", type="primary", disabled=is_published, use_container_width=True):
-                            with st.spinner(f"Publishing Day {i+1} article to website..."):
+                            st.download_button("🌐 Download Web Preview HTML", data=html_f.read(), file_name=f"Day_{i+1}_Preview.html", mime="text/html", use_container_width=True, key=f"dl_kb_html_{i}")
+
+                        if st.button(f"🚀 Approve & Publish to Web", key=f"pub_kb_item_{i}", type="primary", use_container_width=True):
+                            with st.spinner(f"Publishing Day {i+1} to website..."):
                                 from agents.github_publisher import publish_reviewed_draft_to_github
-                                pub_res = publish_reviewed_draft_to_github(
-                                    title=edited_t,
-                                    content=edited_c,
-                                    target_location="Meerut",
-                                    language="hi"
-                                )
+                                pub_res = publish_reviewed_draft_to_github(title=edited_t, content=edited_c, target_location="Meerut", language="hi")
                                 if pub_res.get("status") == "published":
                                     staged_item["published"] = True
                                     staged_item["published_url"] = pub_res.get("published_url", "")
                                     st.session_state["gc_staged_weekly_drafts"][i] = staged_item
-                                    # 💾 UPDATE DB: mark as published so it survives session resets
                                     try:
                                         db_id = staged_item.get("db_id")
                                         if db_id:
                                             from db.schema import get_connection
                                             conn = get_connection()
-                                            conn.execute("UPDATE content_pieces SET status='published', published_url=? WHERE id=?", 
-                                                       (pub_res.get("published_url", ""), db_id))
+                                            conn.execute("UPDATE content_pieces SET status='published', published_url=? WHERE id=?", (pub_res.get("published_url", ""), db_id))
                                             conn.commit()
                                             conn.close()
                                     except Exception:
@@ -1786,6 +1735,23 @@ def render_local_search_engine(user_id=None, project_id=1):
                                     st.rerun()
                                 else:
                                     st.error(f"Push failed: {pub_res.get('message','')}")
+
+        # 🟢 COLUMN 3: PUBLISHED LIVE
+        with col_pub:
+            st.markdown(f"#### 🟢 Published Live ({len(published_items)})")
+            if not published_items:
+                st.info("No articles published live yet.")
+            else:
+                for i, q, staged_item in published_items:
+                    live_url = staged_item.get("published_url") or pub_url
+                    with st.expander(f"✅ Day {i+1}: {intent_emoji.get(q['intent'],'📌')} {q['query']}", expanded=True):
+                        st.markdown(f"""
+                        <div style="background:#d4edda; border:2px solid #28a745; border-radius:10px; padding:10px; margin:4px 0;">
+                            <p style="margin:0; color:#155724; font-weight:bold; font-size:0.9rem;">🎉 LIVE ON WEBSITE!</p>
+                            <p style="margin:4px 0 0 0; font-size:0.85rem;"><a href="{live_url}" target="_blank" style="color:#155724; font-weight:bold; text-decoration:underline;">🔗 Open Live Article Link</a></p>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        st.markdown(f"**Title**: {staged_item.get('title', q['query'])}")
 
         st.markdown("---")
         # 📊 PERSISTENT TOGGLE: Uses checkbox so plan stays visible (survives reruns)
