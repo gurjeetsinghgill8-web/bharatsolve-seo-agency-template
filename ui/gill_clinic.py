@@ -1466,28 +1466,43 @@ def render_local_search_engine(user_id=None, project_id=1):
         weekly_queries = get_weekly_target_queries()
         staged_dict = st.session_state.get("gc_staged_weekly_drafts", {})
         
-        # 🔁 RELOAD FROM DB: Restore weekly drafts that survive Streamlit Cloud session resets
-        if not staged_dict or any(i not in staged_dict for i in range(7)):
-            try:
-                db_weekly = get_content_pieces(project_id=project_id, limit=50, content_type="weekly_planner")
-                for piece in db_weekly:
-                    kw = (piece.get("target_keyword") or "").lower().strip()
-                    # Match this DB piece to a day index by keyword
-                    for i, q in enumerate(weekly_queries[:7]):
-                        if kw and (kw in q['query'].lower() or q['query'].lower() in kw):
-                            if i not in staged_dict or not staged_dict[i].get("content"):
-                                staged_dict[i] = {
-                                    "query": q['query'],
-                                    "title": piece.get("title", q['query']),
-                                    "content": piece.get("content", ""),
-                                    "published": bool(piece.get("published_url") or piece.get("status") == "published"),
-                                    "published_url": piece.get("published_url", ""),
-                                    "db_id": piece.get("id"),
-                                }
-                            break
-                st.session_state["gc_staged_weekly_drafts"] = staged_dict
-            except Exception:
-                pass  # DB load is best-effort; session_state fallback still works
+        # 🔁 RELOAD FROM DB: Restore ALL weekly drafts & blogs (draft or published) that survive Streamlit Cloud session resets
+        try:
+            from db.operations import get_content_pieces
+            all_db_pieces = get_content_pieces(project_id=project_id, limit=100) # Fetch ALL content types
+            for piece in all_db_pieces:
+                kw = (piece.get("target_keyword") or "").lower().strip()
+                title_lower = (piece.get("title") or "").lower().strip()
+                p_content = piece.get("content") or ""
+                p_url = piece.get("published_url") or ""
+                is_pub = bool(p_url or piece.get("status") == "published")
+                
+                # Match DB piece to one of the 7 daily queries
+                for i, q in enumerate(weekly_queries[:7]):
+                    q_clean = q['query'].lower().strip()
+                    # Match if target_keyword or title overlap
+                    match_found = False
+                    if kw and (kw in q_clean or q_clean in kw):
+                        match_found = True
+                    elif q_clean in title_lower or any(word in title_lower for word in q_clean.split() if len(word) > 3):
+                        match_found = True
+                    
+                    if match_found:
+                        existing = staged_dict.get(i, {})
+                        # If not already staged or if DB has richer data / published status
+                        if not existing or not existing.get("content") or (is_pub and not existing.get("published")):
+                            staged_dict[i] = {
+                                "query": q['query'],
+                                "title": piece.get("title", q['query']),
+                                "content": p_content,
+                                "published": is_pub,
+                                "published_url": p_url,
+                                "db_id": piece.get("id"),
+                            }
+                        break
+            st.session_state["gc_staged_weekly_drafts"] = staged_dict
+        except Exception as err:
+            print(f"DB reload error: {err}")
         
         # Find next ungenerated day index
         next_day_idx = 0
@@ -1574,14 +1589,13 @@ def render_local_search_engine(user_id=None, project_id=1):
         st.caption("🟢 Green = Published & Live | 🟡 Yellow = Draft Ready | 🔴 Red = Pending Generation")
         staged_dict = st.session_state.get("gc_staged_weekly_drafts", {})
         
-        # Check DB for already-published articles matching each day's query
+        # Check DB for all draft & published articles matching each day's query
         from db.operations import get_content_pieces as db_get_content_pieces
-        db_published = []
+        all_db_pieces = []
         try:
-            all_db_content = db_get_content_pieces(project_id, limit=50)
-            db_published = [c for c in all_db_content if c.get("published_url") or c.get("status") == "published"]
-        except:
-            db_published = []
+            all_db_pieces = db_get_content_pieces(project_id, limit=100)
+        except Exception:
+            all_db_pieces = []
         
         for i, q in enumerate(weekly_queries[:7]):
             intent_emoji = {
@@ -1596,27 +1610,37 @@ def render_local_search_engine(user_id=None, project_id=1):
             is_published = False
             pub_url = ""
             
-            # Check DB first
+            # Check DB first (both published & draft status)
             query_lower = q['query'].lower().strip()
-            for db_item in db_published:
+            for db_item in all_db_pieces:
                 db_title = (db_item.get("title") or "").lower()
                 db_keyword = (db_item.get("target_keyword") or "").lower()
-                if query_lower in db_title or query_lower in db_keyword:
-                    is_published = True
-                    pub_url = db_item.get("published_url", "")
-                    # Also update session_state so memory persists
+                item_content = db_item.get("content") or ""
+                item_pub_url = db_item.get("published_url") or ""
+                item_is_pub = bool(item_pub_url or db_item.get("status") == "published")
+                
+                # Check for match by keyword or title
+                if query_lower in db_title or query_lower in db_keyword or (db_title and any(word in db_title for word in query_lower.split() if len(word) > 3)):
+                    if item_is_pub:
+                        is_published = True
+                        pub_url = item_pub_url
+                    
                     if not staged_item:
                         staged_item = {
                             "query": q['query'],
                             "title": db_item.get("title", q['query']),
-                            "content": db_item.get("content", ""),
-                            "published": True,
-                            "published_url": pub_url
+                            "content": item_content,
+                            "published": item_is_pub,
+                            "published_url": item_pub_url,
+                            "db_id": db_item.get("id")
                         }
                         staged_dict[i] = staged_item
                     else:
-                        staged_item["published"] = True
-                        staged_item["published_url"] = staged_item.get("published_url") or pub_url
+                        if item_is_pub:
+                            staged_item["published"] = True
+                            staged_item["published_url"] = item_pub_url
+                        if not staged_item.get("content"):
+                            staged_item["content"] = item_content
                     break
             
             # Fall back to session_state flag
