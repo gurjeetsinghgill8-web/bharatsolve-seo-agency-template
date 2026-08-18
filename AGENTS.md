@@ -3,51 +3,61 @@
 ## App Identity
 - **Name**: BHARATSOLVE SEO AGENCY v1.0
 - **Client**: Dr. Gurjeet Singh Gill — Gill Heart Clinic, Mohiuddinpur, Meerut
-- **Stack**: Python 3.11 + Streamlit + SQLite + Groq/Gemini LLM
+- **Stack**: Python 3.11 + Streamlit + SQLite + Groq/Gemini LLM + GitHub Actions Cron
 - **Live URL**: https://bharatsolve-seo-agency-template-d7c7gtbuaxpkxkya3dsmcz.streamlit.app/
 - **Website**: https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/
 - **GitHub Repo**: gurjeetsinghgill8-web/bharatsolve-seo-agency-template (app) | gurjeetsinghgill8-web/gill-heart-clinic (website)
 
 ## Architecture
 ```
-app.py                          → Main entry, routing, sidebar nav, auth
-ui/gill_clinic.py (107KB)       → Gill Clinic Command Center (main UI)
+app.py                          → Main entry, routing, sidebar nav, auth, on-load cloud task checks
+ui/gill_clinic.py (119KB)       → Gill Clinic Command Center (main UI, 1-Click Turbo, Telemetry Radar)
 ui/auth.py                      → Login/Register
-agents/*.py                     → Business logic (content, competitor, rank, reviews, etc.)
+agents/*.py                     → Business logic (content, competitor, rank, reviews, gbp, etc.)
 db/schema.py + operations.py    → SQLite (18 tables, 1 file)
 utils/llm_client.py             → Multi-provider LLM: Groq → Gemini → DeepSeek fallback
-harness/                        → Scheduler & Auto-Pilot
+harness/headless_runner.py      → Standalone autonomous engine for CLI, UI, and GitHub Actions
+harness/scheduler.py            → Task scheduler & multi-mode runner
+.github/workflows/auto_seo.yml  → 24/7 serverless cron (Runs daily at 9 AM & 6 PM IST)
 ```
 
 ## Key Session State Variables (gill_clinic.py)
 - `gc_project_id` — Auto-created Gill Clinic project ID
 - `gc_staged_weekly_drafts` — Dict[int, dict] for 7-day planner
 - `gc_last_blog`, `gc_blog_title`, `gc_blog_content`, `gc_review_mode` — Blog editor
+- `gc_quick_jump` — Section quick navigation
 - `my_competitors` — User's custom competitor list
 - `show_full_plan_checkbox` — Persists 50+ search plan visibility
 
-## CRITICAL: Streamlit Cloud Session Limitations
+## CRITICAL: Streamlit Cloud Session Limitations & Fix
 - **Sessions recycle after ~5-10 min inactivity** → ALL `st.session_state` is LOST
 - **MUST persist any user-generated content to DB** (`content_pieces` table)
 - DB is at `/tmp/seo_agency.db` on Cloud, `seo_agency.db` locally
 - Always reload from DB at function start as fallback for session state
+- **24/7 Serverless Solution**: Headless runner (`harness/headless_runner.py`) triggered via GitHub Actions (`.github/workflows/auto_seo.yml`) operates completely independently of Streamlit Cloud sleep cycles.
 
-## Bugs Fixed (Aug 2026)
-1. **Language detection**: `"english" in "hinglish"` = True → Hinglish was treated as English
-   - Fix: Check "hinglish" FIRST, then "hindi", then "english"
-   - Files: `agents/content_agent.py`, `agents/github_publisher.py`
-2. **Dual-language forced Hindi**: Prompt mandated Hindi+English in every article, ignoring user's language choice
-   - Fix: Target-language-only mandate
-3. **7-Day Planner resets to PENDING**: Drafts stored only in session_state, lost on Cloud recycle
-   - Fix: Save drafts to DB as `content_type='weekly_planner'`, reload at function start
-4. **Blog generator review mode lost**: Same session_state loss
-   - Fix: Auto-restore last `status='draft'` blog from DB on page load
-5. **View Full 50+ Plan disappeared**: `st.button` only True on click frame
-   - Fix: Replaced with persistent `st.checkbox`
-6. **Competitor shows ~8 not 62**: Used local `MY_COMPETITORS` with 16 blanks
-   - Fix: Import 62 `DEFAULT_COMPETITORS` from `agents/competitor_agent.py`
-7. **Blog Gen missing HTML download**: Only had PDF+WhatsApp+Telegram
-   - Fix: Added `🌐 Save Web HTML File` via `utils/html_preview_generator`
+## Major Upgrades & Bug Fixes
+
+### Auto-Pilot Overhaul & Turbo Master-Run (18 Aug 2026)
+1. **1-Click Dr. Gill AI Turbo Master-Run**:
+   - Added 1-click execution engine in `ui/gill_clinic.py` and `harness/headless_runner.py`.
+   - Automatically picks next unwritten high-intent query from 50+ local search queries -> Generates 100% NMC & GEO compliant article -> Pushes live to GitHub Pages (`blogs/slug.html`) -> Rebuilds master blog catalog (`blogs/index.html`), homepage (`index.html`), `sitemap.xml`, and `llms.txt`.
+2. **Replaced All Hardcoded Fake Statuses with Live Telemetry**:
+   - Eliminated static "2 hours ago" strings.
+   - Built **Live Health Radar** showing real connection pills (Google Gemini LLM, Groq Llama LLM, GitHub API connection to `gurjeetsinghgill8-web/gill-heart-clinic`, and live website link).
+   - Connected real SQLite agent execution logs (`get_agent_logs`).
+3. **24/7 Serverless Autonomous Cron**:
+   - Created `.github/workflows/auto_seo.yml` running twice daily (9:00 AM & 6:00 PM IST) on GitHub Actions.
+   - Hooked `try_cloud_tasks()` into `app.py` on-load check.
+
+### Earlier Fixes (Aug 2026)
+1. **Language detection**: `"english" in "hinglish"` = True → Fixed: Check "hinglish" FIRST, then "hindi", then "english" in `content_agent.py` and `github_publisher.py`.
+2. **Dual-language forced Hindi**: Fixed to target-language-only mandate.
+3. **7-Day Planner resets to PENDING**: Persisted to SQLite DB with `content_type='weekly_planner'`.
+4. **Blog generator review mode lost**: Auto-restores last `status='draft'` blog from DB on page load.
+5. **View Full 50+ Plan disappeared**: Replaced button with persistent `st.checkbox`.
+6. **Competitor shows ~8 not 62**: Imports 62 `DEFAULT_COMPETITORS` from `agents/competitor_agent.py`.
+7. **Blog Gen missing HTML download**: Added `🌐 Save Web HTML File` via `utils/html_preview_generator`.
 
 ## Language Handling
 - 3 modes: Hinglish (हिंग्लिश), English, हिंदी
@@ -69,49 +79,20 @@ content, published_url, created_at
 ## Key Functions
 | Function | File | Purpose |
 |----------|------|---------|
-| `render_blog_section()` | gill_clinic.py:595 | 3-step blog generator + manager |
-| `render_local_search_engine()` | gill_clinic.py:1417 | 7-day content planner |
+| `run_clinic_turbo_cycle()` | headless_runner.py:60 | 1-click end-to-end SEO pipeline |
+| `render_autopilot_section()` | gill_clinic.py:1840 | Live telemetry + 1-Click Master Control |
+| `render_blog_section()` | gill_clinic.py:620 | 3-step blog generator + manager |
+| `render_local_search_engine()` | gill_clinic.py:1417 | 7-day content planner & 50+ search queries |
 | `render_competitor_section()` | gill_clinic.py:1245 | Competitor intel table |
-| `show_gill_clinic()` | gill_clinic.py:1974 | Main orchestrator with quick-jump |
-| `generate_content()` | content_agent.py:70 | AI content generation |
-| `get_competitor_data()` | gill_clinic.py:384 | Load 62 competitors from agent |
-| `save_content()` | operations.py:154 | Insert into content_pieces |
+| `show_gill_clinic()` | gill_clinic.py:2030 | Main orchestrator with quick-jump |
+| `auto_blog_task()` | github_publisher.py:600 | AI content generation + Git Push |
 
-## Website SEO Fixes (Aug 2026)
+## Website Source Map & Schemas
 - **Website source**: `C:\Users\pc\Desktop\gurjas ai\Dr G S GILL WEBSITE\index.html` (5,864 lines, single-page site)
 - **Live**: https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/
 - **GitHub Repo**: gurjeetsinghgill8-web/gill-heart-clinic
-
-### Fixes Applied (2026-08-02)
-1. **H1 optimized (100% NMC Ethics Compliant)**: `"Dr. Gurjeet Singh Gill (Dr. GS Gill)"` → `"Heart Doctor & Cardio-Physician in Meerut — Dr. Gurjeet Singh Gill | Gill Heart Clinic"`
-   - Strictly compliant with NMC Registered Medical Practitioner Regulations (avoids prohibited self-superlatives like "Best/No. 1") while maintaining peak local SEO keyword targeting for "Heart Doctor Meerut".
-2. **Physician Schema added**: Individual doctor schema with credentials (MBBS, Diploma Cardiology, PGDCCP, AI IIT Kanpur), address, memberOf MedicalClinic
-   - Enables Google Knowledge Panel for Dr. Gill as a verified medical entity
-3. **FAQPage Schema expanded (10 FAQs)**: Added 5 English FAQs (diabetic checkup frequency, silent heart disease, ECG timing, ECG vs Echo, acidity vs heart attack) + 5 location/cost FAQs
-   - Enables rich results with expandable Q&A in Google search (potential 20-50% CTR increase)
-4. **Breadcrumb Schema added**: Basic breadcrumb list for page hierarchy
-5. **Duplicate HTML ID fixed**: First gallery section `id="gallery"` → `id="facilities"` (second photo gallery keeps `id="gallery"`)
-   - Was causing HTML validation error; nav `#gallery` now correctly points to photo gallery
-6. **15+ Years Experience Consistency**: Updated all experience references across site bio, schema, and badges from 12+ to 15+ years
-7. **English FAQ Accordion & Knowledge Hub**: Added interactive UI accordion + Cardiology Knowledge Hub cluster wheel linking diagnostic services, calculators, and booking
-8. **Regional Catchment Territory Expansion**: Enriched `areaServed` schemas, meta tags, footer text, and signals to explicitly cover **Ghaziabad, Delhi NCR, Meerut, Modinagar, Govindpuri, Hapur, Baghpat, Muradnagar, Sardhana, Kankerkhera, Khatauli & NH-58 Express Corridor**.
-
-### Existing Schemas (before fixes)
-- MedicalClinic (name, address, geo, hours, founder)
-- JobPosting × 3 (MBBS, BMS, BHMS doctors)
-
-### Not Changed (already strong)
-- Title tag, meta description, OG tags, canonical URL
-- MedicalClinic schema, JobPosting schemas
-- All blog content, services, about, testimonials, health tools, contact/map sections
-
-## Website Source Map
-| File | Purpose |
-|------|---------|
-| `index.html` | Main single-page clinic website (deployed) |
-| `standalone.html` | Simpler alternate version |
-| `index-dev.html` | Development copy |
-| `manual.html` | Manual/guide page |
+- **Schemas**: Physician, MedicalClinic, FAQPage (10 FAQs), BreadcrumbList, JobPosting × 3
+- **Compliance**: 100% NMC Registered Medical Practitioner Regulations (no superlatives like "Best/No. 1"), 15+ years experience verified.
 
 ## Deployment
 - Streamlit Cloud auto-deploys on `git push origin master`
