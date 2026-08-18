@@ -266,6 +266,15 @@ def main():
         login_page()
         return
     
+    # ── Cloud Scheduled Task Runner ──
+    if IS_STREAMLIT_CLOUD and not st.session_state.get("_cloud_tasks_checked_recently"):
+        try:
+            from harness.scheduler import try_cloud_tasks
+            try_cloud_tasks()
+            st.session_state["_cloud_tasks_checked_recently"] = True
+        except Exception as e:
+            pass
+    
     # ── Sidebar ──
     with st.sidebar:
         st.markdown("""

@@ -262,10 +262,10 @@ def run_gbp_posting():
 # ═══════════════════════════════════════════════════════════════
 
 def run_auto_blog_task():
-    """Gill Clinic: Auto-generate and publish a heart health blog."""
+    """Gill Clinic: Auto-generate and publish a heart health blog with complete catalog rebuild."""
     try:
-        from agents.github_publisher import auto_blog_task
-        result = auto_blog_task()
+        from harness.headless_runner import run_clinic_turbo_cycle
+        result = run_clinic_turbo_cycle()
         log_agent_action("auto_blog", f"Blog: {result.get('title', 'Unknown')[:50]} — {result.get('status', 'unknown')}")
         return result
     except Exception as e:
