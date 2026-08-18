@@ -16,6 +16,7 @@ ui/auth.py                      → Login/Register
 agents/*.py                     → Business logic (content, competitor, rank, reviews, gbp, etc.)
 db/schema.py + operations.py    → SQLite (18 tables, 1 file)
 utils/llm_client.py             → Multi-provider LLM: Groq → Gemini → DeepSeek fallback
+utils/live_analytics_hub.py     → Live Multi-LLM Radar, SERP Timeline & Competitor Dominance Tower
 harness/headless_runner.py      → Standalone autonomous engine for CLI, UI, and GitHub Actions
 harness/scheduler.py            → Task scheduler & multi-mode runner
 .github/workflows/auto_seo.yml  → 24/7 serverless cron (Runs daily at 9 AM & 6 PM IST)
