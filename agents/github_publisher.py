@@ -657,6 +657,28 @@ def publish_blog_to_github(topic: str, target_location: str = "Meerut",
     return result
 
 
+def auto_blog_task(topic: str = None, target_location: str = "Meerut, Delhi NCR", 
+                   language: str = "Hinglish", auto_publish: bool = True) -> dict:
+    """
+    Automated task for generating and publishing a heart health blog.
+    Accepts custom topic, target_location, language and auto_publish parameters.
+    """
+    if not topic:
+        try:
+            from harness.headless_runner import pick_next_target_query
+            query_data = pick_next_target_query()
+            topic = query_data.get("query", "Chest Pain Causes and Heart Care in Meerut")
+        except Exception:
+            topic = "Chest Pain Causes and Heart Care in Meerut"
+    
+    return publish_blog_to_github(
+        topic=topic,
+        target_location=target_location,
+        language=language,
+        auto_publish=auto_publish
+    )
+
+
 def deep_clean_github_noncompliant_blogs() -> dict:
     """
     Deep clean & delete non-compliant or test blog files from GitHub repository.

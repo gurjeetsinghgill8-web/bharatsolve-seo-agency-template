@@ -30,7 +30,7 @@ load_dotenv()
 from db.schema import init_db
 from db.operations import log_agent_action, get_content_pieces, save_content
 from agents.github_publisher import (
-    auto_blog_task,
+    publish_blog_to_github,
     update_master_blog_index,
     update_homepage_articles,
     publish_ai_geo_blueprint,
@@ -71,6 +71,14 @@ def pick_next_target_query() -> dict:
     return random.choice(all_queries)
 
 
+def _safe_print(text: str):
+    """Safely print text avoiding UnicodeEncodeError on Windows terminals."""
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        print(text.encode('ascii', 'replace').decode('ascii'))
+
+
 def run_clinic_turbo_cycle(force_topic: str = None, language: str = "Hinglish") -> dict:
     """
     Execute the entire automated SEO cycle end-to-end.
@@ -78,9 +86,9 @@ def run_clinic_turbo_cycle(force_topic: str = None, language: str = "Hinglish") 
     """
     init_db()
     start_time = time.time()
-    print(f"\n{'='*60}")
-    print(f"🚀 BHARATSOLVE GILL CLINIC AUTO-SEO ENGINE — {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"{'='*60}")
+    _safe_print(f"\n{'='*60}")
+    _safe_print(f"🚀 BHARATSOLVE GILL CLINIC AUTO-SEO ENGINE — {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    _safe_print(f"{'='*60}")
 
     # Step 1: Query selection
     if force_topic:
@@ -89,40 +97,40 @@ def run_clinic_turbo_cycle(force_topic: str = None, language: str = "Hinglish") 
         query_info = pick_next_target_query()
     
     topic = query_info["query"]
-    print(f"🎯 Target Search Query: '{topic}' (Category: {query_info.get('category')})")
+    _safe_print(f"🎯 Target Search Query: '{topic}' (Category: {query_info.get('category')})")
 
     # Step 2: Check API keys
     gemini_key = get_api_key("gemini")
     groq_key = get_api_key("groq")
     github_tok = _get_github_token()
 
-    print(f"🔑 API Status -> Gemini: {'✅ Configured' if gemini_key else '❌ Missing'}, Groq: {'✅ Configured' if groq_key else '❌ Missing'}, GitHub: {'✅ Configured' if github_tok else '❌ Missing'}")
+    _safe_print(f"🔑 API Status -> Gemini: {'✅ Configured' if gemini_key else '❌ Missing'}, Groq: {'✅ Configured' if groq_key else '❌ Missing'}, GitHub: {'✅ Configured' if github_tok else '❌ Missing'}")
 
     # Step 3: Run auto blog generation & publish
-    print(f"📝 Generating NMC-compliant article in {language}...")
+    _safe_print(f"📝 Generating NMC-compliant article in {language}...")
     try:
-        result = auto_blog_task(topic=topic, target_location="Meerut, Delhi NCR", auto_publish=True, language=language)
+        result = publish_blog_to_github(topic=topic, target_location="Meerut, Delhi NCR", auto_publish=True, language=language)
     except Exception as e:
         err_msg = f"Auto blog task exception: {e}"
-        print(f"❌ Error: {err_msg}")
+        _safe_print(f"❌ Error: {err_msg}")
         log_agent_action("auto_pilot", err_msg, status="error", error_message=str(e))
         return {"status": "error", "error": err_msg, "topic": topic}
 
     # Step 4: Rebuild website master catalogs & AI Blueprints
     if result.get("status") == "published":
-        print(f"🌐 Published Live URL: {result.get('published_url')}")
+        _safe_print(f"🌐 Published Live URL: {result.get('published_url')}")
         try:
-            print("🔄 Updating Master Index, Homepage Articles & AI GEO Blueprints...")
+            _safe_print("🔄 Updating Master Index, Homepage Articles & AI GEO Blueprints...")
             update_master_blog_index()
             update_homepage_articles()
             publish_ai_geo_blueprint()
-            print("✅ Master catalog and AI search blueprints (/llms.txt, robots.txt, sitemap.xml) updated!")
+            _safe_print("✅ Master catalog and AI search blueprints (/llms.txt, robots.txt, sitemap.xml) updated!")
         except Exception as update_err:
-            print(f"⚠️ Catalog update warning: {update_err}")
+            _safe_print(f"⚠️ Catalog update warning: {update_err}")
 
     elapsed_s = round(time.time() - start_time, 2)
-    print(f"⏱️ Cycle completed in {elapsed_s}s — Final Status: {result.get('status')}")
-    print(f"{'='*60}\n")
+    _safe_print(f"⏱️ Cycle completed in {elapsed_s}s — Final Status: {result.get('status')}")
+    _safe_print(f"{'='*60}\n")
     
     result["elapsed_seconds"] = elapsed_s
     result["query_info"] = query_info
