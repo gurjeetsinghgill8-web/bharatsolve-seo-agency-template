@@ -16,6 +16,7 @@ from db.operations import (
 )
 from agents.content_agent import generate_content
 from utils.pdf_generator import clean_text_for_pdf as clean_text_for_pdf_snippet
+from utils.live_analytics_hub import render_live_research_hub
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -2118,7 +2119,7 @@ def show_gill_clinic():
     st.markdown("### ⚡ Quick Jump — Click Any Button Below to Jump Instantly!")
     active_section = st.radio(
         "Jump to section:",
-        ["📊 ALL SECTIONS", "📝 Blog Generator", "⭐ Review Manager", 
+        ["📊 ALL SECTIONS", "🏆 Live Analytics & Competitor Tower", "📝 Blog Generator", "⭐ Review Manager", 
          "📈 Rank Tracker", "🔍 Competitor Intel", "📅 7-Day Planner", 
          "🤖 AI GEO & Visibility", "🔄 Auto-Pilot"],
         horizontal=True,
@@ -2128,6 +2129,7 @@ def show_gill_clinic():
     # Map display to internal key
     section_key_map = {
         "📊 ALL SECTIONS": "all",
+        "🏆 Live Analytics & Competitor Tower": "analytics",
         "📝 Blog Generator": "blog",
         "⭐ Review Manager": "reviews",
         "📈 Rank Tracker": "ranks",
@@ -2148,6 +2150,11 @@ def show_gill_clinic():
     render_quick_actions()
     
     st.markdown("<br>", unsafe_allow_html=True)
+
+    # ── 🏆 LIVE ANALYTICS, MULTI-LLM RADAR & COMPETITOR TOWER ──
+    if show_all or active_section == "analytics":
+        render_live_research_hub(user_id, project_id)
+        st.markdown("<br>", unsafe_allow_html=True)
     
     show_all = active_section == "all"
     
