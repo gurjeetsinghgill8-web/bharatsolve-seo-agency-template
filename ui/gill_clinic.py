@@ -597,7 +597,7 @@ def render_quick_actions():
     
     with col0:
         if st.button("🚀 1-Click AI Turbo Run", key="qa_turbo_run", type="primary", use_container_width=True):
-            st.session_state["gc_quick_jump"] = "🔄 Auto-Pilot"
+            st.session_state["gc_pending_jump"] = "🔄 Auto-Pilot"
             st.session_state["gc_trigger_turbo_auto"] = True
             st.rerun()
 
@@ -2116,6 +2116,10 @@ def show_gill_clinic():
     render_live_links_directory()
     
     # ── ⚡ QUICK JUMP NAVIGATION v3.1 (No Scrolling Needed!) ──
+    # Consume pending jump if requested before widget instantiation
+    if "gc_pending_jump" in st.session_state:
+        st.session_state["gc_quick_jump"] = st.session_state.pop("gc_pending_jump")
+
     st.markdown("### ⚡ Quick Jump — Click Any Button Below to Jump Instantly!")
     active_section = st.radio(
         "Jump to section:",
