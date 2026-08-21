@@ -1,5 +1,7 @@
 [build]
-  publish = "web"
+  base = "web"
+  publish = "."
+  command = "echo 'Static web dashboard ready for deployment'"
 
 [[headers]]
   for = "/*"
