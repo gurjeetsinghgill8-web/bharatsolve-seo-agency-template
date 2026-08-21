@@ -21,32 +21,18 @@ IS_STREAMLIT_CLOUD = os.environ.get('STREAMLIT_RUNNER_ID') is not None
 # Import UI modules
 from ui.auth import login_page, check_auth, logout
 from ui.gill_clinic import show_gill_clinic
-from ui.dashboard import show_dashboard
-from ui.clients import show_clients_page
-from ui.keywords import show_keywords_page
-from ui.content import show_content_page
-from ui.rankings import show_rankings_page
-from ui.social import show_social_page
-from ui.email import show_email_page
-from ui.reports import show_reports_page
-from ui.settings import show_settings_page
-from ui.publisher import show_publisher_page
-from ui.google_business import show_google_business_page
-from ui.scheduler import show_scheduler_page
-from ui.backup import show_backup_page
-from ui.patient_community import show_patient_community
 
 # Import DB init
 from db.schema import init_db
 
 # ── Page Config ──
 st.set_page_config(
-    page_title="BHARATSOLVE SEO AGENCY",
-    page_icon="🚀",
+    page_title="Gill Heart Clinic — SEO Command Center",
+    page_icon="🏥",
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
-        'About': '🚀 BHARATSOLVE SEO AGENCY v1.0 — Single Person AI SEO Agency'
+        'About': '🏥 Dr. Gurjeet Singh Gill — Gill Heart Clinic SEO Automation Command Center'
     }
 )
 
@@ -54,7 +40,7 @@ st.set_page_config(
 # Note: On Streamlit Cloud, /static/ is served via the app's root
 st.markdown("""
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="BHARATSOLVE SEO">
+<meta name="apple-mobile-web-app-title" content="Gill Heart SEO">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0077b6">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -107,7 +93,7 @@ st.markdown("""
     }
     .sidebar-title h2 {
         color: #0077b6 !important;
-        font-size: 1.5rem;
+        font-size: 1.3rem;
         margin: 0;
     }
     .sidebar-title p {
@@ -279,48 +265,19 @@ def main():
     with st.sidebar:
         st.markdown("""
         <div class="sidebar-title">
-            <h2>🚀 BHARATSOLVE</h2>
-            <p>SEO Agency OS v1.0</p>
+            <h2>🏥 GILL HEART CLINIC</h2>
+            <p>Dr. Gurjeet Singh Gill — SEO OS</p>
         </div>
         """, unsafe_allow_html=True)
         
-        st.markdown(f"<p style='text-align: center; color: #0077b6; font-weight: bold;'>👤 {st.session_state['username']}</p>", 
+        st.markdown(f"<p style='text-align: center; color: #0077b6; font-weight: bold; margin-top: 0.5rem;'>👤 {st.session_state['username']}</p>", 
                     unsafe_allow_html=True)
         
-        st.markdown("---")
-        
-        # Navigation
-        nav_items = {
-            "🏥 Gill Clinic": "gill_clinic",
-            "🏠 Dashboard": "dashboard",
-            "👥 Clients": "clients",
-            "🔑 Keywords": "keywords",
-            "📝 Content": "content",
-            "📊 Rankings": "rankings",
-            "📱 Social": "social",
-            "📧 Email": "email",
-            "🌐 Publish": "publisher",
-            "🏪 Google Biz": "google_business",
-            "🫂 Community": "patient_community",
-            "⏰ Scheduler": "scheduler",
-            "💾 Backup": "backup",
-            "📈 Reports": "reports",
-            "⚙️ Settings": "settings"
-        }
-        
-        for label, page in nav_items.items():
-            if st.button(label, key=f"nav_{page}", use_container_width=True):
-                st.session_state["page"] = page
-        
-        st.markdown("---")
-        
-        # Subscription info
-        user_data = st.session_state.get("user_data", {})
-        tier = user_data.get("subscription_tier", "freelancer")
-        st.markdown(f"""
-        <div style="background: rgba(255,255,255,0.8); border-radius: 10px; padding: 0.8rem; text-align: center; margin: 1rem 0; border: 1px solid #90e0ef;">
-            <p style="color: #666; margin: 0; font-size: 0.8rem;">Current Plan</p>
-            <p style="color: #0077b6; margin: 0; font-weight: bold;">{tier.title()}</p>
+        st.markdown("""
+        <div style="background: rgba(255,255,255,0.85); border-radius: 10px; padding: 0.8rem; margin: 0.8rem 0; border: 1px solid #90e0ef; font-size: 0.85rem;">
+            <b>📍 Clinic:</b> Mohiuddinpur, Meerut<br>
+            <b>⭐ Rating:</b> 4.8★ (127 Reviews)<br>
+            <b>🌐 Status:</b> <span style="color: green; font-weight: bold;">● Active & Live</span>
         </div>
         """, unsafe_allow_html=True)
         
@@ -336,12 +293,12 @@ def main():
         </div>
         """, unsafe_allow_html=True)
         
-        # Auto-Pilot Toggle (disabled on Streamlit Cloud)
+        # Auto-Pilot Mode
         st.markdown("---")
         if IS_STREAMLIT_CLOUD:
-            st.info("🤖 Auto-Pilot runs automatically on cloud")
+            st.info("🤖 24/7 Cloud Scheduled Engine Active")
         else:
-            auto_pilot = st.toggle("🤖 Auto-Pilot Mode", key="auto_pilot_toggle", 
+            auto_pilot = st.toggle("🤖 Local Auto-Pilot Mode", key="auto_pilot_toggle", 
                                    value=st.session_state.get("auto_pilot_active", False))
             if auto_pilot and not st.session_state.get("auto_pilot_active", False):
                 from harness.auto_pilot import run_auto_pilot
@@ -360,39 +317,8 @@ def main():
             logout()
             st.rerun()
     
-    # ── Page Router ──
-    page = st.session_state.get("page", "gill_clinic")
-    
-    if page == "gill_clinic":
-        show_gill_clinic()
-    elif page == "dashboard":
-        show_dashboard()
-    elif page == "clients":
-        show_clients_page()
-    elif page == "keywords":
-        show_keywords_page()
-    elif page == "content":
-        show_content_page()
-    elif page == "rankings":
-        show_rankings_page()
-    elif page == "social":
-        show_social_page()
-    elif page == "email":
-        show_email_page()
-    elif page == "publisher":
-        show_publisher_page()
-    elif page == "google_business":
-        show_google_business_page()
-    elif page == "patient_community":
-        show_patient_community()
-    elif page == "scheduler":
-        show_scheduler_page()
-    elif page == "backup":
-        show_backup_page()
-    elif page == "reports":
-        show_reports_page()
-    elif page == "settings":
-        show_settings_page()
+    # ── Render Master Front Page (Gill Heart Clinic Command Center) ──
+    show_gill_clinic()
 
 
 if __name__ == "__main__":
