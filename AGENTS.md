@@ -99,3 +99,10 @@ content, published_url, created_at
 - Streamlit Cloud auto-deploys on `git push origin master`
 - Requires `GEMINI_API_KEY` in Streamlit Secrets
 - Optional: `GITHUB_TOKEN`, `GROQ_API_KEY`, `SMTP_USER/PASS`
+
+## Web PWA Dashboard (`web/`) — Security & Deploy (27 Aug 2026)
+- **Keys are SERVER-ONLY.** The PWA never stores API keys in `localStorage`. All AI + GitHub actions go through the Netlify serverless function `netlify/functions/turbo-runner.js` (actions: `health`, `turbo_blog`, `review_reply`).
+- **`netlify.toml` must keep `base = "."` + `publish = "web"` + `[functions] directory = "netlify/functions"`.** Setting `base = "web"` silently drops the function (Netlify would look in `web/netlify/functions`).
+- **GitHub Pages deploy** (`deploy_web.yml`) uses `configure-pages` with `enablement: true` to auto-enable Pages; it serves only the static preview (backend shows OFFLINE). Netlify is the full experience.
+- **No fabricated "live" metrics.** Citation %, Maps rank, and review data must be real or clearly labeled as estimates/samples (NMC compliance — no "Best"/"No. 1"/"#1 Rank").
+- Canonical clinic facts live in `../Dr G S GILL WEBSITE/DOCTOR_CONFIG.txt` (15+ yrs, 50,000+ patients, 25,000+ ECGs, Sugar Mill Mohiuddinpur Meerut 250205, maps.app.goo.gl/SqhL69uBkRvEeRhD8).

@@ -1,7 +1,18 @@
+# Netlify configuration — BHARATSOLVE SEO AGENCY (Web PWA Dashboard)
+#
+# base = "." so Netlify finds the serverless functions at netlify/functions/
+# publish = "web" so only the PWA dashboard is served.
+#
+# Previously `base = "web"` made Netlify look for functions in web/netlify/functions
+# (which does not exist), so the secure /turbo-runner backend was silently NOT deployed.
+
 [build]
-  base = "web"
-  publish = "."
+  base = "."
+  publish = "web"
   command = "echo 'Static web dashboard ready for deployment'"
+
+[functions]
+  directory = "netlify/functions"
 
 [[headers]]
   for = "/*"
@@ -11,6 +22,7 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
 
+# SPA fallback for the PWA (functions at /.netlify/functions/* are served first).
 [[redirects]]
   from = "/*"
   to = "/index.html"

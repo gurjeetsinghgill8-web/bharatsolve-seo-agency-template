@@ -259,6 +259,18 @@ body {
   font-weight: 700;
 }
 
+/* ═══ HONEST DATA DISCLAIMER NOTE ═══ */
+.honest-note {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 0.8rem;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.7rem;
+}
+
 /* ═══ 1-CLICK TURBO MASTER-RUN HERO ═══ */
 .turbo-card {
   background: linear-gradient(135deg, #03045e 0%, #0077b6 100%);

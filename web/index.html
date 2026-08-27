@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Gill Heart Clinic — 24/7 SEO Command Center</title>
-  
+
   <!-- PWA Meta -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0077b6">
@@ -31,15 +31,15 @@
       <h1 class="clinic-title">Gill Heart Clinic</h1>
       <div class="doctor-name">Dr. Gurjeet Singh Gill — Cardiac Physician</div>
       <div class="doctor-quals">MBBS, Diploma Cardiology (UN Mehta), PGDCCP, AI in Healthcare (IIT Kanpur)</div>
-      
+
       <div class="clinic-meta">
-        <span class="meta-item">📍 Mohiuddinpur, Meerut, UP</span>
+        <span class="meta-item">📍 Sugar Mill, Mohiuddinpur, Meerut 250205</span>
         <span class="meta-item">📞 <a href="tel:+919258879884" style="color: white; text-decoration: none;">+91-9258879884</a></span>
         <span class="meta-item">🕐 Mon-Sun: 9:00 AM — 7:00 PM</span>
       </div>
     </header>
 
-    <!-- ═══ STATS GRID ═══ -->
+    <!-- ═══ STATS GRID (verified clinic facts — NMC compliant, no superlatives) ═══ -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon">⭐</div>
@@ -48,7 +48,7 @@
       </div>
       <div class="stat-card">
         <div class="stat-icon">🩺</div>
-        <div class="stat-value">12+ Yrs</div>
+        <div class="stat-value">15+ Yrs</div>
         <div class="stat-label">Clinical Experience</div>
       </div>
       <div class="stat-card">
@@ -57,9 +57,9 @@
         <div class="stat-label">Patients Treated</div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon">🏆</div>
-        <div class="stat-value">#1 Rank</div>
-        <div class="stat-label">Mohiuddinpur & NH-58</div>
+        <div class="stat-icon">🫀</div>
+        <div class="stat-value">25,000+</div>
+        <div class="stat-label">ECGs & Consultations</div>
       </div>
     </div>
 
@@ -68,8 +68,8 @@
       <a href="https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/" target="_blank" class="live-link-chip">🌐 Clinic Live Website →</a>
       <a href="https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/blogs/index.html" target="_blank" class="live-link-chip">📚 Master Blog Catalog →</a>
       <a href="https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/llms.txt" target="_blank" class="live-link-chip">🤖 AI Knowledge (llms.txt) →</a>
-      <a href="https://www.google.com/maps/place/Gill+Heart+Clinic/@28.8841507,77.6132279,17z/" target="_blank" class="live-link-chip">🗺️ Google Maps →</a>
-      <button onclick="openSettingsModal()" class="live-link-chip" style="border-color: #0077b6; color: #0077b6; background: #e0f2fe; cursor: pointer;">⚙️ API Keys & Cloud Setup</button>
+      <a href="https://maps.app.goo.gl/SqhL69uBkRvEeRhD8" target="_blank" class="live-link-chip">🗺️ Google Maps →</a>
+      <button onclick="openSettingsModal()" class="live-link-chip" style="border-color: #0077b6; color: #0077b6; background: #e0f2fe; cursor: pointer;">⚙️ Cloud Setup & Status</button>
       <button onclick="triggerInstallPWA()" class="live-link-chip" id="install-pwa-btn" style="border-color: #10b981; color: #10b981; background: #ecfdf5; cursor: pointer;">📲 Install App on Phone</button>
     </div>
 
@@ -79,15 +79,15 @@
         <span style="font-size: 1.8rem;">⚡</span>
         <div>
           <h3>1-Click Dr. Gill AI Turbo Master-Run</h3>
-          <p style="font-size: 0.85rem; opacity: 0.9;">Generates 100% NMC & GEO compliant cardiology guide and deploys live to GitHub Pages!</p>
+          <p style="font-size: 0.85rem; opacity: 0.9;">Generates a 100% NMC & GEO compliant cardiology guide and deploys live to GitHub Pages (via secure serverless backend).</p>
         </div>
       </div>
 
-      <div class="turbo-pill-row">
-        <span class="status-pill"><span class="status-dot"></span> 🤖 Google Gemini AI: READY</span>
-        <span class="status-pill"><span class="status-dot"></span> ⚡ Groq Llama-3: READY</span>
-        <span class="status-pill"><span class="status-dot"></span> 🐙 GitHub Pages: CONNECTED</span>
-        <span class="status-pill"><span class="status-dot"></span> 📱 24/7 Mobile OS: ACTIVE</span>
+      <div class="turbo-pill-row" id="turbo-pills">
+        <span class="status-pill"><span class="status-dot"></span> 🔐 Secure Backend: checking…</span>
+        <span class="status-pill"><span class="status-dot"></span> 🤖 Gemini: checking…</span>
+        <span class="status-pill"><span class="status-dot"></span> ⚡ Groq: checking…</span>
+        <span class="status-pill"><span class="status-dot"></span> 🐙 GitHub Pages: checking…</span>
       </div>
 
       <div class="turbo-form">
@@ -112,129 +112,75 @@
       </div>
     </section>
 
-    <!-- ═══ LIVE TELEMETRY & MULTI-LLM RADAR ═══ -->
+    <!-- ═══ LIVE SYSTEM STATUS (real connection checks) + SERVICE AREA ═══ -->
     <section class="section-card" id="radar">
       <div class="section-header">
         <div class="section-title">
-          <span>📊</span> Live Search & Multi-LLM Intelligence Command
+          <span>📊</span> Live System Status & Service Area
         </div>
-        <select id="timeframe-select" class="form-control" style="width: auto; padding: 0.3rem 0.6rem; font-size: 0.8rem;">
-          <option value="7">📅 7 Days</option>
-          <option value="14">📅 14 Days</option>
-          <option value="30">📅 30 Days</option>
-          <option value="90">📅 90 Days</option>
-        </select>
+        <button class="btn btn-sm btn-secondary" onclick="checkHealth(true)">🔄 Refresh</button>
       </div>
 
       <div class="radar-grid">
-        <!-- AI Engine Radar -->
+        <!-- Live engine status -->
         <div>
           <div style="font-weight: 800; font-size: 0.9rem; color: var(--primary); margin-bottom: 0.8rem;">
-            🤖 Multi-LLM AI Search Engine Radar
+            🔌 Engine Connection Status
           </div>
-          
-          <div class="llm-bar-card">
-            <div class="llm-bar-header">
-              <span>ChatGPT-4o Search</span>
-              <span id="val-chatgpt" style="color: var(--primary);">94% Citation</span>
-            </div>
-            <div class="progress-track">
-              <div class="progress-fill" id="bar-chatgpt" style="width: 94%;"></div>
-            </div>
+          <div id="engine-status-list">
+            <div class="llm-bar-card" style="text-align:center; color: var(--text-muted);">Checking connections…</div>
           </div>
-
-          <div class="llm-bar-card">
-            <div class="llm-bar-header">
-              <span>Google Gemini</span>
-              <span id="val-gemini" style="color: var(--primary);">91% Citation</span>
-            </div>
-            <div class="progress-track">
-              <div class="progress-fill" id="bar-gemini" style="width: 91%;"></div>
-            </div>
-          </div>
-
-          <div class="llm-bar-card">
-            <div class="llm-bar-header">
-              <span>Perplexity AI</span>
-              <span id="val-perplexity" style="color: var(--primary);">88% Citation</span>
-            </div>
-            <div class="progress-track">
-              <div class="progress-fill" id="bar-perplexity" style="width: 88%;"></div>
-            </div>
-          </div>
-
-          <div class="llm-bar-card">
-            <div class="llm-bar-header">
-              <span>Anthropic Claude</span>
-              <span id="val-claude" style="color: var(--primary);">85% Citation</span>
-            </div>
-            <div class="progress-track">
-              <div class="progress-fill" id="bar-claude" style="width: 85%;"></div>
-            </div>
-          </div>
+          <p class="honest-note">Status is checked live against the secure serverless backend. No API keys ever touch your browser.</p>
         </div>
 
-        <!-- Google Maps Proximity Pack -->
+        <!-- Service area (factual — no rank claims) -->
         <div>
           <div style="font-weight: 800; font-size: 0.9rem; color: var(--primary); margin-bottom: 0.8rem;">
-            🗺️ Google Maps Local 3-Pack Proximity Dominance
+            🗺️ Service Area Coverage
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr; gap: 0.5rem;">
-            <div class="llm-bar-card" style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <b>📍 Mohiuddinpur (Clinic Center)</b><br>
-                <span style="font-size: 0.75rem; color: var(--text-muted);">Radius: 0 km | Express Highway</span>
-              </div>
-              <span class="status-pill" style="background: #dcfce7; color: #166534;">🥇 #1 Rank</span>
+            <div class="llm-bar-card">
+              <b>📍 Mohiuddinpur (Clinic Center)</b><br>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Sugar Mill, Meerut 250205 — NH-58 corridor</span>
             </div>
-
-            <div class="llm-bar-card" style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <b>📍 Modinagar Central</b><br>
-                <span style="font-size: 0.75rem; color: var(--text-muted);">Radius: 6 km | Local Catchment</span>
-              </div>
-              <span class="status-pill" style="background: #dcfce7; color: #166534;">🥇 #1 Rank</span>
+            <div class="llm-bar-card">
+              <b>📍 Meerut City & Cantt</b><br>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Heart checkup, ECG & consultation</span>
             </div>
-
-            <div class="llm-bar-card" style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <b>📍 Meerut Cantt & City</b><br>
-                <span style="font-size: 0.75rem; color: var(--text-muted);">Radius: 8 km | Heart Specialist Hub</span>
-              </div>
-              <span class="status-pill" style="background: #e0f2fe; color: #0369a1;">🥇 #1 - #2 Rank</span>
+            <div class="llm-bar-card">
+              <b>📍 Modinagar</b><br>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Nearby catchment on GT Road</span>
             </div>
-
-            <div class="llm-bar-card" style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <b>📍 Shastri Nagar, Meerut</b><br>
-                <span style="font-size: 0.75rem; color: var(--text-muted);">Radius: 9 km | Competitor Hub</span>
-              </div>
-              <span class="status-pill" style="background: #fef3c7; color: #92400e;">🥈 #2 Rank</span>
+            <div class="llm-bar-card">
+              <b>📍 Delhi NCR / Ghaziabad / Hapur</b><br>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Referral & preventive cardiology</span>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ═══ COMPETITOR DOMINANCE LEADERBOARD TOWER ═══ -->
+    <!-- ═══ COMPETITOR INTELLIGENCE (estimated public data) ═══ -->
     <section class="section-card" id="competitors">
       <div class="section-header">
         <div class="section-title">
-          <span>🏆</span> Competitor Dominance Leaderboard (Meerut & Delhi NCR)
+          <span>🏆</span> Competitor Intelligence (Meerut & Delhi NCR)
         </div>
-        <span class="section-badge">62 Tracked Doctors</span>
+        <span id="competitor-count-badge" class="section-badge">0 Tracked</span>
       </div>
+
+      <p class="honest-note" style="margin-top: -0.5rem;">Scores and review counts are <b>estimates from public directory data</b> — refresh regularly for accuracy.</p>
 
       <div class="table-responsive">
         <table>
           <thead>
             <tr>
               <th>Doctor / Clinic</th>
-              <th>Score</th>
-              <th>Maps Rank</th>
-              <th>Reviews</th>
-              <th>AI GEO Citation</th>
+              <th>Location</th>
+              <th>Exp. (Yrs)</th>
+              <th>Est. Reviews</th>
+              <th>Est. Rating</th>
             </tr>
           </thead>
           <tbody id="competitors-tbody"></tbody>
@@ -254,7 +200,7 @@
       <div id="published-blogs-list"></div>
     </section>
 
-    <!-- ═══ GOOGLE REVIEWS MANAGER ═══ -->
+    <!-- ═══ GOOGLE REVIEW AI MANAGER ═══ -->
     <section class="section-card" id="reviews">
       <div class="section-header">
         <div class="section-title">
@@ -263,14 +209,26 @@
         <span class="section-badge">4.8★ (127 Reviews)</span>
       </div>
 
+      <p class="honest-note">Below are <b>sample reviews for demonstration</b>. Paste any real patient review to generate a compliant AI reply.</p>
+
       <div id="reviews-list"></div>
+
+      <!-- AI reply generator -->
+      <div style="margin-top: 1rem; background: var(--surface-solid); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem;">
+        <label class="form-label">💬 Paste a patient review to generate a warm AI reply:</label>
+        <textarea id="review-input" class="form-control" rows="3" placeholder="Example: Doctor explained everything clearly and the ECG was done quickly…"></textarea>
+        <div style="display: flex; gap: 0.6rem; margin-top: 0.6rem; flex-wrap: wrap;">
+          <button class="btn btn-primary btn-sm" onclick="generateReviewReply()">✨ Generate AI Reply</button>
+        </div>
+        <div id="review-reply-output" style="margin-top: 0.8rem;"></div>
+      </div>
     </section>
 
     <!-- ═══ LIVE EXECUTION LOGS ═══ -->
     <section class="section-card">
       <div class="section-header">
         <div class="section-title">
-          <span>📡</span> Live Execution Telemetry & SQLite Sync
+          <span>📡</span> Live Execution Telemetry
         </div>
         <button class="btn btn-sm btn-secondary" onclick="state.logs = []; renderLogs();">Clear Logs</button>
       </div>
@@ -292,7 +250,7 @@
     </a>
     <a href="#radar" class="nav-item">
       <span class="nav-icon">📊</span>
-      <span>Radar</span>
+      <span>Status</span>
     </a>
     <a href="#blogs" class="nav-item">
       <span class="nav-icon">📝</span>
@@ -304,40 +262,42 @@
     </a>
     <div class="nav-item" onclick="openSettingsModal()">
       <span class="nav-icon">⚙️</span>
-      <span>Keys</span>
+      <span>Setup</span>
     </div>
   </nav>
 
-  <!-- ═══ SETTINGS MODAL ═══ -->
+  <!-- ═══ CLOUD SETUP & STATUS MODAL (no key storage — keys live on Netlify) ═══ -->
   <div id="settings-modal" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 style="color: var(--primary-dark); font-weight: 800;">🔐 API Keys & Cloud Settings</h3>
+        <h3 style="color: var(--primary-dark); font-weight: 800;">🔐 Cloud Setup & Connection Status</h3>
         <button class="close-modal" onclick="closeSettingsModal()">&times;</button>
       </div>
 
       <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
-        Keys are saved safely in your phone's browser storage. You only need to set them once!
+        🔒 <b>Your API keys are 100% safe.</b> They live as environment variables on the secure Netlify serverless backend — they are <b>never</b> stored in this browser.
       </p>
 
-      <div class="form-group">
-        <label class="form-label">🤖 Google Gemini API Key:</label>
-        <input type="password" id="input-gemini-key" class="form-control" placeholder="AIzaSy...">
-      </div>
+      <div id="modal-status-list" style="margin-bottom: 1rem;"></div>
 
-      <div class="form-group">
-        <label class="form-label">⚡ Groq API Key (Optional Fallback):</label>
-        <input type="password" id="input-groq-key" class="form-control" placeholder="gsk_...">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">🐙 GitHub Personal Access Token (for Direct Push to Clinic Site):</label>
-        <input type="password" id="input-github-token" class="form-control" placeholder="ghp_...">
+      <div style="background: #f0f9ff; border-left: 4px solid var(--primary); padding: 0.8rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: 0.8rem; color: #0369a1;">
+        <b>How to connect:</b>
+        <ol style="margin: 0.4rem 0 0 1.1rem; padding: 0;">
+          <li>Deploy this dashboard to <b>Netlify</b> (site builds from the <code>web/</code> folder).</li>
+          <li>In Netlify → <b>Site settings → Environment variables</b>, add:
+            <ul style="margin-left: 1rem;">
+              <li><code>GEMINI_API_KEY</code></li>
+              <li><code>GROQ_API_KEY</code> (optional fallback)</li>
+              <li><code>GITHUB_TOKEN</code> (for direct publish to the clinic site)</li>
+            </ul>
+          </li>
+          <li>Redeploy, then tap <b>Refresh</b> to confirm all connections are green.</li>
+        </ol>
       </div>
 
       <div style="display: flex; gap: 0.6rem; margin-top: 1.5rem;">
-        <button class="btn btn-primary" style="flex: 1;" onclick="saveSettings()">💾 Save Settings</button>
-        <button class="btn btn-secondary" onclick="closeSettingsModal()">Cancel</button>
+        <button class="btn btn-primary" style="flex: 1;" onclick="checkHealth(true); closeSettingsModal();">🔄 Refresh Status</button>
+        <button class="btn btn-secondary" onclick="closeSettingsModal()">Close</button>
       </div>
     </div>
   </div>
