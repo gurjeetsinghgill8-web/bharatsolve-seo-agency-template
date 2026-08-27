@@ -32,3 +32,6 @@ Thumbs.db
 # Temp files
 *.pdf
 nul
+
+# Local Netlify folder
+.netlify
