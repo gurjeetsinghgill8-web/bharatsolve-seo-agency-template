@@ -86,6 +86,7 @@
       <div class="turbo-pill-row" id="turbo-pills">
         <span class="status-pill"><span class="status-dot"></span> 🔐 Secure Backend: checking…</span>
         <span class="status-pill"><span class="status-dot"></span> 🤖 Gemini: checking…</span>
+        <span class="status-pill"><span class="status-dot"></span> 🧠 DeepSeek: checking…</span>
         <span class="status-pill"><span class="status-dot"></span> ⚡ Groq: checking…</span>
         <span class="status-pill"><span class="status-dot"></span> 🐙 GitHub Pages: checking…</span>
       </div>
@@ -286,7 +287,8 @@
           <li>Deploy this dashboard to <b>Netlify</b> (site builds from the <code>web/</code> folder).</li>
           <li>In Netlify → <b>Site settings → Environment variables</b>, add:
             <ul style="margin-left: 1rem;">
-              <li><code>GEMINI_API_KEY</code></li>
+              <li><code>DEEPSEEK_API_KEY</code> (primary AI)</li>
+              <li><code>GEMINI_API_KEY</code> (optional)</li>
               <li><code>GROQ_API_KEY</code> (optional fallback)</li>
               <li><code>GITHUB_TOKEN</code> (for direct publish to the clinic site)</li>
             </ul>

@@ -309,6 +309,7 @@ function renderHealth() {
     pills.innerHTML = [
       pillHtml(`🔐 Secure Backend: ${offline ? 'OFFLINE' : 'CONNECTED'}`, !offline),
       pillHtml(`🤖 Gemini: ${h.gemini ? 'READY' : 'NOT SET'}`, !!h.gemini),
+      pillHtml(`🧠 DeepSeek: ${h.deepseek ? 'READY' : 'NOT SET'}`, !!h.deepseek),
       pillHtml(`⚡ Groq: ${h.groq ? 'READY' : 'NOT SET'}`, !!h.groq),
       pillHtml(`🐙 GitHub Pages: ${h.github ? 'CONNECTED' : 'NOT SET'}`, !!h.github)
     ].join('');
@@ -319,7 +320,8 @@ function renderHealth() {
   if (list) {
     const rows = [
       { label: 'Secure Serverless Backend', sub: offline ? 'Not reachable — deploy to Netlify' : 'Connected & serving requests', ok: !offline },
-      { label: 'Google Gemini AI', sub: h.gemini ? 'API key configured' : 'No key on server (fallback content used)', ok: !!h.gemini },
+      { label: 'DeepSeek Chat', sub: h.deepseek ? 'Primary AI configured' : 'No key on server (fallback content used)', ok: !!h.deepseek },
+      { label: 'Google Gemini AI', sub: h.gemini ? 'API key configured' : 'No key on server (optional)', ok: !!h.gemini },
       { label: 'Groq Llama-3', sub: h.groq ? 'Optional fallback configured' : 'No fallback key (optional)', ok: !!h.groq },
       { label: 'GitHub Pages Publishing', sub: h.github ? 'Direct publish enabled' : 'No GITHUB_TOKEN (articles save as preview only)', ok: !!h.github }
     ];

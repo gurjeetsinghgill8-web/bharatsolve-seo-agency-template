@@ -48,6 +48,7 @@ exports.handler = async (event) => {
 
   // Server-side secrets (100% hidden from the browser)
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
   const GROQ_API_KEY = process.env.GROQ_API_KEY;
   const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
@@ -58,6 +59,7 @@ exports.handler = async (event) => {
         success: true,
         backend: "secure-serverless",
         gemini: !!GEMINI_API_KEY,
+        deepseek: !!DEEPSEEK_API_KEY,
         groq: !!GROQ_API_KEY,
         github: !!GITHUB_TOKEN
       });
@@ -71,7 +73,8 @@ exports.handler = async (event) => {
       const prompt = `Write a polite, warm, professional Hinglish reply to this patient Google review for Dr. Gurjeet Singh Gill at Gill Heart Clinic Mohiuddinpur Meerut. Patient Name: ${patientName || "Patient"}, Review: "${review}". Thank them for trusting us with their heart health. Keep it 2-3 sentences. Do NOT use banned superlatives like 'Best' or 'No. 1'.`;
 
       let replyText = await geminiGenerate(prompt, GEMINI_API_KEY, 256);
-      if (!replyText && GROQ_API_KEY) replyText = await groqGenerate(prompt, GROQ_API_KEY, 256);
+      if (!replyText) replyText = await deepseekGenerate(prompt, DEEPSEEK_API_KEY, 256);
+      if (!replyText) replyText = await groqGenerate(prompt, GROQ_API_KEY, 256);
       if (!replyText) {
         replyText = `धन्यवाद ${patientName || ""} जी! 🙏 आपके कीमती feedback के लिए बहुत-बहुत शुक्रिया। हम हमेशा अपने patients की heart health के लिए committed हैं। ❤️`;
       }
@@ -92,7 +95,8 @@ Strict Guidelines:
 - Include structured sections: Symptoms & Warning Signs, Preventive Strategies, Diagnostic Importance, and FAQs.`;
 
     let markdown = await geminiGenerate(prompt, GEMINI_API_KEY, 2048);
-    if (!markdown && GROQ_API_KEY) markdown = await groqGenerate(prompt, GROQ_API_KEY, 2048);
+    if (!markdown) markdown = await deepseekGenerate(prompt, DEEPSEEK_API_KEY, 2048);
+    if (!markdown) markdown = await groqGenerate(prompt, GROQ_API_KEY, 2048);
     if (!markdown) {
       markdown = `## ${targetQuery} — Complete Patient Guide by Dr. Gurjeet Singh Gill\n\nTimely cardiovascular assessment is vital for patients across Meerut and Delhi NCR. Visit Gill Heart Clinic, Sugar Mill, Mohiuddinpur for expert non-invasive cardiology care.`;
     }
@@ -148,6 +152,35 @@ async function geminiGenerate(prompt, key, maxTokens) {
     return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
   } catch (e) {
     console.error("Gemini call error", e);
+    return "";
+  }
+}
+
+async function deepseekGenerate(prompt, key, maxTokens) {
+  if (!key) return "";
+  try {
+    const url = "https://api.deepseek.com/chat/completions";
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: "deepseek-chat",
+        messages: [
+          { role: "system", content: "You are an expert, NMC-compliant medical SEO copywriter for Dr. Gurjeet Singh Gill." },
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.7,
+        max_tokens: maxTokens
+      })
+    });
+    if (!res.ok) return "";
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content || "";
+  } catch (e) {
+    console.error("DeepSeek call error", e);
     return "";
   }
 }

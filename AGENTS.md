@@ -102,6 +102,7 @@ content, published_url, created_at
 
 ## Web PWA Dashboard (`web/`) — Security & Deploy (27 Aug 2026)
 - **Keys are SERVER-ONLY.** The PWA never stores API keys in `localStorage`. All AI + GitHub actions go through the Netlify serverless function `netlify/functions/turbo-runner.js` (actions: `health`, `turbo_blog`, `review_reply`).
+- **AI chain (server-side):** Gemini → DeepSeek → Groq — first configured key wins, all optional (falls back to NMC-compliant template). DeepSeek uses `https://api.deepseek.com/chat/completions` (model `deepseek-chat`, OpenAI-compatible).
 - **`netlify.toml` must keep `base = "."` + `publish = "web"` + `[functions] directory = "netlify/functions"`.** Setting `base = "web"` silently drops the function (Netlify would look in `web/netlify/functions`).
 - **GitHub Pages deploy** (`deploy_web.yml`) uses `configure-pages` with `enablement: true` to auto-enable Pages; it serves only the static preview (backend shows OFFLINE). Netlify is the full experience.
 - **No fabricated "live" metrics.** Citation %, Maps rank, and review data must be real or clearly labeled as estimates/samples (NMC compliance — no "Best"/"No. 1"/"#1 Rank").
