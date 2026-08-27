@@ -1,14 +1,12 @@
 # Netlify configuration — BHARATSOLVE SEO AGENCY (Web PWA Dashboard)
 #
-# base = "." so Netlify finds the serverless functions at netlify/functions/
-# publish = "web" so only the PWA dashboard is served.
-#
-# Previously `base = "web"` made Netlify look for functions in web/netlify/functions
-# (which does not exist), so the secure /turbo-runner backend was silently NOT deployed.
+# base = "web" so Netlify does NOT detect the Python `requirements.txt` at the
+# repo root (which triggers a failing "pip install" during git-integration builds).
+# Functions live at web/netlify/functions/ so they still deploy with base="web".
 
 [build]
-  base = "."
-  publish = "web"
+  base = "web"
+  publish = "."
   command = "echo 'Static web dashboard ready for deployment'"
 
 [functions]
