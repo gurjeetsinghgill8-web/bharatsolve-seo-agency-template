@@ -222,7 +222,14 @@ async function runTurboCycle() {
 
       if (serverRes.isLive) {
         addLog(`🚀 Published live to GitHub Pages: ${serverRes.url}`);
-        alert(`🎉 Success! Article for "${query}" is now LIVE on GitHub Pages.`);
+        const rb = serverRes.rebuild;
+        if (rb && rb.summary) {
+          addLog(`📚 Site rebuilt — ${rb.summary.articles} articles in catalog · homepage · sitemap.xml · llms.txt · robots.txt updated.`);
+        }
+        const rbMsg = (rb && rb.summary)
+          ? `\n\n📚 Full site rebuilt:\n• Master catalog: ${rb.summary.articles} articles\n• Homepage articles section\n• sitemap.xml\n• llms.txt + llms-full.txt\n• robots.txt`
+          : '';
+        alert(`🎉 Success! Article for "${query}" is now LIVE on GitHub Pages.${rbMsg}`);
       } else {
         addLog(`📝 Article generated, but NOT published. ${serverRes.note || 'GITHUB_TOKEN missing on server.'}`);
         alert(`📝 Article generated but not published. ${serverRes.note || 'Set GITHUB_TOKEN in Netlify env vars to enable live publishing.'}`);
