@@ -12,7 +12,7 @@
  */
 
 const REPO = "gurjeetsinghgill8-web/gill-heart-clinic";
-const BRANCH = "master";
+const BRANCH = "gh-pages"; // the clinic site is published from the gh-pages branch
 const CLINIC_SITE = "https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/";
 const CLINIC_NAME = "Gill Heart Clinic";
 const DOCTOR = "Dr. Gurjeet Singh Gill";
