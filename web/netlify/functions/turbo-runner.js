@@ -95,7 +95,7 @@ Target Query: "${targetQuery}".
 Language: ${targetLang}. 
 Strict Guidelines: 
 - 100% NMC Registered Medical Practitioner Regulations (do NOT use banned superlatives like 'Best' or 'No. 1').
-- Detail diagnostic services: 12-Lead ECG, 2D Echo, Blood Pressure Profiling, Preventive Heart Counseling.
+- Detail clinic services (for Google Business Profile 'Services' section — include SEO keywords 'heart specialist' & 'cardiology consultation'): Cardiac Consultation (Heart Specialist Opinion & Second Opinion), Second Opinion on ECG/2D Echo/TMT/Holter Reports (tests are done outside; the clinic reviews reports and gives second opinion), Chest Pain & Angina Evaluation, Heart Attack Follow-up, Hypertension (High BP) Clinic, Palpitations & Arrhythmia Care, Heart Failure Management, Diabetes Management, Cholesterol (Lipid) Clinic, Breathlessness Evaluation, General Medicine, Preventive Healthcare, Respiratory Care, Digestive Health, Heart & Body Health Check-up Packages, Lifestyle & Weight Counseling.
 - Clinic details: ${ADDRESS} | Phone: ${PHONE}.
 - Include structured sections: Symptoms & Warning Signs, Preventive Strategies, Diagnostic Importance, and FAQs.`;
 
@@ -409,7 +409,7 @@ function buildLlmsTxt(articles) {
 - PGDCCP (NI): Post Graduate Diploma in Clinical Cardiology & Critical Care
 - AI in Healthcare: Certification from IIT Kanpur
 - Associate Consultant: Yashoda Superspeciality Hospital, Ghaziabad
-- Google Rating: 4.8★ (127+ Reviews)
+- Google Rating: 5.0★ (4 Google Reviews)
 - Phone: ${PHONE}
 
 ## Clinic Address & Hours

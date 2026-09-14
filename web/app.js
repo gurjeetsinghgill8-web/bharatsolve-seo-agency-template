@@ -23,11 +23,19 @@ const CLINIC = {
   website: "https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/",
   github_repo: "gurjeetsinghgill8-web/gill-heart-clinic",
   google_maps: "https://maps.app.goo.gl/SqhL69uBkRvEeRhD8",
-  rating: 4.8,
-  reviews: 127,
+  rating: 5.0,
+  reviews: 4,
   experience_years: "15+",
   patients: "50,000+",
-  ecgs: "25,000+"
+  ecgs: "25,000+",
+  services: [
+    "Cardiac Consultation (Heart Specialist Opinion)", "Second Opinion on ECG/Echo/TMT/Holter Reports",
+    "Chest Pain & Angina Care", "Heart Attack Follow-up", "Hypertension (High BP) Clinic",
+    "Palpitations & Arrhythmia Care", "Heart Failure Management", "Diabetes Management",
+    "Cholesterol (Lipid) Clinic", "Breathlessness Evaluation", "General Medicine",
+    "Preventive Healthcare", "Respiratory Care", "Digestive Health",
+    "Heart & Body Health Check-up Packages", "Lifestyle & Weight Counseling"
+  ]
 };
 
 const DEFAULT_QUERIES = [
@@ -37,7 +45,7 @@ const DEFAULT_QUERIES = [
   "heart doctor near me open now",
   "Dr. Gurjeet Singh Gill Cardiac Physician",
   "Gill Heart Clinic Meerut appointment",
-  "heart doctor emergency Meerut",
+  "heart attack warning signs Meerut",
   "BP checkup Mohiuddinpur Meerut",
   "chest pain treatment Mohiuddinpur",
   "ECG test near me Mohiuddinpur",

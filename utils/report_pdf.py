@@ -54,7 +54,7 @@ def generate_clinic_pdf_report(stats: Dict, user_id: int = None) -> str:
     pdf.ln(3)
     
     overview_data = [
-        ("Google Rating", s(f"{stats.get('google_rating', '4.8')} / 5 ({stats.get('google_reviews', '127')} reviews)")),
+        ("Google Rating", s(f"{stats.get('google_rating', '5.0')} / 5 ({stats.get('google_reviews', '4')} Google reviews)")),
         ("Keywords Tracking", s(str(stats.get('keywords_count', '16')))),
         ("Blogs Published", s(str(stats.get('blogs_count', '0')))),
         ("Published This Week", s(str(stats.get('published_count', '0')))),
@@ -119,7 +119,7 @@ def generate_clinic_pdf_report(stats: Dict, user_id: int = None) -> str:
     pdf.ln(3)
     
     blogs = stats.get('recent_blogs', [
-        "Emergency Heart Care Signs & Treatment",
+        "Urgent Heart Symptoms — When to Go to Hospital",
         "Pediatric Cardiology - Children Heart Health", 
         "Angioplasty Information Guide",
         "Heart Bypass Surgery Recovery Tips",
@@ -200,8 +200,8 @@ def generate_clinic_pdf_report(stats: Dict, user_id: int = None) -> str:
 def get_report_stats(user_id: int = None) -> Dict:
     """Gather real stats from database for the report."""
     stats = {
-        "google_rating": 4.8,
-        "google_reviews": 127,
+        "google_rating": 5.0,
+        "google_reviews": 4,
         "keywords_count": 0,
         "blogs_count": 0,
         "published_count": 0,

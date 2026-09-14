@@ -88,18 +88,18 @@ LOCAL_SEARCH_QUERIES = {
         {"query": "ज्यादा पानी पीने से heart पर असर", "intent": "information", "volume": "medium", "conversion": "low"},
     ],
     
-    # ── Emergency/Local Searches (HIGHEST Intent → IMMEDIATE) ──
+    # ── Urgent / High-Intent Local Searches (OPD clinic — no emergency services) ──
     "emergency_local": [
-        {"query": "heart doctor emergency Meerut", "intent": "emergency", "volume": "medium", "conversion": "very_high"},
+        {"query": "heart doctor Meerut today", "intent": "emergency", "volume": "medium", "conversion": "very_high"},
         {"query": "cardiologist open on Sunday Meerut", "intent": "emergency", "volume": "low", "conversion": "very_high"},
-        {"query": "heart clinic near me open now", "intent": "emergency", "volume": "medium", "conversion": "very_high"},
-        {"query": "chest pain doctor near me 24 hours", "intent": "emergency", "volume": "medium", "conversion": "very_high"},
-        {"query": "heart attack emergency number Meerut", "intent": "emergency", "volume": "low", "conversion": "very_high"},
-        {"query": "ECG at home Meerut", "intent": "book_service", "volume": "medium", "conversion": "high"},
-        {"query": "cardiologist home visit Meerut", "intent": "book_service", "volume": "low", "conversion": "very_high"},
-        {"query": "heart checkup at home near me", "intent": "book_service", "volume": "medium", "conversion": "high"},
-        {"query": "BP check near me free", "intent": "walk_in", "volume": "medium", "conversion": "high"},
-        {"query": "heart camp in Meerut today", "intent": "event", "volume": "low", "conversion": "high"},
+        {"query": "heart clinic near me OPD Meerut", "intent": "emergency", "volume": "medium", "conversion": "very_high"},
+        {"query": "chest pain doctor near me Meerut", "intent": "emergency", "volume": "medium", "conversion": "very_high"},
+        {"query": "heart attack warning signs Meerut", "intent": "symptoms", "volume": "low", "conversion": "high"},
+        {"query": "ECG report review Meerut", "intent": "book_service", "volume": "medium", "conversion": "high"},
+        {"query": "cardiac second opinion Meerut", "intent": "book_service", "volume": "low", "conversion": "very_high"},
+        {"query": "heart checkup clinic Meerut", "intent": "book_service", "volume": "medium", "conversion": "high"},
+        {"query": "BP checkup clinic Mohiuddinpur", "intent": "walk_in", "volume": "medium", "conversion": "high"},
+        {"query": "heart checkup Meerut", "intent": "event", "volume": "low", "conversion": "high"},
     ],
 }
 

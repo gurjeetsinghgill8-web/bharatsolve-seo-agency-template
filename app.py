@@ -276,7 +276,7 @@ def main():
         st.markdown("""
         <div style="background: rgba(255,255,255,0.85); border-radius: 10px; padding: 0.8rem; margin: 0.8rem 0; border: 1px solid #90e0ef; font-size: 0.85rem;">
             <b>📍 Clinic:</b> Mohiuddinpur, Meerut<br>
-            <b>⭐ Rating:</b> 4.8★ (127 Reviews)<br>
+            <b>⭐ Rating:</b> 5.0★ (4 Google Reviews)<br>
             <b>🌐 Status:</b> <span style="color: green; font-weight: bold;">● Active & Live</span>
         </div>
         """, unsafe_allow_html=True)

@@ -61,7 +61,7 @@ HEART_TIPS_ENGLISH = [
     "🧘‍♂️ Yoga is magic for your heart — Anulom Vilom, Bhramari, Shavasana. 15 min daily for BP + stress control.",
     "🌙 Get 7-8 hours of sleep! Sleep deprivation raises BP and increases heart attack risk by 48%.",
     "🥤 Ditch cold drinks — hidden sugars lead to diabetes and heart disease. Choose water, coconut water, or buttermilk instead.",
-    "🏥 Chest pain? DON'T IGNORE! Consult a cardiologist immediately. Every minute counts. Emergency: 9258879884",
+    "🏥 Chest pain? DON'T IGNORE! Get an OPD consultation at Gill Heart Clinic with Dr. Gurjeet Singh Gill, Cardio-Physician, Mohiuddinpur, Meerut. ⚠️ This is an OPD clinic — for sudden/severe symptoms go to the nearest hospital emergency. Book: 9258879884",
     "🐟 Eat fish twice a week — omega-3 keeps arteries clean. Vegetarian? Try flaxseeds and walnuts!",
     "💧 Drink 8-10 glasses of water daily. Dehydration thickens blood = extra load on your heart.",
 ]

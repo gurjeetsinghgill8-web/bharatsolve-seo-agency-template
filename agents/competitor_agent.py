@@ -26,10 +26,10 @@ CLINIC_INFO = {
     "doctor": "Dr. Gurjeet Singh Gill",
     "location": "Mohiuddinpur, Meerut",
     "specialty": "Non-Invasive Cardiology",
-    "years": 12,
+    "years": 15,
     "patients": "50,000+",
-    "google_rating": 4.8,
-    "google_reviews": 127,
+    "google_rating": 5.0,
+    "google_reviews": 4,
 }
 
 TARGET_LOCATIONS = ["Meerut", "Delhi NCR", "Modinagar", "Hapur", "Ghaziabad"]

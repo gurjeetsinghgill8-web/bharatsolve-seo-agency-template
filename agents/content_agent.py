@@ -27,16 +27,17 @@ CRITICAL LEGAL & MEDICAL ETHICS RULES (NMC Regulations):
 2. Use ethical, professional medical terms: "Experienced Cardiac Physician", "Comprehensive Heart Care", "अनुभवी कार्डिएक फिजिशियन", "हृदय स्वास्थ्य विशेषज्ञ".
 3. Dr. Gill is a CARDIAC PHYSICIAN — NEVER call him "cardiologist" or "renowned cardiologist".
 4. NEVER mention test prices (₹), costs, or fees for any procedure.
-5. NEVER claim ECG/2D Echo/TMT is done AT the clinic. Write: "consult a cardiac center for these tests".
-6. Services: Consultation, Clinical Assessment, Preventive Cardiology, Heart Health Counseling, Lifestyle Modification.
+5. NEVER claim ECG/2D Echo/TMT/Holter is done AT the clinic. Write: "get these tests done at a cardiac center / diagnostic lab; we review the reports and give a second opinion".
+5b. NEVER claim emergency, ambulance, ICU or 24x7 emergency services — Gill Heart Clinic is an OPD consultation clinic by appointment only. For sudden or severe symptoms (severe chest pain, severe breathlessness, fainting), always instruct the patient to go to the nearest hospital emergency immediately.
+6. Services: Consultation, Second Opinion on ECG/Echo/TMT/Holter Reports, Preventive Cardiology, General Medicine, Respiratory Care, Digestive Health, Diabetes Management, Blood Pressure, Cholesterol, Heart Health Counseling, Lifestyle Modification.
 7. Tone: Deeply informative, empathetic, authoritative medical guidance citing ACC/AHA/ESC guidelines.
 8. REQUIRED STRUCTURE:
    - 📌 Executive Summary & Key Highlights Box
    - 🩺 Clinical Symptoms, Causes & Early Warning Signs
-   - 📊 Diagnostic Evaluation (Digital ECG, 2D Echo Ultrasound, TMT)
+   - 📊 Diagnostic Report Review & Second Opinion (ECG, 2D Echo, TMT, Holter — tests done outside, we review reports)
    - 💊 Evidence-Based Treatment & PM Jan Aushadhi Generic Medicine Guidance
    - 🥗 Indian Heart-Healthy Diet & Lifestyle Protocols
-   - 🚨 Emergency Protocol & OPD Appointment Instructions
+   - 🚨 Urgent Symptoms — When to Go to Hospital Emergency + OPD Appointment Instructions
    - ❓ Frequently Asked Patient Questions (FAQs)
 9. Include: "This article has been reviewed by Dr. Gurjeet Singh Gill, Cardiac Physician".
 10. RESPECT USER LANGUAGE SELECTION STRICTLY (Hindi, English, or Hinglish).
@@ -60,7 +61,7 @@ CRITICAL LEGAL & MEDICAL ETHICS RULES (NMC Regulations):
 
 13. DR. GILL'S PERSONAL CLINICAL EXPERIENCE SECTION (MOST IMPORTANT for GEO — AI Prioritizes Genuine Human Experience):
    - Every article MUST include a dedicated section: <h2>🩺 Dr. Gill's Clinical Experience & Personal Patient Guidance</h2>
-   - Share practical, real-world clinical observations from Dr. Gill's 12+ years of practice and 50,000+ patients treated.
+   - Share practical, real-world clinical observations from Dr. Gill's 15+ years of practice and 50,000+ patients treated.
    - Include anonymized patient scenarios: "Dr. Gill recalls a 45-year-old school teacher from Meerut who came with mild chest discomfort after climbing stairs. Her ECG was normal but..."
    - Add personal clinical tips and observations that only come from real experience, not textbooks.
    - This section is what ChatGPT and Google Gemini value MOST — authentic, first-hand human expertise that cannot be replicated by AI.
@@ -113,7 +114,7 @@ Primary Keyword: {keyword}
 
 4. PERSONAL CLINICAL EXPERIENCE SECTION:
    MUST include a dedicated section: <h2>🩺 Dr. Gill's Clinical Experience & Personal Patient Guidance</h2>
-   Share anonymized patient scenarios from Dr. Gill's 12+ years at Gill Heart Clinic, Mohiuddinpur, Meerut.
+   Share anonymized patient scenarios from Dr. Gill's 15+ years at Gill Heart Clinic, Mohiuddinpur, Meerut.
    Example: "Dr. Gill recalls a 45-year-old Meerut teacher who..."
    Add personal tips that only come from real clinical experience — this is what AI search engines value most!
 

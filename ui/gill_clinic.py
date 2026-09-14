@@ -91,35 +91,46 @@ CLINIC = {
     "website": "https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/",
     "github_repo": "gurjeetsinghgill8-web/gill-heart-clinic",
     "hours": "Mon-Sun: 9:00 AM — 7:00 PM",
-    "years_experience": 12,
+    "years_experience": 15,
     "patients_treated": "50,000+",
-    "google_rating": 4.8,
-    "google_review_count": 127,
+    "google_rating": 5.0,
+    "google_review_count": 4,
     "associated_hospitals": ["Yashoda Hospital", "UN Mehta Institute", "IIT Kanpur"],
     "youtube": "https://www.youtube.com/@dr.gurjeetsinghgill",
-    "services": "Consultation, Clinical Assessment, Preventive Cardiology, Heart Health Counseling, ECG Interpretation",
+    "services": (
+        "Cardiac Consultation (Heart Specialist Opinion), Second Opinion on ECG/Echo/TMT/Holter Reports, "
+        "Chest Pain & Angina Care, Heart Attack Follow-up, Hypertension (High BP) Clinic, "
+        "Palpitations & Arrhythmia Care, Heart Failure Management, Diabetes Management, "
+        "Cholesterol (Lipid) Clinic, Breathlessness Evaluation, General Medicine, "
+        "Preventive Healthcare, Respiratory Care, Digestive Health, "
+        "Heart & Body Health Check-up Packages, Lifestyle & Weight Counseling"
+    ),
 }
 
 TARGET_LOCATIONS = ["Meerut", "Delhi NCR", "Mohiuddinpur", "Modinagar", "Hapur"]
 
 TARGET_KEYWORDS = [
-    "Cardiac Physician Meerut", "Heart Doctor Delhi NCR", "BP Specialist Meerut",
-    "Chest Pain Doctor Near Me", "Heart Clinic Mohiuddinpur",
-    "ECG Test Consultation Meerut", "2D Echo Advice Meerut", "TMT Test Guidance Meerut",
+    "Cardiac Physician Meerut", "Heart Specialist Meerut", "Heart Doctor Delhi NCR",
+    "BP Specialist Meerut", "Chest Pain Doctor Near Me", "Heart Clinic Mohiuddinpur",
+    "ECG Report Second Opinion Meerut", "2D Echo Report Review Meerut", "TMT Report Second Opinion Meerut",
+    "Holter Report Review Meerut", "Arrhythmia Doctor Meerut", "Palpitations Treatment Meerut",
     "Diabetes Heart Doctor", "Cholesterol Treatment Meerut",
     "Heart Care Physician Meerut", "Cardiac Care Delhi NCR",
     "Heart Failure Specialist", "Heart Attack Prevention Meerut",
+    "Heart Health Checkup Meerut", "General Medicine Doctor Meerut",
+    "Second Opinion Heart Doctor Meerut",
     "Cardiac Physician near Yashoda Hospital", "Heart Checkup Meerut",
 ]
 
 BLOG_CATEGORIES = [
     "Chest Pain Warning Signs", "High BP Control Tips", "ECG vs 2D Echo vs TMT",
+    "Holter Monitoring — 24-Hour ECG Guide", "Palpitations — When to See a Heart Doctor",
     "Diabetes & Heart Connection", "Cholesterol Management",
     "Indian Heart-Healthy Diet", "Heart Attack Prevention",
     "Safe Exercises for Heart Patients", "Heart Failure Management",
     "Women & Heart Disease", "Stress & Heart Health",
     "Seasonal Heart Care Tips",
-    "Emergency Heart Care Signs & Treatment",
+    "Urgent Heart Symptoms — When to Go to Hospital",
     "Pediatric Cardiology — Children Heart Health",
     "Angioplasty Information Guide — Procedure Recovery",
     "Heart Bypass Surgery Recovery Tips",
@@ -140,22 +151,6 @@ MY_COMPETITORS = [
     "Dr. Amit Sharma — Cardiologist, Meerut",
     "Dr. Sachit Goel — Cardiologist, Meerut",
     "Dr. Deepak (Deek) — Cardiologist, Meerut",
-    "Dr. ________ — Cardiologist, Meerut",
-    "Dr. ________ — Cardiologist, Meerut",
-    "Dr. ________ — Cardiologist, Meerut Cantt",
-    "Dr. ________ — Cardiologist, Modinagar",
-    "Dr. ________ — Cardiologist, Hapur",
-    "Dr. ________ — Cardiologist, Ghaziabad",
-    "Dr. ________ — Cardiologist, Delhi NCR",
-    "Dr. ________ — Cardiologist, Delhi NCR",
-    "Dr. ________ — Heart Specialist, Meerut",
-    "Dr. ________ — Heart Specialist, Delhi NCR",
-    "Dr. ________ — Physician + Cardio, Meerut",
-    "Dr. ________ — Physician + Cardio, Delhi NCR",
-    "Dr. ________ — Diabetes + Heart, Meerut",
-    "Dr. ________ — BP Specialist, Meerut",
-    "Dr. ________ — Echo/ECG Specialist, Meerut",
-    "Dr. ________ — TMT Specialist, Delhi NCR",
 ]
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -506,11 +501,18 @@ def render_clinic_header():
             </div>
             <div style="text-align: right;">
                 <div style="background: rgba(255,255,255,0.1); border-radius: 12px; padding: 1rem; border: 1px solid rgba(0,180,216,0.3);">
-                    <p style="color: #f1c40f; font-size: 1.5rem; margin: 0;">⭐ {CLINIC['google_rating']}</p>
-                    <p style="color: #ccc; font-size: 0.8rem; margin: 0;">{CLINIC['google_review_count']} Reviews</p>
+                    <p style="color: #f1c40f; font-size: 1.5rem; margin: 0;">⭐ {CLINIC['google_rating']} <span style="font-size:0.7rem;color:#ccc;">(Live Google)</span></p>
+                    <p style="color: #ccc; font-size: 0.8rem; margin: 0;">{CLINIC['google_review_count']} Google Reviews</p>
                     <p style="color: #00b4d8; font-size: 0.8rem; margin: 0;">{CLINIC['years_experience']}+ Years</p>
                     <p style="color: #90e0ef; font-size: 0.8rem; margin: 0;">{CLINIC['patients_treated']} Patients</p>
         </div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="gill-header" style="margin-top: -1rem;">
+        <p class="details" style="margin: 0; line-height: 1.7;">
+            🩺 <strong>Services:</strong> {CLINIC['services']}
+        </p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -543,12 +545,18 @@ def render_live_links_directory():
 def render_stats_row(user_id):
     stats = get_dashboard_stats(user_id) if user_id else {}
     
+    try:
+        from agents.competitor_agent import DEFAULT_COMPETITORS
+        competitors_tracked = len(DEFAULT_COMPETITORS)
+    except Exception:
+        competitors_tracked = len(MY_COMPETITORS)
+    
     col1, col2, col3, col4, col5 = st.columns(5)
     
     with col1:
         st.markdown(f"""
         <div class="gill-stat-card">
-            <p class="stat-value">🔑 {stats.get('total_keywords', 16)}</p>
+            <p class="stat-value">🔑 {stats.get('total_keywords', len(TARGET_KEYWORDS))}</p>
             <p class="stat-label">Keywords Tracking</p>
         </div>
         """, unsafe_allow_html=True)
@@ -559,7 +567,7 @@ def render_stats_row(user_id):
         st.markdown(f"""
         <div class="gill-stat-card">
             <p class="stat-value">📊 {rank_display}</p>
-            <p class="stat-label">Avg Delhi Rank</p>
+            <p class="stat-label">Avg Meerut Rank</p>
         </div>
         """, unsafe_allow_html=True)
     
@@ -575,14 +583,14 @@ def render_stats_row(user_id):
         st.markdown(f"""
         <div class="gill-stat-card">
             <p class="stat-value">⭐ {CLINIC['google_rating']}</p>
-            <p class="stat-label">Google Rating</p>
+            <p class="stat-label">Google Rating (Live)</p>
         </div>
         """, unsafe_allow_html=True)
     
     with col5:
         st.markdown(f"""
         <div class="gill-stat-card">
-            <p class="stat-value">🏆 4</p>
+            <p class="stat-value">🏆 {competitors_tracked}</p>
             <p class="stat-label">Competitors Tracked</p>
         </div>
         """, unsafe_allow_html=True)
@@ -1364,8 +1372,10 @@ def render_competitor_section():
                      delta=f"{'Better' if your_avg_rank < competitor_avg else 'Behind'} than avg competitor",
                      delta_color="inverse")
         with col2:
-            st.metric("⭐ Your Reviews", str(CLINIC['google_review_count']),
-                     delta=f"+{CLINIC['google_review_count'] - int(sum(c['reviews'] for c in comps)/len(comps))}")
+            comp_review_avg = int(sum(c['reviews'] for c in comps) / len(comps)) if comps else 0
+            review_gap = CLINIC['google_review_count'] - comp_review_avg
+            st.metric("⭐ Your Reviews (Live Google)", str(CLINIC['google_review_count']),
+                     delta=f"{review_gap:+d} vs avg competitor")
         
         # Gap keywords
         st.markdown("---")
@@ -1403,11 +1413,11 @@ def render_competitor_section():
                     published_count = 0
                     published_keywords = []
                 
-                # Emergency Heart Care
-                if any('emergency' in kw.lower() or 'heart care' in kw.lower() for kw in published_keywords):
-                    completed.append("✅ Emergency Heart Care blog — PUBLISHED")
+                # Urgent Heart Symptoms
+                if any('emergency' in kw.lower() or 'urgent' in kw.lower() or 'heart care' in kw.lower() for kw in published_keywords):
+                    completed.append("✅ Urgent Heart Symptoms blog — PUBLISHED")
                 else:
-                    pending.append("📝 Create 'Emergency Heart Care Signs' blog — high-volume keyword with no local competition in Meerut")
+                    pending.append("📝 Create 'Urgent Heart Symptoms — When to Go to Hospital' blog — high-intent keyword with no local competition in Meerut")
                 
                 # Pediatric Cardiology
                 if any('pediatric' in kw.lower() or 'children' in kw.lower() for kw in published_keywords):
@@ -1445,7 +1455,7 @@ def render_competitor_section():
                 **Blogs Published**: {published_count} → website live 🎉
                 **GBP Posts**: Auto-pilot active every 7 days 📱
                 **Competitors Tracked**: Anand Hospital, Lokpriya, Max, Fortis — real-time monitoring
-                **Key Gap Closed**: Emergency Care, Pediatric, Angioplasty content now on your site ✅
+                **Key Gap Closed**: Urgent-symptom guidance, Pediatric, Angioplasty information content now on your site ✅
                 
                 **Next Big Win**: Get 10 new Google reviews this month → direct Maps ranking boost in Meerut!
                 """)
