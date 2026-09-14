@@ -17,12 +17,14 @@ const CLINIC = {
   qualifications: "MBBS, Diploma Cardiology (UN Mehta), PGDCCP, AI in Healthcare (IIT Kanpur)",
   specialty: "Non-Invasive Cardiology & Preventive Heart Care",
   tagline: "Ethical, affordable, evidence-based cardiac care — Meerut & Delhi NCR",
-  address: "Sugar Mill, Mohiuddinpur, Meerut 250205, Uttar Pradesh",
+  address: "Sugar Mill, Mohiuddinpur, Meerut 250205, Uttar Pradesh (Near Metro Pillar 1375)",
   phone: "+91-9258879884",
   email: "gurjeetsinghgill8@gmail.com",
   website: "https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/",
   github_repo: "gurjeetsinghgill8-web/gill-heart-clinic",
   google_maps: "https://maps.app.goo.gl/SqhL69uBkRvEeRhD8",
+  google_review: "https://search.google.com/local/writereview?placeid=ChIJhXPKKcVhDDkRQC5IEfUI2p0",
+  review_helper: "https://gurjeetsinghgill8-web.github.io/gill-heart-clinic/review.html",
   rating: 5.0,
   reviews: 4,
   experience_years: "15+",
@@ -39,6 +41,8 @@ const CLINIC = {
 };
 
 const DEFAULT_QUERIES = [
+  "Heart Doctor Near Modinagar RRTS",
+  "Non-Invasive Cardio-Physician Mohiuddinpur",
   "heart doctor near me",
   "Cardiac Physician in Meerut",
   "experienced heart doctor Meerut",
