@@ -100,6 +100,13 @@ content, published_url, created_at
 - Requires `GEMINI_API_KEY` in Streamlit Secrets
 - Optional: `GITHUB_TOKEN`, `GROQ_API_KEY`, `SMTP_USER/PASS`
 
+### ⚠️ CLINIC WEBSITE (gill-heart-clinic) — LIVE BRANCH IS `gh-pages`
+- **GitHub Pages serves the `gh-pages` branch** of `gurjeetsinghgill8-web/gill-heart-clinic` (verified 14 Sep 2026: the live sitemap has 14 blog entries = gh-pages, while `master` had 2).
+- The local working copy `C:\Users\pc\Desktop\gurjas ai\Dr G S GILL WEBSITE` tracks `master`, and `config.json -> gill_clinic.github_branch` is `gh-pages` (the automation publishes articles to gh-pages).
+- **To publish website edits live, push to `gh-pages` — pushing only `master` does NOT update the live site.** Recommended flow: commit on `master`, then apply the same commit to `gh-pages` (`git checkout -B live origin/gh-pages && git format-patch -1 <commit>` … or cherry-pick/patch-apply), then `git push origin live:gh-pages`.
+- The daily cron rewrites only the `<!-- START DYNAMIC AI BLOGS SECTION -->` block of `index.html` plus `llms.txt`, `llms-full.txt`, `sitemap.xml`, `robots.txt` and `blogs/*`. The services grid, colours and section copy are safe from regeneration.
+- **Clinic scope (do not claim otherwise):** OPD consultation clinic by appointment only. No emergency/ambulance/ICU services. ECG, 2D Echo, TMT, Holter are NOT performed in-clinic — reports done outside are reviewed and a second opinion is given.
+
 ## Web PWA Dashboard (`web/`) — Security & Deploy (27 Aug 2026)
 - **Keys are SERVER-ONLY.** The PWA never stores API keys in `localStorage`. All AI + GitHub actions go through the Netlify serverless function `web/netlify/functions/turbo-runner.js` (actions: `health`, `turbo_blog`, `review_reply`).
 - **AI chain (server-side):** Gemini → DeepSeek → Groq — first configured key wins, all optional (falls back to NMC-compliant template). DeepSeek uses `https://api.deepseek.com/chat/completions` (model `deepseek-chat`, OpenAI-compatible).

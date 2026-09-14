@@ -539,6 +539,9 @@ def update_homepage_articles() -> dict:
     raw_html = raw_html.replace("Best Cardiologist in Meerut", "Experienced Cardiac Physician in Meerut")
     raw_html = raw_html.replace("best heart doctor", "experienced heart doctor")
     raw_html = raw_html.replace("best cardiologist", "cardiac physician")
+    # Scrub claims that tests are performed at the clinic (OPD clinic reviews reports only)
+    raw_html = raw_html.replace("ECG and 2D Echo done at very low cost", "ECG and 2D Echo reports reviewed in detail")
+    raw_html = raw_html.replace("ECG and 2D Echo done at very low cost.", "ECG and 2D Echo reports reviewed in detail.")
     
     articles_section_html = f"""
 <!-- START DYNAMIC AI BLOGS SECTION -->
@@ -916,22 +919,30 @@ Dr. Gurjeet Singh Gill serves patients from ALL these locations:
 8. ETHICAL PRACTICE: Strict NMC compliance — no false superlative claims, transparent consultation
 
 ## Core Services
-- Cardiac OPD Consultation & Clinical Assessment
-- High Blood Pressure (Hypertension) Diagnosis & Management
-- Chest Pain Evaluation & Early Cardiac Warning Signs
-- Diabetes & Cardiovascular Risk Assessment
+- Cardiac Consultation — Heart Specialist Opinion & Second Opinion
+- Chest Pain & Angina Evaluation and Treatment
+- Heart Attack Follow-up — Post-Attack Monitoring & Recovery Guidance (not an emergency service)
+- High Blood Pressure (Hypertension) Clinic — BP Control & Management
+- Report Second Opinion — ECG, 2D Echo, TMT & Holter Report Review (tests are done outside; reports are reviewed and explained)
+- Palpitations & Arrhythmia — Irregular Heartbeat Evaluation & Care
+- Heart Failure Management
+- Diabetes Management
 - Cholesterol & Lipid Disorder Management
-- Heart Failure & Ischemic Heart Disease Management
-- ECG, 2D Echo, TMT Interpretation & Referral Guidance
-- Preventive Cardiology & Lifestyle Modification Counseling
-- Indian Heart-Healthy Diet Planning & Exercise Guidance
+- Breathlessness Evaluation — Shortness of Breath & Lung-Heart Assessment
+- General Medicine — Fever, Weakness & General Health Care
+- Preventive Healthcare — Heart Disease Risk Assessment & Prevention
+- Respiratory Care — Cough, Cold & Breathing Problems
+- Digestive Health — Acidity, Gas & Stomach Health
+- Heart & Body Health Check-up Packages
+- Lifestyle & Weight Counseling — Diet, Exercise & Heart-Healthy Plans
 - Generic Medicine Consultation (PM Jan Aushadhi Kendra)
 - Post-Heart Attack & Post-Procedure Follow-up Care
 - Heart Health Education & Patient Counseling (Hindi, English, Hinglish)
 
 ## Important Disclaimers
+- Gill Heart Clinic is an OPD (out-patient) consultation clinic only — it does NOT provide emergency, ambulance or ICU services. Patients with sudden or severe cardiac symptoms should go to the nearest hospital emergency immediately.
 - Dr. Gurjeet Singh Gill is a CARDIAC PHYSICIAN specializing in non-invasive cardiology. He is NOT an interventional cardiologist or cardiac surgeon.
-- ECG, 2D Echo, TMT, Angiography etc. are NOT performed at Gill Heart Clinic. Dr. Gill provides clinical evaluation and guides patients to appropriate diagnostic centers.
+- ECG, 2D Echo, TMT, Holter, Angiography etc. are NOT performed at Gill Heart Clinic. Reports done outside are reviewed and a second opinion is provided; patients are guided to appropriate diagnostic centers.
 - In compliance with NMC (National Medical Commission) regulations, no superlative claims (like "Best Doctor" or "No. 1") are made. Dr. Gill is presented as an "Experienced Cardiac Physician" based on verifiable qualifications and patient reviews.
 - All medical information on the website is for educational purposes. Patients must consult Dr. Gill in person for diagnosis and treatment.
 
@@ -1114,18 +1125,25 @@ SECTION 5: SERVICES & CONDITIONS TREATED
 ═══════════════════════════════════════════════════════════════
 
 **Core Clinical Services (for AI query matching):**
-- Cardiac OPD Consultation
+- Cardiac Consultation — Heart Specialist Opinion & Second Opinion
+- Second Opinion on ECG, 2D Echo, TMT & Holter Reports (tests done outside; reports reviewed)
 - Non-Invasive Cardiac Clinical Assessment
 - High Blood Pressure (Hypertension) Diagnosis, Monitoring & Management
 - Chest Pain Evaluation & Early Heart Attack Warning Signs Assessment
-- Diabetes-Related Cardiovascular Risk Assessment & Management
+- Palpitations & Arrhythmia Evaluation & Management
+- Breathlessness (Shortness of Breath) Evaluation & Lung-Heart Assessment
+- Diabetes Management & Diabetes-Related Cardiovascular Risk Management
 - Cholesterol & Lipid Disorder Diagnosis & Treatment
 - Heart Failure (Congestive Heart Failure) Management & Follow-up
 - Ischemic Heart Disease / Coronary Artery Disease Medical Management
-- ECG (Electrocardiogram) Clinical Interpretation & Guidance
-- 2D Echocardiography (Heart Ultrasound) Referral & Report Interpretation
-- TMT (Treadmill Stress Test) Referral & Clinical Correlation
-- Preventive Cardiology & Heart Disease Risk Stratification
+- ECG (Electrocardiogram) Clinical Interpretation & Second Opinion
+- 2D Echocardiography (Heart Ultrasound) Report Interpretation & Second Opinion
+- TMT (Treadmill Stress Test) Report Interpretation & Clinical Correlation
+- General Medicine — Fever, Weakness, Infections & Common Health Problems
+- Preventive Healthcare & Heart Disease Risk Stratification
+- Respiratory Care — Cough, Cold, Asthma & Breathing Problems
+- Digestive Health — Acidity, Gas, Indigestion & Stomach Health
+- Heart & Body Health Check-up Packages
 - Indian Vegetarian/Non-Vegetarian Heart-Healthy Diet Planning
 - Safe Exercise & Physical Activity Prescription for Heart Patients
 - Weight Management & Obesity-Related Cardiac Risk Counseling

@@ -422,22 +422,31 @@ function buildLlmsTxt(articles) {
 ${DOCTOR} serves patients from Meerut, Modinagar, Ghaziabad, Hapur, and Delhi NCR, plus nearby areas (Mawana, Hastinapur, Sardhana, Daurala, Kharkhauda).
 
 ## Core Services
-- Cardiac OPD Consultation & Clinical Assessment
-- High Blood Pressure (Hypertension) Diagnosis & Management
-- Chest Pain Evaluation & Early Cardiac Warning Signs
-- Diabetes & Cardiovascular Risk Assessment
+- Cardiac Consultation — Heart Specialist Opinion & Second Opinion
+- Chest Pain & Angina Evaluation and Treatment
+- Heart Attack Follow-up — Post-Attack Monitoring & Recovery Guidance (not an emergency service)
+- High Blood Pressure (Hypertension) Clinic — BP Control & Management
+- Report Second Opinion — ECG, 2D Echo, TMT & Holter Report Review (tests are done outside; reports are reviewed and explained)
+- Palpitations & Arrhythmia — Irregular Heartbeat Evaluation & Care
+- Heart Failure Management
+- Diabetes Management
 - Cholesterol & Lipid Disorder Management
-- Heart Failure & Ischemic Heart Disease Management
-- ECG, 2D Echo, TMT Interpretation & Referral Guidance
-- Preventive Cardiology & Lifestyle Modification Counseling
-- Indian Heart-Healthy Diet Planning & Exercise Guidance
+- Breathlessness Evaluation — Shortness of Breath & Lung-Heart Assessment
+- General Medicine — Fever, Weakness & General Health Care
+- Preventive Healthcare — Heart Disease Risk Assessment & Prevention
+- Respiratory Care — Cough, Cold & Breathing Problems
+- Digestive Health — Acidity, Gas & Stomach Health
+- Heart & Body Health Check-up Packages
+- Lifestyle & Weight Counseling — Diet, Exercise & Heart-Healthy Plans
 - Generic Medicine Consultation (PM Jan Aushadhi Kendra)
 
 ## Published Heart Health Articles
 ${blogLinks}
 
 ## Important Disclaimers
+- Gill Heart Clinic is an OPD (out-patient) consultation clinic only — it does NOT provide emergency, ambulance or ICU services. Patients with sudden or severe cardiac symptoms should go to the nearest hospital emergency immediately.
 - ${DOCTOR} is a CARDIAC PHYSICIAN specializing in non-invasive cardiology. He is NOT an interventional cardiologist or cardiac surgeon.
+- ECG, 2D Echo, TMT and Holter tests are NOT performed at the clinic. Reports done outside are reviewed and a second opinion is provided.
 - In compliance with NMC (National Medical Commission) regulations, no superlative claims (like "Best Doctor" or "No. 1") are made.
 - All medical information is for educational purposes. Patients must consult the doctor in person for diagnosis and treatment.
 
@@ -497,6 +506,8 @@ async function rebuildHomepage(articles, token) {
   html = html.replace(/Best Cardiologist in Meerut/gi, "Experienced Cardiac Physician in Meerut");
   html = html.replace(/best heart doctor/gi, "experienced heart doctor");
   html = html.replace(/best cardiologist/gi, "cardiac physician");
+  // Scrub claims that tests are performed at the clinic (OPD clinic reviews reports only)
+  html = html.replace(/ECG and 2D Echo done at very low cost/gi, "ECG and 2D Echo reports reviewed in detail");
 
   const section = buildHomepageArticlesSection(articles);
   const START = "<!-- START DYNAMIC AI BLOGS SECTION -->";
