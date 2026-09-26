@@ -101,6 +101,16 @@ def _gbp_headers() -> dict:
     }
 
 
+def is_gbp_configured() -> bool:
+    """
+    True only when all three GBP settings exist.
+
+    When False, fetch_latest_reviews() returns DEMO data — so auto-posting must
+    be blocked instead of pretending it worked.
+    """
+    return bool(_get_gbp_account() and _get_gbp_location() and _get_gbp_token())
+
+
 def fetch_latest_reviews(max_results: int = 10) -> List[Dict]:
     """
     Fetch latest Google reviews via GBP API.
@@ -253,7 +263,7 @@ Rating: {stars} ({rating_val}/5)
 Patient's Review: "{review_text}"
 Sentiment: {sentiment}
 
-Dr. {CLINIC_CONFIG['doctor'].split()[-2]} {CLINIC_CONFIG['doctor'].split()[-1]} at {CLINIC_CONFIG['name']}, {CLINIC_CONFIG['location']}
+Dr. {CLINIC_CONFIG['doctor']} at {CLINIC_CONFIG['name']}, {CLINIC_CONFIG['location']}
 
 Write a short, warm, natural Hinglish reply (2-4 sentences):
 - Address the reviewer by name: {reviewer.split()[0]} ji
@@ -502,4 +512,82 @@ def auto_review_task():
     print("💬 Auto-Review Task: Checking for new Google reviews...")
     result = auto_reply_to_reviews(max_reviews=5)
     print(f"💬 Result: {result['replied']} replied, {result['skipped']} skipped, {result['errors']} errors")
+    return result
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# UI ENTRY POINTS
+# (names expected by ui/gill_clinic.py — previously MISSING, which is why
+#  the Review Manager buttons raised ImportError and always showed a warning)
+# ═══════════════════════════════════════════════════════════════════════
+
+def generate_review_reply(reviewer_name: str, rating, review_text: str) -> Dict:
+    """
+    Generate ONE AI reply for a review pasted into the UI.
+
+    Returns:
+        {"reply": str, "sentiment": str, "rating": int, "source": "ai"|"fallback"}
+    """
+    review = {
+        "reviewer": (reviewer_name or "Patient").strip(),
+        "rating": rating,
+        "text": (review_text or "").strip(),
+    }
+    rating_num = _star_rating(rating)
+    review["rating_num"] = rating_num
+    sentiment = analyze_sentiment(review["text"], rating_num)
+    review["sentiment"] = sentiment
+
+    source = "ai"
+    try:
+        reply = generate_ai_reply(review)
+        # call_llm() returns an error string instead of raising when every provider fails.
+        if not reply or reply.strip().startswith("⚠️"):
+            raise ValueError("AI unavailable")
+    except Exception:
+        reply = _generate_fallback_reply(review)
+        source = "fallback"
+
+    log_agent_action("review_agent", f"UI reply generated for {review['reviewer'][:20]} ({sentiment})")
+
+    return {
+        "reply": reply,
+        "sentiment": sentiment,
+        "rating": rating_num,
+        "source": source,
+    }
+
+
+def process_auto_replies(max_reviews: int = 5) -> Dict:
+    """
+    UI entry point behind the '🚀 Auto-Reply All Reviews Now' button.
+
+    Refuses to run when GBP is unconfigured, because fetch_latest_reviews()
+    would return DEMO reviews and the UI would falsely report success.
+    """
+    if not is_gbp_configured():
+        return {
+            "status": "not_configured",
+            "total": 0, "replied": 0, "skipped": 0, "errors": 0,
+            "error": (
+                "Google Business Profile connect nahi hai. "
+                "GOOGLE_BUSINESS_TOKEN / GOOGLE_BUSINESS_ACCOUNT / GOOGLE_BUSINESS_LOCATION "
+                "set karein — ya neeche 'Generate AI Reply' se reply banayein aur Google par paste karein."
+            ),
+        }
+
+    result = auto_reply_to_reviews(max_reviews=max_reviews)
+    result["status"] = "ok"
+
+    # Telegram summary (best effort — never block the UI).
+    try:
+        from utils.telegram_notifier import send_status_alert
+        send_status_alert(
+            "Google Review Auto-Reply complete",
+            f"{result.get('replied', 0)} replied | {result.get('skipped', 0)} skipped | {result.get('errors', 0)} errors",
+            ok=result.get("errors", 0) == 0,
+        )
+    except Exception:
+        pass
+
     return result
