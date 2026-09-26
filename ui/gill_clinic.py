@@ -1961,6 +1961,23 @@ def render_autopilot_section(user_id=None):
                         st.balloons()
                     elif res.get("status") == "generated_not_published":
                         st.warning(f"📝 Article generated successfully, but GitHub Push encountered an issue: {res.get('push_error')}. Please verify your GITHUB_TOKEN.")
+                    elif res.get("status") == "pending_review":
+                        tg_status = "✈️ Telegram par bhej diya ✅" if res.get("telegram_sent") else "⚠️ Telegram par nahi bheja gaya"
+                        if not res.get("telegram_sent") and res.get("telegram_error"):
+                            tg_status = f"⚠️ Telegram error: {res.get('telegram_error')}"
+                        st.success(f"📬 **Draft ban gaya aur review ke liye queue ho gaya!** ({res.get('elapsed_seconds')}s)")
+                        st.markdown(f"""
+                        <div style="background: #e8f4fd; border: 2px solid #0077b6; border-radius: 12px; padding: 1rem; margin: 0.8rem 0;">
+                            <h4 style="color: #0077b6; margin: 0 0 0.5rem 0;">📬 Review Pending: {res.get('title')}</h4>
+                            <p style="margin: 0.2rem 0; font-size: 0.9rem;"><strong>🎯 Topic:</strong> {res.get('topic')}</p>
+                            <p style="margin: 0.2rem 0; font-size: 0.9rem;"><strong>📄 Words:</strong> {res.get('word_count')} words | 100% NMC Ethics Compliant</p>
+                            <p style="margin: 0.2rem 0; font-size: 0.9rem;">{tg_status}</p>
+                            <p style="margin: 0.5rem 0 0 0; color: #555;">
+                                Ab <strong>📬 Pending Drafts</strong> section mein jaakar <strong>✅ Publish</strong> ya <strong>❌ Reject</strong> karein.
+                                Publish karne par hi website live update hogi.
+                            </p>
+                        </div>
+                        """, unsafe_allow_html=True)
                     elif res.get("status") == "error":
                         st.error(f"❌ Execution error: {res.get('error')}")
                     else:
@@ -2087,6 +2104,161 @@ def render_ai_geo_section(user_id=None, project_id=0):
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# 📬 PENDING BLOG DRAFTS — TELEGRAM REVIEW & PUBLISH
+# ═══════════════════════════════════════════════════════════════════════
+
+def _draft_query_param(key: str) -> str:
+    """Read a URL query param across Streamlit versions."""
+    try:
+        return st.query_params.get(key, "") or ""
+    except Exception:
+        pass
+    try:
+        vals = st.experimental_get_query_params().get(key, [])
+        return vals[0] if vals else ""
+    except Exception:
+        return ""
+
+
+@st.cache_data(ttl=120, show_spinner=False)
+def _load_pending_drafts_cached():
+    """
+    Pending drafts, cached for 2 minutes.
+
+    Without caching this section would hit the GitHub API on EVERY page load,
+    which is slow and burns the 5000/hr rate limit.
+    """
+    from agents.draft_review import list_pending_drafts
+    return list_pending_drafts(limit=20)
+
+
+def render_pending_drafts_section(user_id=None):
+    """
+    Review queue for AI-generated blog drafts.
+
+    The daily cron (or the 1-Click button in review mode) saves each draft to the
+    website repository and sends it to Dr. Gill on Telegram. Nothing goes live
+    until it is approved here.
+    """
+    st.markdown("""
+    <div style="background:#e8f4fd; border:2px solid #0077b6; border-radius:12px; padding:14px 18px; margin:10px 0;">
+        <p style="margin:0; color:#0077b6; font-weight:bold; font-size:1.05rem;">📬 PENDING BLOG DRAFTS — Review & Publish</p>
+        <p style="margin:6px 0 0 0; color:#333; font-size:0.9rem;">
+            Roz ka AI blog draft yahan aata hai aur <strong>Telegram par bhi</strong> bhej diya jaata hai.
+            <strong>Approve</strong> karne par website par live publish ho jaayega — reject karne par kuch nahi hoga.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── Flash message from a previous action (survives st.rerun) ──
+    flash = st.session_state.pop("gc_draft_flash", None)
+    if flash:
+        kind, msg, url = flash
+        (st.success if kind == "success" else st.error)(msg)
+        if url:
+            st.markdown(f"[🔗 Article kholkar dekhein]({url})")
+
+    # ── Telegram status ──
+    try:
+        from utils.telegram_notifier import is_telegram_configured, send_test_message
+        tg_ok = is_telegram_configured()
+    except Exception:
+        tg_ok = False
+        send_test_message = None
+
+    col_a, col_b = st.columns([3, 1])
+    with col_a:
+        if tg_ok:
+            st.success("✈️ Telegram connected — har draft aapko Telegram par bhi milega.")
+        else:
+            st.warning(
+                "⚠️ **Telegram connect nahi hai.** `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` "
+                "Streamlit Secrets mein daalein (guide: `P0_KEYS_SETUP_GUIDE.md`). "
+                "Tab tak system auto-publish mode mein chalega."
+            )
+    with col_b:
+        if tg_ok and send_test_message and st.button("📨 Test Telegram", key="tg_test_btn", use_container_width=True):
+            res = send_test_message()
+            if res.get("ok"):
+                st.success("Bhej diya!")
+            else:
+                st.error(res.get("error", "Failed"))
+
+    if st.button("🔄 Refresh Drafts", key="refresh_drafts_btn", use_container_width=True):
+        _load_pending_drafts_cached.clear()
+        st.rerun()
+
+    # ── Load drafts (cached 2 min to avoid hammering the GitHub API) ──
+    try:
+        with st.spinner("Drafts load kar rahe hain..."):
+            drafts = _load_pending_drafts_cached()
+    except Exception as e:
+        st.error(f"Drafts load nahi ho paye: {e}")
+        return
+
+    if not drafts:
+        st.info("📭 Koi pending draft nahi hai. Roz automatic naya draft aayega.")
+        return
+
+    st.markdown(f"#### 📥 {len(drafts)} draft review ka intezaar kar rahe hain")
+
+    # Opened from the Telegram button (?draft=<slug>) → auto-expand that one.
+    focus = _draft_query_param("draft")
+
+    for d in drafts:
+        slug = d.get("slug", "")
+        title = d.get("title", "Untitled")
+        is_focus = bool(focus and slug == focus)
+        created = str(d.get("created_at", ""))[:16].replace("T", " ")
+
+        with st.expander(f"{'👉 ' if is_focus else ''}{title}", expanded=is_focus):
+            st.caption(
+                f"🎯 {d.get('topic', '—')}  ·  🗣️ {d.get('language', '—')}  ·  "
+                f"📊 {d.get('word_count', 0)} words  ·  🕒 {created}"
+            )
+
+            with st.form(key=f"draft_form_{slug}"):
+                new_title = st.text_input("Title (edit kar sakte hain)", value=title, key=f"t_{slug}")
+                new_content = st.text_area("Content — HTML (edit kar sakte hain)",
+                                           value=d.get("content", ""), height=200, key=f"c_{slug}")
+                c1, c2, c3 = st.columns(3)
+                do_publish = c1.form_submit_button("✅ Publish Live", type="primary", use_container_width=True)
+                do_reject = c2.form_submit_button("❌ Reject", use_container_width=True)
+                do_preview = c3.form_submit_button("👁 Preview", use_container_width=True)
+
+            if do_preview:
+                st.markdown("---")
+                st.markdown(f"<h3>{new_title}</h3>", unsafe_allow_html=True)
+                st.markdown(new_content, unsafe_allow_html=True)
+                st.markdown("---")
+
+            if do_publish:
+                with st.spinner("Website par publish kar rahe hain..."):
+                    from agents.draft_review import approve_and_publish_draft
+                    res = approve_and_publish_draft(slug, edited_title=new_title, edited_content=new_content)
+                if res.get("success"):
+                    st.session_state["gc_draft_flash"] = (
+                        "success", f"🎉 Live ho gaya: {res.get('title')}", res.get("published_url", "")
+                    )
+                    _load_pending_drafts_cached.clear()
+                    st.rerun()
+                else:
+                    st.error(f"❌ Publish fail: {res.get('error')}")
+
+            if do_reject:
+                from agents.draft_review import reject_pending_draft
+                res = reject_pending_draft(slug)
+                if res.get("success"):
+                    st.session_state["gc_draft_flash"] = (
+                        "success", f"🗑️ Draft reject kar diya: {res.get('title')}", ""
+                    )
+                    _load_pending_drafts_cached.clear()
+                    st.rerun()
+                else:
+                    st.error(f"❌ Reject fail: {res.get('error')}")
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # MAIN: Show Gill Clinic Command Center
 # ═══════════════════════════════════════════════════════════════════════
 
@@ -2133,8 +2305,8 @@ def show_gill_clinic():
     st.markdown("### ⚡ Quick Jump — Click Any Button Below to Jump Instantly!")
     active_section = st.radio(
         "Jump to section:",
-        ["📊 ALL SECTIONS", "🏆 Live Analytics & Competitor Tower", "📝 Blog Generator", "⭐ Review Manager", 
-         "📈 Rank Tracker", "🔍 Competitor Intel", "📅 7-Day Planner", 
+        ["📊 ALL SECTIONS", "🏆 Live Analytics & Competitor Tower", "📝 Blog Generator", "📬 Pending Drafts",
+         "⭐ Review Manager", "📈 Rank Tracker", "🔍 Competitor Intel", "📅 7-Day Planner", 
          "🤖 AI GEO & Visibility", "🔄 Auto-Pilot"],
         horizontal=True,
         key="gc_quick_jump",
@@ -2145,6 +2317,7 @@ def show_gill_clinic():
         "📊 ALL SECTIONS": "all",
         "🏆 Live Analytics & Competitor Tower": "analytics",
         "📝 Blog Generator": "blog",
+        "📬 Pending Drafts": "drafts",
         "⭐ Review Manager": "reviews",
         "📈 Rank Tracker": "ranks",
         "🔍 Competitor Intel": "competitor",
@@ -2188,6 +2361,11 @@ def show_gill_clinic():
             elif not show_all:
                 _section_placeholder("⭐ Review Manager", "reviews", "Auto-reply to Google reviews & manage patient feedback")
     
+    # ── 📬 Pending Blog Drafts (Telegram review queue) ──
+    if show_all or active_section == "drafts":
+        st.markdown("<br>", unsafe_allow_html=True)
+        render_pending_drafts_section(user_id)
+
     # ── Bottom Row: Rank Tracker + Competitor ──
     if show_all or active_section in ("ranks", "competitor"):
         st.markdown("<br>", unsafe_allow_html=True)
