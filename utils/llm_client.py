@@ -47,6 +47,38 @@ def _get_vault():
             VAULT = {}
     return VAULT
 
+def _looks_like_placeholder(value) -> bool:
+    """
+    True when a credential is still an un-filled template value.
+
+    Without this check, values like "AIza_your_key_here" are returned as if they
+    were real keys — the UI then shows "✅ Configured" while every API call fails,
+    which hides the actual problem from the user.
+    """
+    if not value:
+        return True
+    v = str(value).strip()
+    if len(v) < 15:  # real provider keys are always longer than this
+        return True
+    low = v.lower()
+    markers = (
+        "your_key", "your-key", "yourkey", "your_api", "your-api",
+        "key_here", "api_key_here", "apikeyhere", "xxxx", "dummy",
+        "placeholder", "changeme", "change_me", "insert_", "paste_",
+        "example", "sample",
+    )
+    if any(m in low for m in markers):
+        return True
+    return v.startswith("<") or v.endswith(">")
+
+
+def _clean_key(value) -> Optional[str]:
+    """Return the credential only when it is real (not a placeholder)."""
+    if _looks_like_placeholder(value):
+        return None
+    return str(value).strip()
+
+
 def get_api_key(provider: str) -> Optional[str]:
     """Get API key: Streamlit secrets → vault → .env → environment."""
     env_var_map = {
@@ -62,19 +94,21 @@ def get_api_key(provider: str) -> Optional[str]:
     try:
         import streamlit as st
         if hasattr(st, 'secrets') and env_var in st.secrets:
-            val = st.secrets[env_var]
-            if val:
-                return val
+            key = _clean_key(st.secrets[env_var])
+            if key:
+                return key
     except:
         pass
     
     # 2️⃣ Try encrypted vault (local machine)
     vault = _get_vault()
-    if env_var in vault and vault[env_var]:
-        return vault[env_var]
+    if env_var in vault:
+        key = _clean_key(vault[env_var])
+        if key:
+            return key
     
     # 3️⃣ Try environment variable
-    key = os.getenv(env_var)
+    key = _clean_key(os.getenv(env_var))
     if key:
         return key
     
@@ -85,9 +119,9 @@ def get_api_key(provider: str) -> Optional[str]:
             for line in f:
                 line = line.strip()
                 if line.startswith(env_var + "="):
-                    val = line.split("=", 1)[1].strip().strip('"').strip("'")
-                    if val:
-                        return val
+                    key = _clean_key(line.split("=", 1)[1].strip().strip('"').strip("'"))
+                    if key:
+                        return key
     return None
 
 # ── Provider implementations ──
