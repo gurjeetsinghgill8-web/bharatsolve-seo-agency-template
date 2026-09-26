@@ -17,8 +17,10 @@ agents/*.py                     → Business logic (content, competitor, rank, r
 db/schema.py + operations.py    → SQLite (18 tables, 1 file)
 utils/llm_client.py             → Multi-provider LLM: Groq → Gemini → DeepSeek fallback
 utils/live_analytics_hub.py     → Live Multi-LLM Radar, SERP Timeline & Competitor Dominance Tower
-harness/headless_runner.py      → Standalone autonomous engine for CLI, UI, and GitHub Actions
+harness/headless_runner.py      → Standalone autonomous engine; `--mode review|publish` (default review)
 harness/scheduler.py            → Task scheduler & multi-mode runner
+agents/draft_review.py          → Pending-draft review queue on GitHub (pending_drafts/*.json)
+utils/telegram_notifier.py      → Telegram notifications + blog-draft-for-review delivery
 .github/workflows/auto_seo.yml  → 24/7 serverless cron (Runs daily at 9 AM & 6 PM IST)
 ```
 
@@ -38,6 +40,41 @@ harness/scheduler.py            → Task scheduler & multi-mode runner
 - **24/7 Serverless Solution**: Headless runner (`harness/headless_runner.py`) triggered via GitHub Actions (`.github/workflows/auto_seo.yml`) operates completely independently of Streamlit Cloud sleep cycles.
 
 ## Major Upgrades & Bug Fixes
+
+### Telegram Draft-Review Flow + P1 Fixes (26 Sep 2026)
+1. **Daily blog → Telegram review (NEW)**:
+   - `harness/headless_runner.py` takes `--mode review` (DEFAULT) or `--mode publish`.
+     In `review` mode the blog is saved as a PENDING draft and sent to Dr. Gill on Telegram;
+     nothing goes live until he approves it.
+   - **Safety fallback:** if Telegram is unconfigured, `review` auto-degrades to `publish`
+     so the website keeps updating instead of silently doing nothing.
+   - `agents/draft_review.py` (NEW): GitHub-backed review queue (`pending_drafts/*.json` in the
+     WEBSITE repo) — the only state shared between the GitHub Actions cron and Streamlit Cloud.
+     API: `save_pending_draft`, `list_pending_drafts`, `approve_and_publish_draft`, `reject_pending_draft`.
+   - `utils/telegram_notifier.py` (NEW): Telegram helpers + 4096-char HTML chunking,
+     `send_blog_draft_for_review`, `send_publish_confirmation`, `send_test_message`.
+     Offline/misconfigured → returns `{"ok": False}`, never raises.
+   - UI: new **📬 Pending Drafts** section in `ui/gill_clinic.py` (Quick Jump) with Publish/Reject/Edit.
+     Telegram buttons deep-link to it via `?draft=<slug>`.
+2. **CRITICAL: cross-repo GitHub token.** The website (`gill-heart-clinic`) is a DIFFERENT repo from
+   the app. GitHub's automatic `secrets.GITHUB_TOKEN` is scoped to its own repo only and can NEVER push
+   to the website. `auto_seo.yml` now maps `GITHUB_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}`
+   — create a Personal Access Token as repo secret **`GH_PAT`** (`repo` + `workflow` scopes).
+   The name `GITHUB_TOKEN` is RESERVED by GitHub and cannot be created as a secret.
+3. **Fixed broken Review Manager buttons.** `ui/gill_clinic.py` imported `process_auto_replies` and
+   `generate_review_reply`, which **did not exist anywhere** — both buttons raised ImportError (one was
+   masked by a try/except that always showed "token pending"). Both now exist in `agents/review_agent.py`.
+4. **Placeholder API keys no longer count as configured.** `utils/llm_client.get_api_key()` returned
+   `"AIza_your_key_here"` as if it were a real key, so the UI showed "✅ Configured" while every call
+   failed. Added `_looks_like_placeholder()` / `_clean_key()`; status pills are now honest.
+5. **GBP honesty guard:** `process_auto_replies()` refuses to run when GBP is unconfigured
+   (`is_gbp_configured()`), because `fetch_latest_reviews()` silently returns DEMO reviews otherwise.
+6. Other fixes: removed the duplicate no-arg `auto_blog_task()` that shadowed the configurable one;
+   `start_apscheduler()` now actually sets `_apscheduler_running = True`; fixed the reply prompt that
+   rendered "Dr. Singh Gill"; removed the duplicate empty `DEEPSEEK_API_KEY` line in `.env`.
+7. **Still pending (P3):** full GBP auto-reply needs migration off the deprecated
+   `mybusiness.googleapis.com/v4` API to the new Business Profile API with OAuth 2.0 + Google
+   "Basic Access" approval (can take 10+ business days).
 
 ### Auto-Pilot Overhaul & Turbo Master-Run (18 Aug 2026)
 1. **1-Click Dr. Gill AI Turbo Master-Run**:
