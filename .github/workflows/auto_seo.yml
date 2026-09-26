@@ -27,8 +27,23 @@ jobs:
 
       - name: 🚀 Run Autonomous SEO Engine
         env:
+          # ⚠️ CRITICAL: The website lives in a SEPARATE repo (gurjeetsinghgill8-web/gill-heart-clinic).
+          # GitHub's automatic `secrets.GITHUB_TOKEN` is scoped ONLY to this repo, so it can NEVER
+          # push to gill-heart-clinic. A Personal Access Token is REQUIRED.
+          # Create a repo secret named GH_PAT (the name GITHUB_TOKEN is reserved by GitHub).
+          GITHUB_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GOOGLE_BUSINESS_TOKEN: ${{ secrets.GOOGLE_BUSINESS_TOKEN }}
+          GOOGLE_BUSINESS_ACCOUNT: ${{ secrets.GOOGLE_BUSINESS_ACCOUNT }}
+          GOOGLE_BUSINESS_LOCATION: ${{ secrets.GOOGLE_BUSINESS_LOCATION }}
         run: |
-          python harness/headless_runner.py
+          # --mode review   : draft banata hai aur Telegram par review ke liye bhejta hai
+          #                   (website tab tak update NAHI hoti jab tak aap approve na karein)
+          # --mode publish  : seedha live publish karta hai
+          # NOTE: Telegram configured na hone par "review" khud "publish" par fallback karta hai,
+          #       taaki website updating kabhi band na ho.
+          python harness/headless_runner.py --mode review
