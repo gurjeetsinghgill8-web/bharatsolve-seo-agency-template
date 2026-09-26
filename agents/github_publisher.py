@@ -1382,44 +1382,12 @@ def publish_batch_blogs(topics: list = None) -> list:
 
 
 # ═══════════════════════════════════════════════════════════════════════
-# AUTO-BLOG TASK (for scheduler)
+# NOTE: there used to be a SECOND, no-argument `auto_blog_task()` defined
+# here that picked a RANDOM topic from a hardcoded list. Because it was
+# defined last, it silently overrode the configurable `auto_blog_task()`
+# above (line ~663) for every importer.
+#
+# It has been removed in favour of the single configurable version, which
+# falls back to the smarter `pick_next_target_query()` (it skips topics
+# already published OR already waiting in the review queue).
 # ═══════════════════════════════════════════════════════════════════════
-
-def auto_blog_task():
-    """
-    Automated blog task — picks a random heart health topic and publishes daily.
-    Designed to be called by the scheduler every 24 hours.
-    """
-    import random
-    
-    heart_topics = [
-        "Chest Pain Warning Signs",
-        "High BP Control Tips",
-        "ECG vs 2D Echo vs TMT Difference",
-        "Diabetes and Heart Connection",
-        "Cholesterol Management Tips",
-        "Heart Attack Prevention in Hindi",
-        "Heart Healthy Indian Diet Plan",
-        "Safe Exercises for Heart Patients",
-        "Heart Failure Symptoms and Treatment",
-        "Stress and Heart Health Connection",
-        "Seasonal Heart Care Tips for Summer",
-        "Women Heart Disease Awareness",
-        "Smoking and Heart Damage",
-        "Obesity and Heart Risk Factors",
-        "Sleep Apnea and Heart Problems",
-        "Heart Checkup — What Tests You Need",
-        "BP Medicine Side Effects Management",
-        "Post-Heart Attack Recovery Guide",
-        "Heart Disease in Young Indians",
-        "Yoga for Heart Health",
-    ]
-    
-    topic = random.choice(heart_topics)
-    location = random.choice(DEFAULT_CONFIG["target_locations"])
-    
-    result = publish_blog_to_github(topic, location, auto_publish=True)
-    
-    print(f"📝 Auto-Blog: {result.get('title', 'Unknown')} — Status: {result.get('status', 'unknown')}")
-    
-    return result
