@@ -20,7 +20,12 @@ from .github_publisher import (
 )
 from .review_agent import (
     fetch_latest_reviews, process_reviews, generate_ai_reply,
-    auto_reply_to_reviews, generate_review_report, auto_review_task
+    auto_reply_to_reviews, generate_review_report, auto_review_task,
+    generate_review_reply, process_auto_replies, is_gbp_configured
+)
+from .draft_review import (
+    save_pending_draft, list_pending_drafts, get_pending_draft,
+    approve_and_publish_draft, reject_pending_draft, pending_draft_count
 )
 from .competitor_agent import (
     get_competitors, add_competitor, compare_rankings,
@@ -47,6 +52,10 @@ __all__ = [
     # Review Agent
     'fetch_latest_reviews', 'process_reviews', 'generate_ai_reply',
     'auto_reply_to_reviews', 'generate_review_report', 'auto_review_task',
+    'generate_review_reply', 'process_auto_replies', 'is_gbp_configured',
+    # Draft Review (Telegram approval flow)
+    'save_pending_draft', 'list_pending_drafts', 'get_pending_draft',
+    'approve_and_publish_draft', 'reject_pending_draft', 'pending_draft_count',
     # Competitor Agent
     'get_competitors', 'add_competitor', 'compare_rankings',
     'generate_gap_analysis', 'compare_reviews', 'competitor_scan_task',
