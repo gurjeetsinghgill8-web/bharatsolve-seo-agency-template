@@ -266,7 +266,7 @@ def _push_file_to_repo(file_path: str, content: str, commit_message: str) -> dic
 # BLOG GENERATION + PUBLISHING
 # ═══════════════════════════════════════════════════════════════════════
 
-def generate_heart_blog(topic: str, target_location: str = "Meerut", 
+def _generate_heart_blog_raw(topic: str, target_location: str = "Meerut", 
                        language: str = "hinglish") -> dict:
     """
     Generate a complete heart health blog using AI.
@@ -376,6 +376,74 @@ RETURN ONLY VALID JSON. No markdown, no explanation:
     # Absolute fallback - should never reach here
     log_agent_action("github_publisher", f"Blog generation failed for: {topic}", status="error")
     return {"title": "", "content": "", "error": "AI generation failed — please try again"}
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# NMC COMPLIANCE — SUPERLATIVE SCRUBBER
+#
+# The Indian Medical Council (Professional Conduct) Regulations prohibit
+# self-laudatory claims. The LLM still slips words like "Best" into TITLES
+# (e.g. a search query "heart doctor near me" produced
+#  "Best Heart Doctor Near Me in Meerut"), which also poisons the URL slug.
+# Content-level scrubbing already existed for index.html only — this covers
+# the generated title, meta title and slug for every publish path.
+# ═══════════════════════════════════════════════════════════════════════
+
+_SUPERLATIVE_RULES = [
+    (r"\bbest\s+heart\s+doctor\b", "experienced heart doctor"),
+    (r"\bbest\s+heart\s+specialist\b", "experienced heart specialist"),
+    (r"\bbest\s+heart\s+clinic\b", "trusted heart clinic"),
+    (r"\bbest\s+cardiologist\b", "experienced cardiac physician"),
+    (r"\bbest\s+cardiac\s+physician\b", "experienced cardiac physician"),
+    (r"\bbest\s+doctor\b", "experienced doctor"),
+    (r"\bbest\s+heart\b", "trusted heart"),
+    (r"\btop\s+cardiologist\b", "cardiac physician"),
+    (r"\btop\s+heart\s+doctor\b", "experienced heart doctor"),
+    (r"\bno\.?\s*1\b", "trusted"),
+    (r"\bnumber\s*1\b", "trusted"),
+    (r"\b#\s*1\b", "trusted"),
+    (r"\bbest\b", "experienced"),
+    (r"\bbest-in-class\b", "trusted"),
+    (r"सर्वश्रेष्ठ", "अनुभवी"),
+    (r"नंबर\s*1", "अनुभवी"),
+    (r"सबसे\s*अच्छे", "अनुभवी"),
+]
+
+
+def sanitize_nmc_text(text: str) -> str:
+    """Replace self-laudatory superlatives with NMC-compliant wording."""
+    out = str(text or "")
+    for pattern, replacement in _SUPERLATIVE_RULES:
+        out = re.sub(pattern, replacement, out, flags=re.IGNORECASE)
+    # Tidy up the casing/whitespace left behind.
+    out = re.sub(r"\s{2,}", " ", out).strip()
+    out = re.sub(r"^experienced\b", "Experienced", out)
+    return out
+
+
+def generate_heart_blog(topic: str, target_location: str = "Meerut",
+                        language: str = "hinglish") -> dict:
+    """
+    NMC-safe wrapper around _generate_heart_blog_raw().
+
+    Scrubs superlatives from the title / meta title so a prohibited claim can
+    never reach the slug, the blog HTML, Telegram, or the live website.
+    """
+    data = _generate_heart_blog_raw(topic, target_location, language)
+    if isinstance(data, dict) and data.get("title"):
+        before = data["title"]
+        data["title"] = sanitize_nmc_text(before)
+        if data.get("meta_title"):
+            data["meta_title"] = sanitize_nmc_text(data["meta_title"])
+        if data.get("meta_description"):
+            data["meta_description"] = sanitize_nmc_text(data["meta_description"])
+        if data["title"] != before:
+            log_agent_action(
+                "github_publisher",
+                f"NMC scrub applied to title: '{before[:45]}' -> '{data['title'][:45]}'",
+                status="warning",
+            )
+    return data
 
 
 def build_blog_html(blog_data: dict, slug: str = None) -> str:
