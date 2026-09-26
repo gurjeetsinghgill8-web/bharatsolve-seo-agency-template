@@ -487,6 +487,7 @@ def start_apscheduler():
                          id='daily_full_run', replace_existing=True)
     
     _apscheduler.start()
+    _apscheduler_running = True
     try:
         print("[+] APScheduler started - all agent tasks scheduled")
     except:
